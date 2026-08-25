@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,59 +12,145 @@
 
 <body>
 
-    <!-- Navigation Bar -->
-    <header>
-        <nav>
-            <div class="logo">DRESORA</div>
+    <!-- =========================
+         NAVIGATION BAR
+    ========================== -->
 
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="#">Dresses</a></li>
-                <li><a href="#">About</a></li>
-                <li><a href="#">Contact</a></li>
-                <li><a href="#">Login</a></li>
-            </ul>
-        </nav>
+    <header>
+       <nav>
+
+    <div class="logo">
+        <span>DRESORA</span>
+        <small>DRESS RENTAL</small>
+    </div>
+
+    <!-- මෙතනින් පස්සේ search box එක -->
+    <div class="search-box">
+        <input type="text" placeholder="Search dresses...">
+        <button>Search</button>
+    </div>
+
+    <!-- navigation links -->
+    <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="#">Shop</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Contact</a></li>
+        <li>
+            <a href="#">
+                Cart <span class="cart-count">0</span>
+            </a>
+        </li>
+    </ul>
+
+</nav>
     </header>
 
 
-    <!-- Hero Section -->
+    <!-- =========================
+         HERO SECTION
+    ========================== -->
+
     <section class="hero">
 
         <div class="hero-content">
-            <h1>Find Your Perfect Dress</h1>
 
-            <p>
-                Elegant dresses for every special occasion.
-                Rent your perfect look with Dresora.
+            <p class="hero-small-text">
+                DRESORA DRESS RENTAL
             </p>
 
-            <a href="#" class="btn">Browse Dresses</a>
+            <h1>
+                Find Your Perfect Dress
+            </h1>
+
+            <p>
+                Discover elegant dresses for weddings, parties,
+                and every special occasion. Rent your favourite
+                style with Dresora.
+            </p>
+
+            <div class="hero-buttons">
+                <a href="#" class="btn">
+                    Browse Dresses
+                </a>
+
+                <a href="#" class="btn secondary-btn">
+                    Explore Collection
+                </a>
+            </div>
+
         </div>
 
     </section>
 
 
-    <!-- Categories -->
+    <!-- =========================
+         CATEGORIES
+    ========================== -->
+
     <section class="categories">
 
-        <h2>Explore Our Collections</h2>
+        <p class="section-subtitle">
+            FIND YOUR STYLE
+        </p>
+
+        <h2>
+            Explore Our Collections
+        </h2>
 
         <div class="category-container">
 
             <div class="category-card">
-                <h3>Wedding Dresses</h3>
-                <p>Elegant dresses for your special day.</p>
+                <div class="category-icon">♡</div>
+
+                <h3>
+                    Wedding Dresses
+                </h3>
+
+                <p>
+                    Elegant styles for your
+                    unforgettable day.
+                </p>
+
+                <a href="#">
+                    Explore →
+                </a>
             </div>
 
-            <div class="category-card">
-                <h3>Party Dresses</h3>
-                <p>Stylish looks for every celebration.</p>
-            </div>
 
             <div class="category-card">
-                <h3>Casual Dresses</h3>
-                <p>Beautiful dresses for everyday occasions.</p>
+                <div class="category-icon">✦</div>
+
+                <h3>
+                    Party Dresses
+                </h3>
+
+                <p>
+                    Stylish looks for every
+                    celebration.
+                </p>
+
+                <a href="#">
+                    Explore →
+                </a>
+            </div>
+
+
+            <div class="category-card">
+                <div class="category-icon">✧</div>
+
+                <h3>
+                    Casual Dresses
+                </h3>
+
+                <p>
+                    Comfortable and beautiful
+                    everyday styles.
+                </p>
+
+                <a href="#">
+                    Explore →
+                </a>
             </div>
 
         </div>
@@ -71,32 +158,131 @@
     </section>
 
 
-    <!-- Featured Dresses -->
+    <!-- =========================
+         FEATURED DRESSES
+    ========================== -->
+
     <section class="featured">
 
-        <h2>Featured Dresses</h2>
+        <p class="section-subtitle">
+            OUR COLLECTION
+        </p>
+
+        <h2>
+            Featured Dresses
+        </h2>
+
+        <p class="section-description">
+            Discover some of our most popular
+            dresses available for rental.
+        </p>
+
 
         <div class="dress-container">
 
-            <div class="dress-card">
-                <div class="dress-image">Dress Image</div>
-                <h3>Elegant Evening Dress</h3>
-                <p>Rs. 2,500 / Rental</p>
-                <button>View Details</button>
-            </div>
+
+            <!-- Dress 01 -->
 
             <div class="dress-card">
-                <div class="dress-image">Dress Image</div>
-                <h3>Classic Party Dress</h3>
-                <p>Rs. 2,000 / Rental</p>
-                <button>View Details</button>
+
+                <div class="dress-image">
+                    <img
+                        src="images/dress1.jpg"
+                        alt="Elegant Evening Dress"
+                    >
+                </div>
+
+                <div class="dress-info">
+
+                    <span class="dress-category">
+                        Evening Wear
+                    </span>
+
+                    <h3>
+                        Elegant Evening Dress
+                    </h3>
+
+                    <p class="price">
+                        Rs. 2,500
+                        <span>/ rental</span>
+                    </p>
+
+                    <button>
+                        View Details
+                    </button>
+
+                </div>
+
             </div>
 
+
+            <!-- Dress 02 -->
+
             <div class="dress-card">
-                <div class="dress-image">Dress Image</div>
-                <h3>Floral Dress</h3>
-                <p>Rs. 1,800 / Rental</p>
-                <button>View Details</button>
+
+                <div class="dress-image">
+                    <img
+                        src="images/dress2.jpg"
+                        alt="Classic Party Dress"
+                    >
+                </div>
+
+                <div class="dress-info">
+
+                    <span class="dress-category">
+                        Party Wear
+                    </span>
+
+                    <h3>
+                        Classic Party Dress
+                    </h3>
+
+                    <p class="price">
+                        Rs. 2,000
+                        <span>/ rental</span>
+                    </p>
+
+                    <button>
+                        View Details
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Dress 03 -->
+
+            <div class="dress-card">
+
+                <div class="dress-image">
+                    <img
+                        src="images/dress3.jpg"
+                        alt="Floral Dress"
+                    >
+                </div>
+
+                <div class="dress-info">
+
+                    <span class="dress-category">
+                        Casual Wear
+                    </span>
+
+                    <h3>
+                        Floral Dress
+                    </h3>
+
+                    <p class="price">
+                        Rs. 1,800
+                        <span>/ rental</span>
+                    </p>
+
+                    <button>
+                        View Details
+                    </button>
+
+                </div>
+
             </div>
 
         </div>
@@ -104,10 +290,239 @@
     </section>
 
 
-    <!-- Footer -->
+    <!-- =========================
+         WHY CHOOSE DRESORA
+    ========================== -->
+
+    <section class="why-dresora">
+
+        <div class="why-content">
+
+            <p class="section-subtitle">
+                WHY DRESORA?
+            </p>
+
+            <h2>
+                Your Perfect Look,
+                Made Simple
+            </h2>
+
+            <p>
+                Dresora makes finding and renting
+                your favourite dress simple,
+                convenient, and affordable.
+            </p>
+
+        </div>
+
+
+        <div class="benefits">
+
+            <div class="benefit-card">
+
+                <div class="benefit-icon">
+                    ♡
+                </div>
+
+                <h3>
+                    Affordable Rental
+                </h3>
+
+                <p>
+                    Enjoy beautiful dresses
+                    without buying them.
+                </p>
+
+            </div>
+
+
+            <div class="benefit-card">
+
+                <div class="benefit-icon">
+                    ✦
+                </div>
+
+                <h3>
+                    Quality Dresses
+                </h3>
+
+                <p>
+                    Choose from stylish dresses
+                    for different occasions.
+                </p>
+
+            </div>
+
+
+            <div class="benefit-card">
+
+                <div class="benefit-icon">
+                    ✓
+                </div>
+
+                <h3>
+                    Easy Booking
+                </h3>
+
+                <p>
+                    Select your dress and
+                    reserve it easily.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         PROMOTIONAL SECTION
+    ========================== -->
+
+    <section class="promotion">
+
+        <div class="promotion-content">
+
+            <p class="section-subtitle">
+                SPECIAL RENTAL
+            </p>
+
+            <h2>
+                Dress for Every Occasion
+            </h2>
+
+            <p>
+                Whether it is a wedding, party,
+                or special event, find a dress
+                that matches your style.
+            </p>
+
+            <a href="#" class="btn">
+                Explore Collection
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
     <footer>
-        <p>© 2026 Dresora. All Rights Reserved.</p>
+
+        <div class="footer-container">
+
+
+            <!-- About -->
+
+            <div class="footer-section">
+
+                <h3>
+                    DRESORA
+                </h3>
+
+                <p>
+                    Your online destination for
+                    stylish and affordable
+                    dress rentals.
+                </p>
+
+            </div>
+
+
+            <!-- Quick Links -->
+
+            <div class="footer-section">
+
+                <h3>
+                    Quick Links
+                </h3>
+
+                <ul>
+
+                    <li>
+                        <a href="index.html">
+                            Home
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Shop
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            About
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Contact
+                        </a>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <!-- Contact -->
+
+            <div class="footer-section">
+
+                <h3>
+                    Contact Us
+                </h3>
+
+                <p>
+                    Email: info@dresora.com
+                </p>
+
+                <p>
+                    Phone: +94 77 123 4567
+                </p>
+
+            </div>
+
+
+            <!-- Social -->
+
+            <div class="footer-section">
+
+                <h3>
+                    Follow Us
+                </h3>
+
+                <p>
+                    Instagram
+                </p>
+
+                <p>
+                    Facebook
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer-bottom">
+
+            <p>
+                © 2026 Dresora. All Rights Reserved.
+            </p>
+
+        </div>
+
     </footer>
 
+
 </body>
+
 </html>
