@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Dresora - Product Details</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+
+        .details-page {
+            max-width: 1100px;
+            margin: auto;
+            padding: 80px 30px;
+        }
+
+        .details-container {
+            display: flex;
+            gap: 50px;
+            align-items: center;
+            background: white;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(120, 80, 110, 0.10);
+        }
+
+        .details-image {
+            width: 50%;
+            height: 550px;
+            overflow: hidden;
+            border-radius: 15px;
+            background: #f3e8f1;
+        }
+
+        .details-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .details-info {
+            width: 50%;
+        }
+
+        .details-category {
+            color: #a66b9b;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .details-info h1 {
+            color: #5d405c;
+            font-size: 38px;
+            margin: 12px 0 15px;
+        }
+
+        .details-price {
+            color: #8b5a83;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .details-price small {
+            font-size: 14px;
+            color: #777078;
+            font-weight: normal;
+        }
+
+        .details-description {
+            color: #777078;
+            line-height: 1.8;
+            margin-bottom: 25px;
+        }
+
+        .detail-item {
+            margin-bottom: 15px;
+            color: #665966;
+        }
+
+        .detail-item strong {
+            color: #5d405c;
+        }
+
+        /* SIZE */
+
+        .size-title {
+            display: block;
+            margin-bottom: 10px;
+            color: #5d405c;
+            font-weight: bold;
+        }
+
+        .size-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .size-options input {
+            display: none;
+        }
+
+        .size-options label {
+            width: 45px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border: 1px solid #dcc6d8;
+            border-radius: 8px;
+
+            color: #5d405c;
+            cursor: pointer;
+
+            transition: 0.3s;
+        }
+
+        .size-options label:hover {
+            border-color: #8b5a83;
+        }
+
+        .size-options input:checked + label {
+            background: #8b5a83;
+            color: white;
+            border-color: #8b5a83;
+        }
+
+        /* RENTAL DAYS */
+
+        .rental-days {
+            margin-bottom: 20px;
+        }
+
+        .rental-days label {
+            display: block;
+            margin-bottom: 8px;
+            color: #5d405c;
+            font-weight: bold;
+        }
+
+        .rental-days select {
+            width: 180px;
+            padding: 11px 15px;
+
+            border: 1px solid #dcc6d8;
+            border-radius: 8px;
+
+            color: #5d405c;
+            background: white;
+
+            outline: none;
+        }
+
+        /* TOTAL */
+
+        .total-price {
+            margin-top: 15px;
+            padding: 15px;
+
+            background: #f8f0f6;
+            border-radius: 10px;
+
+            color: #5d405c;
+            font-weight: bold;
+        }
+
+        /* ADD TO CART */
+
+        .cart-btn {
+            display: inline-block;
+
+            padding: 13px 30px;
+
+            background: #8b5a83;
+            color: white;
+
+            border: none;
+            border-radius: 25px;
+
+            cursor: pointer;
+
+            margin-top: 15px;
+
+            font-size: 15px;
+            font-weight: bold;
+
+            transition: 0.3s;
+        }
+
+        .cart-btn:hover {
+            background: #6f4568;
+            transform: translateY(-2px);
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 25px;
+            color: #8b5a83;
+            font-weight: bold;
+        }
+
+        .cart-link {
+            margin-left: 10px;
+            color: #8b5a83;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+
+            .details-container {
+                flex-direction: column;
+            }
+
+            .details-image,
+            .details-info {
+                width: 100%;
+            }
+
+            .details-image {
+                height: 450px;
+            }
+
+            .details-info h1 {
+                font-size: 30px;
+            }
+.rental-date {
+    margin-bottom: 20px;
+}
+
+.rental-date label {
+    display: block;
+    margin-bottom: 8px;
+    color: #5d405c;
+    font-weight: bold;
+}
+
+.rental-date input {
+    width: 220px;
+    padding: 11px 15px;
+
+    border: 1px solid #dcc6d8;
+    border-radius: 8px;
+
+    color: #5d405c;
+    background: white;
+
+    outline: none;
+}
+
+.rental-date input:focus {
+    border-color: #8b5a83;
+}
+.rental-dates {
+    margin-bottom: 18px;
+}
+
+.rental-dates label {
+    display: block;
+    margin-bottom: 8px;
+    color: #5d405c;
+    font-weight: bold;
+}
+
+.rental-dates input {
+    width: 180px;
+    padding: 11px 15px;
+
+    border: 1px solid #dcc6d8;
+    border-radius: 8px;
+
+    color: #5d405c;
+    background: white;
+
+    outline: none;
+}
+
+.rental-dates input:focus {
+    border-color: #8b5a83;
+}
+        }
+
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     HEADER
+========================= -->
+
+<header>
+
+    <nav>
+
+        <div class="logo">
+
+            <span>DRESORA</span>
+            <small>DRESS RENTAL</small>
+
+        </div>
+
+        <ul>
+
+            <li>
+                <a href="index.html">
+                    Home
+                </a>
+            </li>
+
+            <li>
+                <a href="products.html">
+                    Shop
+                </a>
+            </li>
+
+            <li>
+                <a href="about.html">
+                    About
+                </a>
+            </li>
+
+            <li>
+                <a href="contact.html">
+                    Contact
+                </a>
+            </li>
+
+            <li>
+                <a href="cart.html">
+                    Cart
+                    <span class="cart-count">0</span>
+                </a>
+            </li>
+
+        </ul>
+
+    </nav>
+
+</header>
+
+
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<main>
+
+<section class="details-page">
+
+
+    <a href="products.html"
+       class="back-btn">
+
+        ← Back to Shop
+
+    </a>
+
+
+    <div class="details-container">
+
+
+        <!-- =========================
+             IMAGE
+        ========================= -->
+
+        <div class="details-image">
+
+            <img id="productImage"
+                 src=""
+                 alt="Dress">
+
+        </div>
+
+
+
+        <!-- =========================
+             DETAILS
+        ========================= -->
+
+        <div class="details-info">
+
+
+            <span id="productCategory"
+                  class="details-category">
+            </span>
+
+
+            <h1 id="productName">
+            </h1>
+
+
+            <p class="details-price">
+
+                Rs. <span id="productPrice"></span>
+
+                <small>
+                    / day
+                </small>
+
+            </p>
+
+
+            <p id="productDescription"
+               class="details-description">
+            </p>
+
+
+
+            <!-- SIZE -->
+
+            <div class="detail-item">
+
+                <span class="size-title">
+                    Select Size
+                </span>
+
+
+                <div class="size-options">
+
+                    <input type="radio"
+                           id="sizeS"
+                           name="size"
+                           value="S">
+
+                    <label for="sizeS">
+                        S
+                    </label>
+
+
+                    <input type="radio"
+                           id="sizeM"
+                           name="size"
+                           value="M">
+
+                    <label for="sizeM">
+                        M
+                    </label>
+
+
+                    <input type="radio"
+                           id="sizeL"
+                           name="size"
+                           value="L">
+
+                    <label for="sizeL">
+                        L
+                    </label>
+
+
+                    <input type="radio"
+                           id="sizeXL"
+                           name="size"
+                           value="XL">
+
+                    <label for="sizeXL">
+                        XL
+                    </label>
+
+                </div>
+
+            </div>
+
+
+
+           
+
+           <!-- RENTAL DATE -->
+
+
+
+<!-- RENTAL DATES -->
+
+<div class="rental-dates">
+
+    <label for="startDate">
+        Rental Start Date
+    </label>
+
+    <input
+        type="date"
+        id="startDate"
+        onchange="calculateTotal()"
+    >
+
+</div>
+
+
+<div class="rental-dates">
+
+    <label for="endDate">
+        Rental End Date
+    </label>
+
+    <input
+        type="date"
+        id="endDate"
+        onchange="calculateTotal()"
+    >
+
+</div>
+
+
+<!-- TOTAL -->
+
+<div class="total-price">
+
+    Total Rental Price:
+
+    Rs.
+    <span id="totalPrice">
+        0
+    </span>
+
+</div>
+
+
+<button
+    class="cart-btn"
+    onclick="addToCart()">
+
+    🛒 Add to Cart
+
+</button>
+
+
+
+            <!-- AVAILABILITY -->
+
+            <div class="detail-item">
+
+                <strong>
+                    Availability:
+                </strong>
+
+                Available
+
+            </div>
+
+
+
+            
+
+
+
+
+        
+
+
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+    <div class="footer-bottom">
+
+        <p><center>
+            © 2026 Dresora. All Rights Reserved.
+        </p></center>
+
+    </div>
+
+</footer>
+
+
+
+<script>
+
+function calculateEndDate() {
+
+    const startDate =
+        document.getElementById("startDate").value;
+
+    const days =
+        Number(
+            document.getElementById("rentalDays").value
+        );
+
+    const endDateInput =
+        document.getElementById("endDate");
+
+
+    if (!startDate) {
+
+        endDateInput.value = "";
+        return;
+
+    }
+
+
+    const start =
+        new Date(startDate);
+
+    start.setDate(
+        start.getDate() + days - 1
+    );
+
+
+    const year =
+        start.getFullYear();
+
+    const month =
+        String(start.getMonth() + 1)
+            .padStart(2, "0");
+
+    const day =
+        String(start.getDate())
+            .padStart(2, "0");
+
+
+    endDateInput.value =
+        `${year}-${month}-${day}`;
+
+}
+/* =========================
+   PRODUCTS
+========================= */
+
+const products = {
+
+    1: {
+        name: "Classic Party Dress",
+        category: "Party Dress",
+        price: 3000,
+        image: "images/party1.jpg",
+        description: "A beautiful and elegant party dress suitable for special occasions and celebrations."
+    },
+
+    2: {
+        name: "Sparkle Party Dress",
+        category: "Party Dress",
+        price: 3200,
+        image: "images/party2.jpg",
+        description: "A stylish sparkle dress designed for parties and special events."
+    },
+
+    3: {
+        name: "Rose Party Dress",
+        category: "Party Dress",
+        price: 2800,
+        image: "images/party3.jpg",
+        description: "A charming rose-inspired party dress perfect for celebrations."
+    },
+
+    4: {
+        name: "Glamour Party Dress",
+        category: "Party Dress",
+        price: 3500,
+        image: "images/party4.jpg",
+        description: "A glamorous dress designed for parties and memorable occasions."
+    },
+
+    5: {
+        name: "Velvet Party Dress",
+        category: "Party Dress",
+        price: 3300,
+        image: "images/party5.jpg",
+        description: "A sophisticated velvet dress with an elegant party style."
+    },
+
+
+    6: {
+        name: "Luxury Wedding Dress",
+        category: "Wedding Dress",
+        price: 5000,
+        image: "images/wedding1.jpg",
+        description: "A beautiful wedding dress designed for an elegant bridal appearance."
+    },
+
+    7: {
+        name: "Princess Wedding Dress",
+        category: "Wedding Dress",
+        price: 5500,
+        image: "images/wedding2.jpg",
+        description: "A princess-style wedding dress for a graceful and elegant look."
+    },
+
+    8: {
+        name: "Elegant Bridal Dress",
+        category: "Wedding Dress",
+        price: 4800,
+        image: "images/wedding3.jpg",
+        description: "An elegant bridal dress suitable for special wedding celebrations."
+    },
+
+    9: {
+        name: "Pearl Wedding Dress",
+        category: "Wedding Dress",
+        price: 5200,
+        image: "images/wedding4.jpg",
+        description: "A beautiful pearl-inspired wedding dress with a sophisticated design."
+    },
+
+    10: {
+        name: "Classic Bridal Gown",
+        category: "Wedding Dress",
+        price: 4900,
+        image: "images/wedding5.jpg",
+        description: "A classic bridal gown designed for a timeless wedding look."
+    },
+
+
+    11: {
+        name: "Elegant Evening Dress",
+        category: "Evening Dress",
+        price: 3500,
+        image: "images/evening1.jpg",
+        description: "An elegant evening dress suitable for dinners and special events."
+    },
+
+    12: {
+        name: "Satin Evening Dress",
+        category: "Evening Dress",
+        price: 3700,
+        image: "images/evening2.jpg",
+        description: "A stylish satin dress perfect for evening occasions."
+    },
+
+    13: {
+        name: "Black Evening Dress",
+        category: "Evening Dress",
+        price: 3400,
+        image: "images/evening3.jpg",
+        description: "A classic black evening dress with a sophisticated appearance."
+    },
+
+    14: {
+        name: "Long Evening Gown",
+        category: "Evening Dress",
+        price: 4200,
+        image: "images/evening4.jpg",
+        description: "A graceful long gown designed for elegant evening occasions."
+    },
+
+    15: {
+        name: "Shimmer Evening Dress",
+        category: "Evening Dress",
+        price: 3900,
+        image: "images/evening5.jpg",
+        description: "A beautiful shimmer dress that adds an elegant touch to special events."
+    },
+
+
+    16: {
+        name: "Floral Summer Dress",
+        category: "Casual Dress",
+        price: 2500,
+        image: "images/casual1.jpg",
+        description: "A fresh floral dress suitable for casual daytime occasions."
+    },
+
+    17: {
+        name: "Simple Cotton Dress",
+        category: "Casual Dress",
+        price: 2200,
+        image: "images/casual2.jpg",
+        description: "A comfortable cotton dress for a simple and relaxed look."
+    },
+
+    18: {
+        name: "Casual Midi Dress",
+        category: "Casual Dress",
+        price: 2400,
+        image: "images/casual3.jpg",
+        description: "A stylish midi dress suitable for casual occasions."
+    },
+
+    19: {
+        name: "Summer Breeze Dress",
+        category: "Casual Dress",
+        price: 2300,
+        image: "images/casual4.jpg",
+        description: "A light and comfortable dress perfect for summer days."
+    },
+
+    20: {
+        name: "Everyday Comfort Dress",
+        category: "Casual Dress",
+        price: 2100,
+        image: "images/casual5.jpg",
+        description: "A comfortable casual dress designed for everyday occasions."
+    },
+
+
+    21: {
+        name: "Modern Cocktail Dress",
+        category: "Cocktail Dress",
+        price: 3200,
+        image: "images/cocktail1.jpg",
+        description: "A modern cocktail dress suitable for stylish celebrations."
+    },
+
+    22: {
+        name: "Satin Cocktail Dress",
+        category: "Cocktail Dress",
+        price: 3400,
+        image: "images/cocktail2.jpg",
+        description: "A sophisticated satin cocktail dress for special occasions."
+    },
+
+    23: {
+        name: "Chic Cocktail Dress",
+        category: "Cocktail Dress",
+        price: 3100,
+        image: "images/cocktail3.jpg",
+        description: "A chic dress designed for elegant cocktail events."
+    },
+
+    24: {
+        name: "Classic Cocktail Dress",
+        category: "Cocktail Dress",
+        price: 3000,
+        image: "images/cocktail4.jpg",
+        description: "A classic cocktail dress with a timeless style."
+    },
+
+    25: {
+        name: "Short Party Cocktail Dress",
+        category: "Cocktail Dress",
+        price: 2900,
+        image: "images/cocktail5.jpg",
+        description: "A stylish short cocktail dress suitable for parties and events."
+    },
+
+
+    26: {
+        name: "Elegant Formal Dress",
+        category: "Formal Dress",
+        price: 3600,
+        image: "images/formal1.jpg",
+        description: "An elegant formal dress suitable for professional and formal events."
+    },
+
+    27: {
+        name: "Classic Formal Gown",
+        category: "Formal Dress",
+        price: 4000,
+        image: "images/formal2.jpg",
+        description: "A classic formal gown designed for sophisticated occasions."
+    },
+
+    28: {
+        name: "Office Formal Dress",
+        category: "Formal Dress",
+        price: 2800,
+        image: "images/formal3.jpg",
+        description: "A professional formal dress suitable for office and business occasions."
+    },
+
+    29: {
+        name: "Long Formal Dress",
+        category: "Formal Dress",
+        price: 3800,
+        image: "images/formal4.jpg",
+        description: "A graceful long formal dress for important occasions."
+    },
+
+    30: {
+        name: "Premium Formal Dress",
+        category: "Formal Dress",
+        price: 4300,
+        image: "images/formal5.jpg",
+        description: "A premium formal dress designed for an elegant and professional appearance."
+    }
+
+};
+
+
+
+/* =========================
+   GET PRODUCT ID
+========================= */
+
+const urlParams =
+    new URLSearchParams(
+        window.location.search
+    );
+
+const productId =
+    urlParams.get("id");
+
+const product =
+    products[productId];
+
+
+
+/* =========================
+   DISPLAY PRODUCT
+========================= */
+
+if (product) {
+
+    document.getElementById(
+        "productName"
+    ).textContent =
+        product.name;
+
+
+    document.getElementById(
+        "productCategory"
+    ).textContent =
+        product.category;
+
+
+    document.getElementById(
+        "productPrice"
+    ).textContent =
+        product.price.toLocaleString();
+
+
+    document.getElementById(
+        "productDescription"
+    ).textContent =
+        product.description;
+
+
+    document.getElementById(
+        "productImage"
+    ).src =
+        product.image;
+
+
+    document.getElementById(
+        "productImage"
+    ).alt =
+        product.name;
+
+
+    calculateTotal();
+
+}
+
+
+
+/* =========================
+   CALCULATE TOTAL
+========================= */
+
+
+
+    function calculateTotal() {
+
+    if (!product) {
+        return;
+    }
+
+    const startDate =
+        document.getElementById("startDate").value;
+
+    const endDate =
+        document.getElementById("endDate").value;
+
+    const totalPrice =
+        document.getElementById("totalPrice");
+
+    if (!startDate || !endDate) {
+
+        totalPrice.textContent =
+            "0";
+
+        return;
+    }
+
+    const start =
+        new Date(startDate);
+
+    const end =
+        new Date(endDate);
+
+    const difference =
+        end - start;
+
+    const days =
+        Math.ceil(
+            difference /
+            (1000 * 60 * 60 * 24)
+        );
+
+    if (days <= 0) {
+
+        totalPrice.textContent =
+            "0";
+
+        return;
+    }
+
+   
+}
+
+
+/* =========================
+   ADD TO CART
+========================= */
+
+
+ function addToCart() {
+
+    if (!product) {
+
+        alert("Product not found.");
+
+        return;
+    }
+
+
+    /* =========================
+       SIZE
+    ========================= */
+
+    const selectedSize =
+        document.querySelector(
+            'input[name="size"]:checked'
+        );
+
+
+    if (!selectedSize) {
+
+        alert(
+            "Please select a size first."
+        );
+
+        return;
+    }
+
+
+    const size =
+        selectedSize.value;
+
+
+    /* =========================
+       DATES
+    ========================= */
+
+    const startDate =
+        document.getElementById(
+            "startDate"
+        ).value;
+
+
+    const endDate =
+        document.getElementById(
+            "endDate"
+        ).value;
+
+
+    if (!startDate || !endDate) {
+
+        alert(
+            "Please select rental start date and end date."
+        );
+
+        return;
+    }
+
+
+    const start =
+        new Date(startDate);
+
+    const end =
+        new Date(endDate);
+
+
+    const difference =
+        end - start;
+
+
+    const rentalDays =
+        Math.ceil(
+            difference /
+            (1000 * 60 * 60 * 24)
+        );
+
+
+    if (rentalDays <= 0) {
+
+        alert(
+            "End date must be after the start date."
+        );
+
+        return;
+    }
+
+
+    /* =========================
+       TOTAL
+    ========================= */
+
+    const totalPrice =
+        product.price * rentalDays;
+
+
+    /* =========================
+       CART ITEM
+    ========================= */
+
+    const cartItem = {
+
+        id: productId,
+
+        name: product.name,
+
+        category: product.category,
+
+        price: product.price,
+
+        image: product.image,
+
+        size: size,
+
+        startDate: startDate,
+
+        endDate: endDate,
+
+        rentalDays: rentalDays,
+
+        totalPrice: totalPrice
+
+    };
+
+
+    /* =========================
+       GET CART
+    ========================= */
+
+    let cart =
+        JSON.parse(
+            localStorage.getItem("cart")
+        ) || [];
+
+
+    /* =========================
+       ADD ITEM
+    ========================= */
+
+    cart.push(cartItem);
+
+
+    /* =========================
+       SAVE CART
+    ========================= */
+
+    localStorage.setItem(
+        "cart",
+        JSON.stringify(cart)
+    );
+
+
+    /* =========================
+       UPDATE COUNT
+    ========================= */
+
+    updateCartCount();
+
+
+    alert(
+        product.name +
+        " has been added to your cart."
+    );
+
+}
+        
+
+
+    
+
+       
+
+   
+
+
+
+/* =========================
+   CART COUNT
+========================= */
+function updateCartCount() {
+
+    const cart =
+        JSON.parse(
+            localStorage.getItem("cart")
+        ) || [];
+
+    const cartCounts =
+        document.querySelectorAll(
+            ".cart-count"
+        );
+
+    cartCounts.forEach(
+        function(count) {
+
+            count.textContent =
+                cart.length;
+
+        }
+    );
+
+}
+
+
+updateCartCount();
+
+function updateCartCount() {
+
+    const cart =
+        JSON.parse(localStorage.getItem("cart")) || [];
+
+    document.querySelectorAll(".cart-count").forEach(function(count) {
+        count.textContent = cart.length;
+    });
+}
+
+updateCartCount();
+
+</script>
+
+
+</body>
+
+</html>

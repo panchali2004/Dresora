@@ -1,250 +1,2266 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Dresora - Dresses</title>
+    <title>Dresora - Shop</title>
 
     <link rel="stylesheet" href="style.css">
+
+    <style>
+
+        /* =========================
+           PRODUCTS PAGE
+        ========================= */
+
+        .products-page {
+            max-width: 1200px;
+            margin: auto;
+            padding: 80px 30px;
+        }
+
+        .products-heading {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .products-heading h1 {
+            color: #5d405c;
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .products-heading p:last-child {
+            color: #777078;
+        }
+
+
+        /* =========================
+           SEARCH
+        ========================= */
+
+        .shop-search {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .shop-search input {
+            width: 350px;
+            padding: 12px 18px;
+            border: 1px solid #ead9e6;
+            border-radius: 25px;
+            outline: none;
+            background: #fffafc;
+        }
+
+        .shop-search input:focus {
+            border-color: #a66b9b;
+        }
+
+
+        /* =========================
+           FILTER + SORT
+        ========================= */
+
+        .filter-sort {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+
+            margin-bottom: 40px;
+            padding: 20px;
+
+            background: #f8f0f6;
+            border-radius: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-group label {
+            color: #5d405c;
+            font-weight: bold;
+        }
+
+        .filter-group select {
+            padding: 10px 15px;
+
+            border: 1px solid #ead9e6;
+            border-radius: 20px;
+
+            background: #ffffff;
+            color: #5d405c;
+
+            outline: none;
+            cursor: pointer;
+        }
+
+        .filter-group select:focus {
+            border-color: #a66b9b;
+        }
+
+
+        /* =========================
+           PRODUCTS GRID
+        ========================= */
+
+        .products-container {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 25px;
+        }
+
+
+        /* =========================
+           PRODUCT CARD
+        ========================= */
+
+        .product-card {
+            background: #ffffff;
+
+            border: 1px solid #ead9e6;
+            border-radius: 15px;
+
+            overflow: hidden;
+
+            box-shadow:
+                0 6px 20px rgba(120, 80, 110, 0.07);
+
+            transition: 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-7px);
+
+            box-shadow:
+                0 12px 28px rgba(120, 80, 110, 0.14);
+        }
+
+
+        /* =========================
+           PRODUCT IMAGE
+        ========================= */
+
+        .product-image {
+            width: 100%;
+            height: 350px;
+
+            background: #f3e8f1;
+
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+
+            display: block;
+
+            transition: 0.4s;
+        }
+
+        .product-card:hover
+        .product-image img {
+            transform: scale(1.04);
+        }
+
+
+        /* =========================
+           PRODUCT INFORMATION
+        ========================= */
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-category {
+            color: #a66b9b;
+
+            font-size: 11px;
+
+            font-weight: bold;
+
+            letter-spacing: 1.5px;
+
+            text-transform: uppercase;
+        }
+
+        .product-info h3 {
+            color: #5d405c;
+
+            font-size: 19px;
+
+            margin: 8px 0;
+        }
+
+        .product-price {
+            color: #8b5a83;
+
+            font-size: 17px;
+
+            font-weight: bold;
+
+            margin-bottom: 15px;
+        }
+
+        .product-price span {
+            color: #8f858d;
+
+            font-size: 13px;
+
+            font-weight: normal;
+        }
+
+
+        /* =========================
+           VIEW DETAILS BUTTON
+        ========================= */
+
+        .product-btn {
+            display: block;
+
+            text-align: center;
+
+            padding: 11px 20px;
+
+            background: #8b5a83;
+
+            color: #ffffff;
+
+            border-radius: 22px;
+
+            transition: 0.3s;
+        }
+
+        .product-btn:hover {
+            background: #6f4568;
+
+            transform: translateY(-2px);
+        }
+
+
+        /* =========================
+           NO PRODUCTS
+        ========================= */
+
+        .no-products {
+            display: none;
+
+            text-align: center;
+
+            color: #777078;
+
+            padding: 50px;
+
+            grid-column: 1 / -1;
+        }
+
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 900px) {
+
+            .products-container {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+        }
+
+
+        @media (max-width: 600px) {
+
+            .products-page {
+                padding: 50px 20px;
+            }
+
+            .products-heading h1 {
+                font-size: 30px;
+            }
+
+            .filter-sort {
+                flex-direction: column;
+
+                align-items: stretch;
+            }
+
+            .filter-group {
+                justify-content: space-between;
+            }
+
+            .shop-search input {
+                width: 100%;
+            }
+
+            .products-container {
+                grid-template-columns: 1fr;
+            }
+
+            .product-image {
+                height: 380px;
+            }
+
+        }
+
+    </style>
+
 </head>
+
 
 <body>
 
+
+<!-- =========================
+     NAVIGATION BAR
+========================= -->
+
 <header>
+
     <nav>
 
         <div class="logo">
+
             <span>DRESORA</span>
+
             <small>DRESS RENTAL</small>
+
         </div>
 
-        <div class="search-box">
-            <input type="text" placeholder="Search dresses...">
-            <button>Search</button>
-        </div>
 
         <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="products.html">Shop</a></li>
-            <li><a href="#">About</a></li>
-            <li><a href="#">Contact</a></li>
+
             <li>
-                <a href="#">
-                    Cart <span class="cart-count">0</span>
+                <a href="index.html">
+                    Home
                 </a>
             </li>
+
+            <li>
+                <a href="products.html">
+                    Shop
+                </a>
+            </li>
+
+            <li>
+                <a href="about.html">
+                    About
+                </a>
+            </li>
+
+            <li>
+                <a href="contact.html">
+                    Contact
+                </a>
+            </li>
+
+            <li>
+                <a href="cart.html">
+                    Cart
+                    <span class="cart-count">0</span>
+                </a>
+            </li>
+
         </ul>
 
     </nav>
+
 </header>
 
 
+
+<!-- =========================
+     MAIN CONTENT
+========================= -->
+
 <main>
 
-    <!-- Page Header -->
-    <section class="products-header">
+<section class="products-page">
 
-        <p class="section-subtitle">OUR COLLECTION</p>
 
-        <h1>Find Your Perfect Dress</h1>
+    <!-- PAGE HEADING -->
+
+    <div class="products-heading">
+
+        <p class="section-subtitle">
+            DRESORA COLLECTION
+        </p>
+
+        <h1>
+            Find Your Perfect Dress
+        </h1>
 
         <p>
             Explore our collection of beautiful dresses
             available for rental.
         </p>
 
-    </section>
+    </div>
 
 
-    <!-- Product Listing -->
-    <section class="products-section">
 
-        <div class="products-grid">
+    <!-- =========================
+         SEARCH
+    ========================= -->
+
+    <div class="shop-search">
+
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search dresses..."
+            onkeyup="applyFilters()"
+        >
+
+    </div>
 
 
-            <!-- Product 01 -->
-            <div class="product-card">
 
-                <div class="product-image">
-                    <img src="images/dress1.jpg" alt="Elegant Evening Dress">
-                </div>
+    <!-- =========================
+         FILTER + SORT
+    ========================= -->
 
-                <div class="product-info">
+    <div class="filter-sort">
 
-                    <span class="product-category">
-                        Evening Dress
-                    </span>
 
-                    <h2>Elegant Evening Dress</h2>
+        <!-- CATEGORY -->
 
-                    <p class="product-price">
-                        Rs. 3500 <span>/ day</span>
-                    </p>
+        <div class="filter-group">
 
-                    <button class="product-btn">
-                        View Details
-                    </button>
+            <label for="categoryFilter">
+                Category
+            </label>
 
-                </div>
+            <select
+                id="categoryFilter"
+                onchange="applyFilters()"
+            >
+
+                <option value="all">
+                    All Dresses
+                </option>
+
+                <option value="party">
+                    Party Dresses
+                </option>
+
+                <option value="wedding">
+                    Wedding Dresses
+                </option>
+
+                <option value="evening">
+                    Evening Dresses
+                </option>
+
+                <option value="casual">
+                    Casual Dresses
+                </option>
+
+                <option value="cocktail">
+                    Cocktail Dresses
+                </option>
+
+                <option value="formal">
+                    Formal Dresses
+                </option>
+
+            </select>
+
+        </div>
+
+
+
+        <!-- SORT -->
+
+        <div class="filter-group">
+
+            <label for="sortFilter">
+                Sort By
+            </label>
+
+            <select
+                id="sortFilter"
+                onchange="applyFilters()"
+            >
+
+                <option value="default">
+                    Default
+                </option>
+
+                <option value="low-high">
+                    Price: Low to High
+                </option>
+
+                <option value="high-low">
+                    Price: High to Low
+                </option>
+
+                <option value="a-z">
+                    Name: A to Z
+                </option>
+
+                <option value="z-a">
+                    Name: Z to A
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         PRODUCTS
+    ========================= -->
+
+    <div
+        class="products-container"
+        id="productsContainer"
+    >
+
+
+        <!-- =========================
+             PARTY DRESSES
+        ========================= -->
+
+
+        <div class="product-card"
+             data-category="party"
+             data-name="Classic Party Dress"
+             data-price="3000">
+
+            <div class="product-image">
+
+                <img
+                    src="images/party1.jpg"
+                    alt="Classic Party Dress"
+                >
 
             </div>
 
+            <div class="product-info">
 
-            <!-- Product 02 -->
-            <div class="product-card">
+                <span class="product-category">
+                    Party Dress
+                </span>
 
-                <div class="product-image">
-                    <img src="images/dress2.jpg" alt="Classic Party Dress">
-                </div>
+                <h3>
+                    Classic Party Dress
+                </h3>
 
-                <div class="product-info">
+                <p class="product-price">
+                    Rs. 3,000
+                    <span>/ day</span>
+                </p>
 
-                    <span class="product-category">
-                        Party Dress
-                    </span>
-
-                    <h2>Classic Party Dress</h2>
-
-                    <p class="product-price">
-                        Rs. 3000 <span>/ day</span>
-                    </p>
-
-                    <button class="product-btn">
-                        View Details
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <!-- Product 03 -->
-            <div class="product-card">
-
-                <div class="product-image">
-                    <img src="images/dress3.jpg" alt="Floral Summer Dress">
-                </div>
-
-                <div class="product-info">
-
-                    <span class="product-category">
-                        Casual Dress
-                    </span>
-
-                    <h2>Floral Summer Dress</h2>
-
-                    <p class="product-price">
-                        Rs. 2500 <span>/ day</span>
-                    </p>
-
-                    <button class="product-btn">
-                        View Details
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <!-- Product 04 -->
-            <div class="product-card">
-
-                <div class="product-image">
-                    <img src="images/dress4.jpg" alt="Luxury Wedding Dress">
-                </div>
-
-                <div class="product-info">
-
-                    <span class="product-category">
-                        Wedding Dress
-                    </span>
-
-                    <h2>Luxury Wedding Dress</h2>
-
-                    <p class="product-price">
-                        Rs. 5000 <span>/ day</span>
-                    </p>
-
-                    <a href="product-details.html" class="product-btn">
-    View Details
-</a>
-
-                </div>
-
-            </div>
-
-
-            <!-- Product 05 -->
-            <div class="product-card">
-
-                <div class="product-image">
-                    <img src="images/dress5.jpg" alt="Modern Cocktail Dress">
-                </div>
-
-                <div class="product-info">
-
-                    <span class="product-category">
-                        Cocktail Dress
-                    </span>
-
-                    <h2>Modern Cocktail Dress</h2>
-
-                    <p class="product-price">
-                        Rs. 3200 <span>/ day</span>
-                    </p>
-
-                    <button class="product-btn">
-                        View Details
-                    </button>
-
-                </div>
+                <a
+                    href="product-details.html?id=1"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
 
             </div>
 
         </div>
 
-    </section>
+
+
+        <div class="product-card"
+             data-category="party"
+             data-name="Sparkle Party Dress"
+             data-price="3200">
+
+            <div class="product-image">
+
+                <img
+                    src="images/party2.jpg"
+                    alt="Sparkle Party Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Party Dress
+                </span>
+
+                <h3>
+                    Sparkle Party Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 3,200
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=2"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="party"
+             data-name="Rose Party Dress"
+             data-price="2800">
+
+            <div class="product-image">
+
+                <img
+                    src="images/party3.jpg"
+                    alt="Rose Party Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Party Dress
+                </span>
+
+                <h3>
+                    Rose Party Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 2,800
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=3"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="party"
+             data-name="Glamour Party Dress"
+             data-price="3500">
+
+            <div class="product-image">
+
+                <img
+                    src="images/party4.jpg"
+                    alt="Glamour Party Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Party Dress
+                </span>
+
+                <h3>
+                    Glamour Party Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 3,500
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=4"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="party"
+             data-name="Velvet Party Dress"
+             data-price="3300">
+
+            <div class="product-image">
+
+                <img
+                    src="images/party5.jpg"
+                    alt="Velvet Party Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Party Dress
+                </span>
+
+                <h3>
+                    Velvet Party Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 3,300
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=5"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================
+             WEDDING DRESSES
+        ========================= -->
+
+
+        <div class="product-card"
+             data-category="wedding"
+             data-name="Luxury Wedding Dress"
+             data-price="5000">
+
+            <div class="product-image">
+
+                <img
+                    src="images/wedding1.jpg"
+                    alt="Luxury Wedding Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Wedding Dress
+                </span>
+
+                <h3>
+                    Luxury Wedding Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 5,000
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=6"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="wedding"
+             data-name="Princess Wedding Dress"
+             data-price="5500">
+
+            <div class="product-image">
+
+                <img
+                    src="images/wedding2.jpg"
+                    alt="Princess Wedding Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Wedding Dress
+                </span>
+
+                <h3>
+                    Princess Wedding Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 5,500
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=7"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="wedding"
+             data-name="Elegant Bridal Dress"
+             data-price="4800">
+
+            <div class="product-image">
+
+                <img
+                    src="images/wedding3.jpg"
+                    alt="Elegant Bridal Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Wedding Dress
+                </span>
+
+                <h3>
+                    Elegant Bridal Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 4,800
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=8"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="wedding"
+             data-name="Pearl Wedding Dress"
+             data-price="5200">
+
+            <div class="product-image">
+
+                <img
+                    src="images/wedding4.jpg"
+                    alt="Pearl Wedding Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Wedding Dress
+                </span>
+
+                <h3>
+                    Pearl Wedding Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 5,200
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=9"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="wedding"
+             data-name="Classic Bridal Gown"
+             data-price="4900">
+
+            <div class="product-image">
+
+                <img
+                    src="images/wedding5.jpg"
+                    alt="Classic Bridal Gown"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Wedding Dress
+                </span>
+
+                <h3>
+                    Classic Bridal Gown
+                </h3>
+
+                <p class="product-price">
+                    Rs. 4,900
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=10"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================
+             EVENING DRESSES
+        ========================= -->
+
+
+        <div class="product-card"
+             data-category="evening"
+             data-name="Elegant Evening Dress"
+             data-price="3500">
+
+            <div class="product-image">
+
+                <img
+                    src="images/evening1.jpg"
+                    alt="Elegant Evening Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Evening Dress
+                </span>
+
+                <h3>
+                    Elegant Evening Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 3,500
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=11"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="evening"
+             data-name="Satin Evening Dress"
+             data-price="3700">
+
+            <div class="product-image">
+
+                <img
+                    src="images/evening2.jpg"
+                    alt="Satin Evening Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Evening Dress
+                </span>
+
+                <h3>
+                    Satin Evening Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 3,700
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=12"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="evening"
+             data-name="Black Evening Dress"
+             data-price="3400">
+
+            <div class="product-image">
+
+                <img
+                    src="images/evening3.jpg"
+                    alt="Black Evening Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Evening Dress
+                </span>
+
+                <h3>
+                    Black Evening Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 3,400
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=13"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="evening"
+             data-name="Long Evening Gown"
+             data-price="4200">
+
+            <div class="product-image">
+
+                <img
+                    src="images/evening4.jpg"
+                    alt="Long Evening Gown"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Evening Dress
+                </span>
+
+                <h3>
+                    Long Evening Gown
+                </h3>
+
+                <p class="product-price">
+                    Rs. 4,200
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=14"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="evening"
+             data-name="Shimmer Evening Dress"
+             data-price="3900">
+
+            <div class="product-image">
+
+                <img
+                    src="images/evening5.jpg"
+                    alt="Shimmer Evening Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Evening Dress
+                </span>
+
+                <h3>
+                    Shimmer Evening Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 3,900
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=15"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================
+             CASUAL DRESSES
+        ========================= -->
+
+
+        <div class="product-card"
+             data-category="casual"
+             data-name="Floral Summer Dress"
+             data-price="2500">
+
+            <div class="product-image">
+
+                <img
+                    src="images/casual1.jpg"
+                    alt="Floral Summer Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Casual Dress
+                </span>
+
+                <h3>
+                    Floral Summer Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 2,500
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=16"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="casual"
+             data-name="Simple Cotton Dress"
+             data-price="2200">
+
+            <div class="product-image">
+
+                <img
+                    src="images/casual2.jpg"
+                    alt="Simple Cotton Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Casual Dress
+                </span>
+
+                <h3>
+                    Simple Cotton Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 2,200
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=17"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="casual"
+             data-name="Casual Midi Dress"
+             data-price="2400">
+
+            <div class="product-image">
+
+                <img
+                    src="images/casual3.jpg"
+                    alt="Casual Midi Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Casual Dress
+                </span>
+
+                <h3>
+                    Casual Midi Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 2,400
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=18"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="casual"
+             data-name="Summer Breeze Dress"
+             data-price="2300">
+
+            <div class="product-image">
+
+                <img
+                    src="images/casual4.jpg"
+                    alt="Summer Breeze Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Casual Dress
+                </span>
+
+                <h3>
+                    Summer Breeze Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 2,300
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=19"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="casual"
+             data-name="Everyday Comfort Dress"
+             data-price="2100">
+
+            <div class="product-image">
+
+                <img
+                    src="images/casual5.jpg"
+                    alt="Everyday Comfort Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Casual Dress
+                </span>
+
+                <h3>
+                    Everyday Comfort Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 2,100
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=20"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================
+             COCKTAIL DRESSES
+        ========================= -->
+
+
+        <div class="product-card"
+             data-category="cocktail"
+             data-name="Modern Cocktail Dress"
+             data-price="3200">
+
+            <div class="product-image">
+
+                <img
+                    src="images/cocktail1.jpg"
+                    alt="Modern Cocktail Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Cocktail Dress
+                </span>
+
+                <h3>
+                    Modern Cocktail Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 3,200
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=21"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="cocktail"
+             data-name="Satin Cocktail Dress"
+             data-price="3400">
+
+            <div class="product-image">
+
+                <img
+                    src="images/cocktail2.jpg"
+                    alt="Satin Cocktail Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Cocktail Dress
+                </span>
+
+                <h3>
+                    Satin Cocktail Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 3,400
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=22"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="cocktail"
+             data-name="Chic Cocktail Dress"
+             data-price="3100">
+
+            <div class="product-image">
+
+                <img
+                    src="images/cocktail3.jpg"
+                    alt="Chic Cocktail Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Cocktail Dress
+                </span>
+
+                <h3>
+                    Chic Cocktail Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 3,100
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=23"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="cocktail"
+             data-name="Classic Cocktail Dress"
+             data-price="3000">
+
+            <div class="product-image">
+
+                <img
+                    src="images/cocktail4.jpg"
+                    alt="Classic Cocktail Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Cocktail Dress
+                </span>
+
+                <h3>
+                    Classic Cocktail Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 3,000
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=24"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="cocktail"
+             data-name="Short Party Cocktail Dress"
+             data-price="2900">
+
+            <div class="product-image">
+
+                <img
+                    src="images/cocktail5.jpg"
+                    alt="Short Party Cocktail Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Cocktail Dress
+                </span>
+
+                <h3>
+                    Short Party Cocktail Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 2,900
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=25"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================
+             FORMAL DRESSES
+        ========================= -->
+
+
+        <div class="product-card"
+             data-category="formal"
+             data-name="Elegant Formal Dress"
+             data-price="3600">
+
+            <div class="product-image">
+
+                <img
+                    src="images/formal1.jpg"
+                    alt="Elegant Formal Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Formal Dress
+                </span>
+
+                <h3>
+                    Elegant Formal Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 3,600
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=26"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="formal"
+             data-name="Classic Formal Gown"
+             data-price="4000">
+
+            <div class="product-image">
+
+                <img
+                    src="images/formal2.jpg"
+                    alt="Classic Formal Gown"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Formal Dress
+                </span>
+
+                <h3>
+                    Classic Formal Gown
+                </h3>
+
+                <p class="product-price">
+                    Rs. 4,000
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=27"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="formal"
+             data-name="Office Formal Dress"
+             data-price="2800">
+
+            <div class="product-image">
+
+                <img
+                    src="images/formal3.jpg"
+                    alt="Office Formal Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Formal Dress
+                </span>
+
+                <h3>
+                    Office Formal Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 2,800
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=28"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="formal"
+             data-name="Long Formal Dress"
+             data-price="3800">
+
+            <div class="product-image">
+
+                <img
+                    src="images/formal4.jpg"
+                    alt="Long Formal Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Formal Dress
+                </span>
+
+                <h3>
+                    Long Formal Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 3,800
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=29"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="product-card"
+             data-category="formal"
+             data-name="Premium Formal Dress"
+             data-price="4300">
+
+            <div class="product-image">
+
+                <img
+                    src="images/formal5.jpg"
+                    alt="Premium Formal Dress"
+                >
+
+            </div>
+
+            <div class="product-info">
+
+                <span class="product-category">
+                    Formal Dress
+                </span>
+
+                <h3>
+                    Premium Formal Dress
+                </h3>
+
+                <p class="product-price">
+                    Rs. 4,300
+                    <span>/ day</span>
+                </p>
+
+                <a
+                    href="product-details.html?id=30"
+                    class="product-btn"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- NO PRODUCTS MESSAGE -->
+
+        <p
+            class="no-products"
+            id="noProducts"
+        >
+            No dresses found.
+        </p>
+
+
+    </div>
+
+</section>
 
 </main>
 
 
-<footer>
+
+
+
+            
+           
+
+
+   <!-- =========================
+     PROFESSIONAL FOOTER
+========================== -->
+
+<footer class="professional-footer">
 
     <div class="footer-container">
 
-        <div class="footer-section">
-            <h3>Dresora</h3>
-            <p>
-                Your trusted online dress rental destination.
+        <!-- Brand -->
+        <div class="footer-column footer-brand">
+
+            <h2>DRESORA</h2>
+
+            <p class="footer-tagline">
+                DRESS RENTAL
             </p>
+
+            <p>
+                Find your perfect dress for every special
+                occasion. Stylish, affordable and easy to rent.
+            </p>
+
+            <div class="footer-social">
+                <a href="#" aria-label="Instagram">Instagram</a>
+                <a href="#" aria-label="Facebook">Facebook</a>
+                <a href="#" aria-label="TikTok">TikTok</a>
+            </div>
+
         </div>
 
-        <div class="footer-section">
+
+        <!-- Quick Links -->
+        <div class="footer-column">
+
             <h3>Quick Links</h3>
 
             <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="products.html">Shop</a></li>
-                <li><a href="#">About</a></li>
-                <li><a href="#">Contact</a></li>
+                <li>
+                    <a href="index.html">Home</a>
+                </li>
+
+                <li>
+                    <a href="products.html">Shop</a>
+                </li>
+
+                <li>
+                    <a href="about.html">About Us</a>
+                </li>
+
+                <li>
+                    <a href="contact.html">Contact Us</a>
+                </li>
+
+                <li>
+                    <a href="cart.html">My Cart</a>
+                </li>
             </ul>
+
         </div>
 
-        <div class="footer-section">
-            <h3>Contact</h3>
 
-            <p>Email: info@dresora.com</p>
-            <p>Phone: +94 77 123 4567</p>
+        <!-- Customer Service -->
+        <div class="footer-column">
+
+            <h3>Customer Service</h3>
+
+            <ul>
+                <li>
+                    <a href="contact.html">Help & Support</a>
+                </li>
+
+                <li>
+                    <a href="contact.html">Rental Information</a>
+                </li>
+
+                <li>
+                    <a href="#">Rental Policy</a>
+                </li>
+
+                <li>
+                    <a href="#">Privacy Policy</a>
+                </li>
+
+                <li>
+                    <a href="#">Terms & Conditions</a>
+                </li>
+            </ul>
+
+        </div>
+
+
+        <!-- Contact -->
+        <div class="footer-column footer-contact">
+
+            <h3>Contact Us</h3>
+
+            <p>
+                <strong>Email</strong><br>
+                info@dresora.com
+            </p>
+
+            <p>
+                <strong>Phone</strong><br>
+                +94 77 123 4567
+            </p>
+
+            <p>
+                <strong>Location</strong><br>
+                Sri Lanka
+            </p>
+
         </div>
 
     </div>
 
+
+    <!-- Newsletter / CTA -->
+    <div class="footer-newsletter">
+
+        <div>
+            <h3>Find Your Perfect Dress</h3>
+
+            <p>
+                Explore our collection and rent your favourite style today.
+            </p>
+        </div>
+
+        <a href="products.html" class="footer-shop-btn">
+            Explore Dresses →
+        </a>
+
+    </div>
+
+
+    <!-- Bottom -->
     <div class="footer-bottom">
-        <p>© 2026 Dresora. All Rights Reserved.</p>
+
+        <p>
+            © 2026 DRESORA. All Rights Reserved.
+        </p>
+
+        <p>
+            Online Dress Rental
+        </p>
+
     </div>
 
 </footer>
 
+
+<!-- =========================
+     JAVASCRIPT
+========================= -->
+
+<script>
+
+
+/* =========================
+   FILTER PRODUCTS
+========================= */
+
+function applyFilters() {
+
+
+    const category =
+        document.getElementById(
+            "categoryFilter"
+        ).value;
+
+
+    const sort =
+        document.getElementById(
+            "sortFilter"
+        ).value;
+
+
+    const search =
+        document.getElementById(
+            "searchInput"
+        )
+        .value
+        .toLowerCase()
+        .trim();
+
+
+    const container =
+        document.getElementById(
+            "productsContainer"
+        );
+
+
+    const noProducts =
+        document.getElementById(
+            "noProducts"
+        );
+
+
+    const products =
+        Array.from(
+            container.querySelectorAll(
+                ".product-card"
+            )
+        );
+
+
+    let visibleProducts = [];
+
+
+    /* =========================
+       FILTER
+    ========================= */
+
+    products.forEach(function(product) {
+
+
+        const productCategory =
+            product.dataset.category;
+
+
+        const productName =
+            product.dataset.name
+            .toLowerCase();
+
+
+        const categoryMatch =
+            category === "all" ||
+            productCategory === category;
+
+
+        const searchMatch =
+            productName.includes(search) ||
+            productCategory.includes(search);
+
+
+        if (
+            categoryMatch &&
+            searchMatch
+        ) {
+
+            product.style.display =
+                "block";
+
+            visibleProducts.push(
+                product
+            );
+
+        } else {
+
+            product.style.display =
+                "none";
+
+        }
+
+    });
+
+
+    /* =========================
+       SORT
+    ========================= */
+
+    if (sort === "low-high") {
+
+        visibleProducts.sort(
+            function(a, b) {
+
+                return Number(
+                    a.dataset.price
+                )
+                -
+                Number(
+                    b.dataset.price
+                );
+
+            }
+        );
+
+    }
+
+
+    else if (sort === "high-low") {
+
+        visibleProducts.sort(
+            function(a, b) {
+
+                return Number(
+                    b.dataset.price
+                )
+                -
+                Number(
+                    a.dataset.price
+                );
+
+            }
+        );
+
+    }
+
+
+    else if (sort === "a-z") {
+
+        visibleProducts.sort(
+            function(a, b) {
+
+                return a.dataset.name
+                    .localeCompare(
+                        b.dataset.name
+                    );
+
+            }
+        );
+
+    }
+
+
+    else if (sort === "z-a") {
+
+        visibleProducts.sort(
+            function(a, b) {
+
+                return b.dataset.name
+                    .localeCompare(
+                        a.dataset.name
+                    );
+
+            }
+        );
+
+    }
+
+
+    /* =========================
+       REORDER PRODUCTS
+    ========================= */
+
+    visibleProducts.forEach(
+        function(product) {
+
+            container.appendChild(
+                product
+            );
+
+        }
+    );
+
+
+    /* =========================
+       NO PRODUCTS
+    ========================= */
+
+    if (
+        visibleProducts.length === 0
+    ) {
+
+        noProducts.style.display =
+            "block";
+
+    } else {
+
+        noProducts.style.display =
+            "none";
+
+    }
+
+}
+
+
+/* =========================
+   HOME PAGE CATEGORY
+========================= */
+
+const urlParams =
+    new URLSearchParams(
+        window.location.search
+    );
+
+
+const selectedCategory =
+    urlParams.get(
+        "category"
+    );
+
+
+if (selectedCategory) {
+
+    const categoryFilter =
+        document.getElementById(
+            "categoryFilter"
+        );
+
+
+    categoryFilter.value =
+        selectedCategory;
+
+
+    applyFilters();
+
+}
+
+
+function updateCartCount() {
+
+    const cart =
+        JSON.parse(localStorage.getItem("cart")) || [];
+
+    document.querySelectorAll(".cart-count").forEach(function(count) {
+        count.textContent = cart.length;
+    });
+}
+
+updateCartCount();
+</script>
+
+
 </body>
+
 </html>

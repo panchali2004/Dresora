@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Dresora - Cart</title>
+
+    <link rel="stylesheet" href="style.css">
+
+
+    <style>
+
+        /* =========================
+           CART PAGE
+        ========================= */
+
+        .cart-page {
+
+            max-width: 1100px;
+
+            margin: auto;
+
+            padding: 80px 30px;
+
+        }
+
+
+        .cart-heading {
+
+            text-align: center;
+
+            margin-bottom: 45px;
+
+        }
+
+
+        .cart-heading h1 {
+
+            color: #5d405c;
+
+            font-size: 40px;
+
+            margin-bottom: 10px;
+
+        }
+
+
+        .cart-heading p {
+
+            color: #777078;
+
+        }
+
+
+        /* =========================
+           CART LAYOUT
+        ========================= */
+
+        .cart-layout {
+
+            display: grid;
+
+            grid-template-columns: 1fr 320px;
+
+            gap: 30px;
+
+            align-items: start;
+
+        }
+
+
+        /* =========================
+           CART ITEMS
+        ========================= */
+
+        .cart-items {
+
+            width: 100%;
+
+        }
+
+
+        .cart-item {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 22px;
+
+            padding: 18px;
+
+            margin-bottom: 18px;
+
+            background: #ffffff;
+
+            border: 1px solid #ead9e6;
+
+            border-radius: 15px;
+
+            box-shadow:
+                0 5px 18px rgba(120, 80, 110, 0.07);
+
+        }
+
+
+        /* =========================
+           SMALL PRODUCT IMAGE
+        ========================= */
+
+        .cart-image-link {
+
+            width: 100px;
+
+            height: 125px;
+
+            flex-shrink: 0;
+
+            display: block;
+
+        }
+
+
+        .cart-image-link img {
+
+            width: 100%;
+
+            height: 100%;
+
+            object-fit: cover;
+
+            border-radius: 10px;
+
+            display: block;
+
+            transition: 0.3s;
+
+        }
+
+
+        .cart-image-link:hover img {
+
+            transform: scale(1.03);
+
+        }
+
+
+        /* =========================
+           PRODUCT INFORMATION
+        ========================= */
+
+        .cart-item-info {
+
+            flex: 1;
+
+        }
+
+
+        .cart-product-name {
+
+            display: inline-block;
+
+            color: #5d405c;
+
+            font-size: 20px;
+
+            font-weight: bold;
+
+            text-decoration: none;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        .cart-product-name:hover {
+
+            color: #8b5a83;
+
+        }
+
+
+        .cart-detail {
+
+            margin: 5px 0;
+
+            color: #777078;
+
+            font-size: 14px;
+
+        }
+
+
+        .cart-detail strong {
+
+            color: #5d405c;
+
+        }
+
+
+        .cart-price {
+
+            color: #8b5a83;
+
+            font-size: 17px;
+
+            font-weight: bold;
+
+            margin-top: 10px;
+
+        }
+
+
+        /* =========================
+           REMOVE BUTTON
+        ========================= */
+
+        .remove-btn {
+
+            padding: 9px 18px;
+
+            border: none;
+
+            border-radius: 20px;
+
+            background: #8b5a83;
+
+            color: white;
+
+            cursor: pointer;
+
+            font-size: 13px;
+
+            margin-top: 10px;
+
+            transition: 0.3s;
+
+        }
+
+
+        .remove-btn:hover {
+
+            background: #6f4568;
+
+            transform: translateY(-2px);
+
+        }
+
+
+        /* =========================
+           RENTAL SUMMARY
+        ========================= */
+
+        .rental-summary {
+
+            background: #f8f0f6;
+
+            padding: 25px;
+
+            border-radius: 18px;
+
+            border: 1px solid #ead9e6;
+
+            position: sticky;
+
+            top: 30px;
+
+        }
+
+
+        .rental-summary h2 {
+
+            color: #5d405c;
+
+            font-size: 24px;
+
+            margin-bottom: 22px;
+
+        }
+
+
+        .summary-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 15px;
+
+            color: #777078;
+
+        }
+
+
+        .summary-row strong {
+
+            color: #5d405c;
+
+        }
+
+
+        .summary-total {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding-top: 18px;
+
+            margin-top: 15px;
+
+            border-top: 1px solid #decddd;
+
+        }
+
+
+        .summary-total span {
+
+            color: #5d405c;
+
+            font-size: 18px;
+
+            font-weight: bold;
+
+        }
+
+
+        .summary-total strong {
+
+            color: #8b5a83;
+
+            font-size: 22px;
+
+        }
+
+
+        /* =========================
+           CHECKOUT BUTTON
+        ========================= */
+
+        .checkout-btn {
+
+            display: block;
+
+            width: 100%;
+
+            margin-top: 25px;
+
+            padding: 13px;
+
+            border: none;
+
+            border-radius: 25px;
+
+            background: #8b5a83;
+
+            color: white;
+
+            text-align: center;
+
+            text-decoration: none;
+
+            cursor: pointer;
+
+            font-size: 15px;
+
+            transition: 0.3s;
+
+        }
+
+
+        .checkout-btn:hover {
+
+            background: #6f4568;
+
+            transform: translateY(-2px);
+
+        }
+
+
+        /* =========================
+           CONTINUE SHOPPING
+        ========================= */
+
+        .continue-shopping {
+
+            display: block;
+
+            text-align: center;
+
+            margin-top: 18px;
+
+            color: #8b5a83;
+
+            text-decoration: none;
+
+            font-weight: bold;
+
+        }
+
+
+        .continue-shopping:hover {
+
+            color: #6f4568;
+
+        }
+
+
+        /* =========================
+           EMPTY CART
+        ========================= */
+
+        .empty-cart {
+
+            display: none;
+
+            text-align: center;
+
+            padding: 60px 20px;
+
+            background: #ffffff;
+
+            border: 1px solid #ead9e6;
+
+            border-radius: 18px;
+
+        }
+
+
+        .empty-cart h2 {
+
+            color: #5d405c;
+
+            margin-bottom: 10px;
+
+        }
+
+
+        .empty-cart p {
+
+            color: #777078;
+
+            margin-bottom: 25px;
+
+        }
+
+
+        .shop-btn {
+
+            display: inline-block;
+
+            padding: 12px 25px;
+
+            background: #8b5a83;
+
+            color: white;
+
+            text-decoration: none;
+
+            border-radius: 25px;
+
+        }
+
+
+        .shop-btn:hover {
+
+            background: #6f4568;
+
+        }
+
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 850px) {
+
+            .cart-layout {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .rental-summary {
+
+                position: static;
+
+            }
+
+        }
+
+
+        @media (max-width: 600px) {
+
+            .cart-page {
+
+                padding: 50px 20px;
+
+            }
+
+
+            .cart-heading h1 {
+
+                font-size: 30px;
+
+            }
+
+
+            .cart-item {
+
+                align-items: flex-start;
+
+                gap: 15px;
+
+            }
+
+
+            .cart-image-link {
+
+                width: 80px;
+
+                height: 105px;
+
+            }
+
+
+            .cart-product-name {
+
+                font-size: 17px;
+
+            }
+
+
+            .cart-detail {
+
+                font-size: 13px;
+
+            }
+
+
+            .remove-btn {
+
+                font-size: 12px;
+
+                padding: 8px 15px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     NAVIGATION
+========================= -->
+
+<header>
+
+    <nav>
+
+        <div class="logo">
+
+            <span>DRESORA</span>
+
+            <small>DRESS RENTAL</small>
+
+        </div>
+
+
+        <ul>
+
+            <li>
+                <a href="index.html">
+                    Home
+                </a>
+            </li>
+
+            <li>
+                <a href="products.html">
+                    Shop
+                </a>
+            </li>
+
+            <li>
+                <a href="about.html">
+                    About
+                </a>
+            </li>
+
+            <li>
+                <a href="contact.html">
+                    Contact
+                </a>
+            </li>
+
+            <li>
+                <a href="cart.html">
+                    Cart
+                    <span class="cart-count">0</span>
+                </a>
+            </li>
+
+        </ul>
+
+    </nav>
+
+</header>
+
+
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<main>
+
+<section class="cart-page">
+
+
+    <!-- HEADING -->
+
+    <div class="cart-heading">
+
+        <p class="section-subtitle">
+            DRESORA RENTAL
+        </p>
+
+        <h1>
+            Your Cart
+        </h1>
+
+        <p>
+            Review your selected dresses and rental details.
+        </p>
+
+    </div>
+
+
+
+    <!-- =========================
+         EMPTY CART
+    ========================= -->
+
+    <div
+        class="empty-cart"
+        id="emptyCart"
+    >
+
+        <h2>
+            Your Cart is Empty
+        </h2>
+
+        <p>
+            You haven't added any dresses to your cart yet.
+        </p>
+
+        <a
+            href="products.html"
+            class="shop-btn"
+        >
+            Browse Dresses
+        </a>
+
+    </div>
+
+
+
+    <!-- =========================
+         CART LAYOUT
+    ========================= -->
+
+    <div
+        class="cart-layout"
+        id="cartLayout"
+    >
+
+
+        <!-- CART ITEMS -->
+
+        <div
+            class="cart-items"
+            id="cartItems"
+        >
+
+        </div>
+
+
+
+        <!-- =========================
+             RENTAL SUMMARY
+        ========================= -->
+
+        <div class="rental-summary">
+
+            <h2>
+                Rental Summary
+            </h2>
+
+
+            <div class="summary-row">
+
+                <span>
+                    Items
+                </span>
+
+                <strong id="totalItems">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="summary-row">
+
+                <span>
+                    Rental Total
+                </span>
+
+                <strong>
+                    Rs. <span id="subtotal">0</span>
+                </strong>
+
+            </div>
+
+
+            <div class="summary-total">
+
+                <span>
+                    Total
+                </span>
+
+                <strong>
+                    Rs. <span id="totalPrice">0</span>
+                </strong>
+
+            </div>
+
+<a
+    href="checkout.html"
+    class="checkout-btn"
+>
+    Continue to Rental
+</a>
+
+
+            <a
+                href="products.html"
+                class="continue-shopping"
+            >
+                ← Continue Shopping
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+    <div class="footer-bottom">
+
+        <p><center>
+            © 2026 Dresora. All Rights Reserved.
+        </p></center>
+
+    </div>
+
+</footer>
+
+
+
+<script>
+
+
+/* =========================
+   GET CART
+========================= */
+
+function getCart() {
+
+    return JSON.parse(
+        localStorage.getItem("cart")
+    ) || [];
+
+}
+
+
+
+/* =========================
+   SAVE CART
+========================= */
+
+function saveCart(cart) {
+
+    localStorage.setItem(
+        "cart",
+        JSON.stringify(cart)
+    );
+
+}
+
+
+
+/* =========================
+   DISPLAY CART
+========================= */
+
+function displayCart() {
+
+
+    const cart =
+        getCart();
+
+
+    const cartItems =
+        document.getElementById(
+            "cartItems"
+        );
+
+
+    const cartLayout =
+        document.getElementById(
+            "cartLayout"
+        );
+
+
+    const emptyCart =
+        document.getElementById(
+            "emptyCart"
+        );
+
+
+    const totalItems =
+        document.getElementById(
+            "totalItems"
+        );
+
+
+    const subtotal =
+        document.getElementById(
+            "subtotal"
+        );
+
+
+    const totalPrice =
+        document.getElementById(
+            "totalPrice"
+        );
+
+
+    /* =========================
+       EMPTY CART
+    ========================= */
+
+    if (cart.length === 0) {
+
+        cartLayout.style.display =
+            "none";
+
+        emptyCart.style.display =
+            "block";
+
+        totalItems.textContent =
+            "0";
+
+        subtotal.textContent =
+            "0";
+
+        totalPrice.textContent =
+            "0";
+
+        updateCartCount();
+
+        return;
+
+    }
+
+
+    cartLayout.style.display =
+        "grid";
+
+    emptyCart.style.display =
+        "none";
+
+
+    cartItems.innerHTML =
+        "";
+
+
+    let total =
+        0;
+
+
+
+    /* =========================
+       CREATE CART ITEMS
+    ========================= */
+
+    cart.forEach(function(item, index) {
+
+
+        /*
+         * Support both:
+         * totalPrice
+         * price
+         */
+
+        const itemPrice =
+            Number(
+                String(
+                    item.totalPrice ||
+                    item.price ||
+                    "0"
+                ).replace(/,/g, "")
+            );
+
+
+        total += itemPrice;
+
+
+
+        /*
+         * Create unique cart ID
+         * if one doesn't exist.
+         */
+
+        if (!item.cartId) {
+
+            item.cartId =
+                Date.now() +
+                "-" +
+                index;
+
+        }
+
+
+
+        const cartItem =
+            document.createElement(
+                "div"
+            );
+
+
+        cartItem.className =
+            "cart-item";
+
+
+
+        /* =========================
+           CART ITEM HTML
+        ========================= */
+
+        cartItem.innerHTML = `
+
+            <a
+                href="product-details.html?id=${item.id}"
+                class="cart-image-link"
+            >
+
+                <img
+                    src="${item.image}"
+                    alt="${item.name}"
+                >
+
+            </a>
+
+
+            <div class="cart-item-info">
+
+
+                <a
+                    href="product-details.html?id=${item.id}"
+                    class="cart-product-name"
+                >
+                    ${item.name}
+                </a>
+
+
+                <p class="cart-detail">
+
+                    <strong>
+                        Size:
+                    </strong>
+
+                    ${item.size || "Not selected"}
+
+                </p>
+
+
+                <p class="cart-detail">
+
+                    <strong>
+                        Rental Days:
+                    </strong>
+
+                    ${item.rentalDays || "Not selected"}
+
+                </p>
+
+
+                <p class="cart-detail">
+
+                    <strong>
+                        Rental Date:
+                    </strong>
+
+                    ${item.startDate || "-"}
+                    ${item.endDate ? " - " + item.endDate : ""}
+
+                </p>
+
+
+                <p class="cart-price">
+
+                    Rs.
+                    ${itemPrice.toLocaleString()}
+
+                </p>
+
+
+                <button
+                    class="remove-btn"
+                    onclick="removeFromCart('${item.cartId}')"
+                >
+
+                    Remove
+
+                </button>
+
+
+            </div>
+
+        `;
+
+
+
+        cartItems.appendChild(
+            cartItem
+        );
+
+    });
+
+
+
+    /*
+     * Save generated cart IDs
+     */
+
+    saveCart(cart);
+
+
+
+    /* =========================
+       UPDATE SUMMARY
+    ========================= */
+
+    totalItems.textContent =
+        cart.length;
+
+
+    subtotal.textContent =
+        total.toLocaleString();
+
+
+    totalPrice.textContent =
+        total.toLocaleString();
+
+
+    updateCartCount();
+
+}
+
+
+
+/* =========================
+   REMOVE ITEM
+========================= */
+
+function removeFromCart(cartId) {
+
+
+    let cart =
+        getCart();
+
+
+    cart =
+        cart.filter(
+            function(item) {
+
+                return item.cartId !== cartId;
+
+            }
+        );
+
+
+    saveCart(cart);
+
+
+    displayCart();
+
+}
+
+
+
+/* =========================
+   CART COUNT
+========================= */
+
+function updateCartCount() {
+
+
+    const cart =
+        getCart();
+
+
+    const countElements =
+        document.querySelectorAll(
+            ".cart-count"
+        );
+
+
+    countElements.forEach(
+        function(element) {
+
+            element.textContent =
+                cart.length;
+
+        }
+    );
+
+}
+
+
+
+
+
+
+/* =========================
+   LOAD CART
+========================= */
+
+displayCart();
+
+</script>
+
+
+</body>
+
+</html>
