@@ -4,9 +4,7 @@
 <head>
 
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Dresora - Product Details</title>
 
@@ -135,21 +133,21 @@
             border-color: #8b5a83;
         }
 
-        /* RENTAL DAYS */
+        /* RENTAL DATE */
 
-        .rental-days {
-            margin-bottom: 20px;
+        .rental-dates {
+            margin-bottom: 18px;
         }
 
-        .rental-days label {
+        .rental-dates label {
             display: block;
             margin-bottom: 8px;
             color: #5d405c;
             font-weight: bold;
         }
 
-        .rental-days select {
-            width: 180px;
+        .rental-dates input {
+            width: 220px;
             padding: 11px 15px;
 
             border: 1px solid #dcc6d8;
@@ -159,6 +157,49 @@
             background: white;
 
             outline: none;
+        }
+
+        .rental-dates input:focus {
+            border-color: #8b5a83;
+        }
+
+        /* EXPECTED RETURN DATE */
+
+        .expected-return {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f0f6;
+            border-radius: 10px;
+        }
+
+        .expected-return strong {
+            color: #5d405c;
+        }
+
+        .expected-return span {
+            color: #8b5a83;
+            font-weight: bold;
+        }
+
+        /* RENTAL POLICY */
+
+        .rental-policy {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #fff8fc;
+            border-left: 4px solid #8b5a83;
+            border-radius: 8px;
+        }
+
+        .rental-policy strong {
+            color: #5d405c;
+        }
+
+        .rental-policy p {
+            margin: 6px 0;
+            color: #777078;
+            font-size: 14px;
+            line-height: 1.6;
         }
 
         /* TOTAL */
@@ -172,6 +213,10 @@
 
             color: #5d405c;
             font-weight: bold;
+        }
+
+        .total-price span {
+            color: #8b5a83;
         }
 
         /* ADD TO CART */
@@ -209,12 +254,6 @@
             font-weight: bold;
         }
 
-        .cart-link {
-            margin-left: 10px;
-            color: #8b5a83;
-            font-weight: bold;
-        }
-
         @media (max-width: 768px) {
 
             .details-container {
@@ -233,62 +272,11 @@
             .details-info h1 {
                 font-size: 30px;
             }
-.rental-date {
-    margin-bottom: 20px;
-}
 
-.rental-date label {
-    display: block;
-    margin-bottom: 8px;
-    color: #5d405c;
-    font-weight: bold;
-}
-
-.rental-date input {
-    width: 220px;
-    padding: 11px 15px;
-
-    border: 1px solid #dcc6d8;
-    border-radius: 8px;
-
-    color: #5d405c;
-    background: white;
-
-    outline: none;
-}
-
-.rental-date input:focus {
-    border-color: #8b5a83;
-}
-.rental-dates {
-    margin-bottom: 18px;
-}
-
-.rental-dates label {
-    display: block;
-    margin-bottom: 8px;
-    color: #5d405c;
-    font-weight: bold;
-}
-
-.rental-dates input {
-    width: 180px;
-    padding: 11px 15px;
-
-    border: 1px solid #dcc6d8;
-    border-radius: 8px;
-
-    color: #5d405c;
-    background: white;
-
-    outline: none;
-}
-
-.rental-dates input:focus {
-    border-color: #8b5a83;
-}
+            .rental-dates input {
+                width: 100%;
+            }
         }
-
 
     </style>
 
@@ -353,7 +341,6 @@
 </header>
 
 
-
 <!-- =========================
      MAIN
 ========================= -->
@@ -387,7 +374,6 @@
         </div>
 
 
-
         <!-- =========================
              DETAILS
         ========================= -->
@@ -409,7 +395,7 @@
                 Rs. <span id="productPrice"></span>
 
                 <small>
-                    / day
+                    / 5 days
                 </small>
 
             </p>
@@ -418,7 +404,6 @@
             <p id="productDescription"
                class="details-description">
             </p>
-
 
 
             <!-- SIZE -->
@@ -476,67 +461,84 @@
             </div>
 
 
+            <!-- RENTAL START DATE -->
 
-           
+            <div class="rental-dates">
 
-           <!-- RENTAL DATE -->
+                <label for="startDate">
+                    Rental Start Date
+                </label>
 
+                <input
+                    type="date"
+                    id="startDate"
+                    onchange="calculateExpectedReturnDate()"
+                >
 
-
-<!-- RENTAL DATES -->
-
-<div class="rental-dates">
-
-    <label for="startDate">
-        Rental Start Date
-    </label>
-
-    <input
-        type="date"
-        id="startDate"
-        onchange="calculateTotal()"
-    >
-
-</div>
+            </div>
 
 
-<div class="rental-dates">
+            <!-- EXPECTED RETURN DATE -->
 
-    <label for="endDate">
-        Rental End Date
-    </label>
+            <div class="expected-return">
 
-    <input
-        type="date"
-        id="endDate"
-        onchange="calculateTotal()"
-    >
+                <strong>
+                    Expected Return Date:
+                </strong>
 
-</div>
+                <span id="expectedReturnDate">
+                    Select start date
+                </span>
 
-
-<!-- TOTAL -->
-
-<div class="total-price">
-
-    Total Rental Price:
-
-    Rs.
-    <span id="totalPrice">
-        0
-    </span>
-
-</div>
+            </div>
 
 
-<button
-    class="cart-btn"
-    onclick="addToCart()">
+            <!-- RENTAL POLICY -->
 
-    🛒 Add to Cart
+            <div class="rental-policy">
 
-</button>
+                <strong>
+                    Rental Policy
+                </strong>
 
+                <p>
+                    • The listed rental price includes the first 5 days.
+                </p>
+
+                <p>
+                    • After 5 days, a late fee of Rs. 500 will be charged for each extra day.
+                </p>
+
+                <p>
+                    • Late fees are calculated based on the actual return date.
+                </p>
+
+            </div>
+
+
+            <!-- TOTAL -->
+
+            <div class="total-price">
+
+                Total Rental Price:
+
+                Rs.
+                <span id="totalPrice">
+                    0
+                </span>
+
+            </div>
+
+
+            <!-- ADD TO CART -->
+
+            <button
+                class="cart-btn"
+                onclick="addToCart()">
+
+                🛒 Add to Cart
+
+            </button>
 
 
             <!-- AVAILABILITY -->
@@ -552,15 +554,6 @@
             </div>
 
 
-
-            
-
-
-
-
-        
-
-
         </div>
 
     </div>
@@ -568,7 +561,6 @@
 </section>
 
 </main>
-
 
 
 <!-- =========================
@@ -579,64 +571,18 @@
 
     <div class="footer-bottom">
 
-        <p><center>
+        <p style="text-align:center;">
             © 2026 Dresora. All Rights Reserved.
-        </p></center>
+        </p>
 
     </div>
 
 </footer>
 
 
-
 <script>
 
-function calculateEndDate() {
 
-    const startDate =
-        document.getElementById("startDate").value;
-
-    const days =
-        Number(
-            document.getElementById("rentalDays").value
-        );
-
-    const endDateInput =
-        document.getElementById("endDate");
-
-
-    if (!startDate) {
-
-        endDateInput.value = "";
-        return;
-
-    }
-
-
-    const start =
-        new Date(startDate);
-
-    start.setDate(
-        start.getDate() + days - 1
-    );
-
-
-    const year =
-        start.getFullYear();
-
-    const month =
-        String(start.getMonth() + 1)
-            .padStart(2, "0");
-
-    const day =
-        String(start.getDate())
-            .padStart(2, "0");
-
-
-    endDateInput.value =
-        `${year}-${month}-${day}`;
-
-}
 /* =========================
    PRODUCTS
 ========================= */
@@ -891,7 +837,6 @@ const products = {
 };
 
 
-
 /* =========================
    GET PRODUCT ID
 ========================= */
@@ -906,7 +851,6 @@ const productId =
 
 const product =
     products[productId];
-
 
 
 /* =========================
@@ -956,29 +900,117 @@ if (product) {
 }
 
 
+/* =========================
+   SET MINIMUM DATE
+========================= */
+
+const startDateInput =
+    document.getElementById("startDate");
+
+const today =
+    new Date();
+
+const todayYear =
+    today.getFullYear();
+
+const todayMonth =
+    String(today.getMonth() + 1)
+        .padStart(2, "0");
+
+const todayDay =
+    String(today.getDate())
+        .padStart(2, "0");
+
+const todayString =
+    `${todayYear}-${todayMonth}-${todayDay}`;
+
+startDateInput.min = todayString;
+
+
+/* =========================
+   CALCULATE EXPECTED RETURN
+========================= */
+
+function calculateExpectedReturnDate() {
+
+    const startDate =
+        document.getElementById("startDate").value;
+
+    const expectedReturn =
+        document.getElementById("expectedReturnDate");
+
+
+    if (!startDate) {
+
+        expectedReturn.textContent =
+            "Select start date";
+
+        calculateTotal();
+
+        return;
+    }
+
+
+    const date =
+        new Date(startDate + "T00:00:00");
+
+
+    /*
+       Rental period = 5 days
+       Expected return = Start Date + 5 days
+    */
+
+    date.setDate(
+        date.getDate() + 5
+    );
+
+
+    const year =
+        date.getFullYear();
+
+    const month =
+        String(date.getMonth() + 1)
+            .padStart(2, "0");
+
+    const day =
+        String(date.getDate())
+            .padStart(2, "0");
+
+
+    const formattedDate =
+        `${year}-${month}-${day}`;
+
+
+    expectedReturn.textContent =
+        formattedDate;
+
+
+    calculateTotal();
+
+}
+
 
 /* =========================
    CALCULATE TOTAL
 ========================= */
 
-
-
-    function calculateTotal() {
+function calculateTotal() {
 
     if (!product) {
         return;
     }
 
-    const startDate =
-        document.getElementById("startDate").value;
-
-    const endDate =
-        document.getElementById("endDate").value;
 
     const totalPrice =
         document.getElementById("totalPrice");
 
-    if (!startDate || !endDate) {
+
+    /*
+       Product price is the fixed
+       rental price for the first 5 days.
+    */
+
+    if (!document.getElementById("startDate").value) {
 
         totalPrice.textContent =
             "0";
@@ -986,30 +1018,10 @@ if (product) {
         return;
     }
 
-    const start =
-        new Date(startDate);
 
-    const end =
-        new Date(endDate);
+    totalPrice.textContent =
+        product.price.toLocaleString();
 
-    const difference =
-        end - start;
-
-    const days =
-        Math.ceil(
-            difference /
-            (1000 * 60 * 60 * 24)
-        );
-
-    if (days <= 0) {
-
-        totalPrice.textContent =
-            "0";
-
-        return;
-    }
-
-   
 }
 
 
@@ -1017,8 +1029,7 @@ if (product) {
    ADD TO CART
 ========================= */
 
-
- function addToCart() {
+function addToCart() {
 
     if (!product) {
 
@@ -1053,7 +1064,7 @@ if (product) {
 
 
     /* =========================
-       DATES
+       START DATE
     ========================= */
 
     const startDate =
@@ -1062,44 +1073,10 @@ if (product) {
         ).value;
 
 
-    const endDate =
-        document.getElementById(
-            "endDate"
-        ).value;
-
-
-    if (!startDate || !endDate) {
+    if (!startDate) {
 
         alert(
-            "Please select rental start date and end date."
-        );
-
-        return;
-    }
-
-
-    const start =
-        new Date(startDate);
-
-    const end =
-        new Date(endDate);
-
-
-    const difference =
-        end - start;
-
-
-    const rentalDays =
-        Math.ceil(
-            difference /
-            (1000 * 60 * 60 * 24)
-        );
-
-
-    if (rentalDays <= 0) {
-
-        alert(
-            "End date must be after the start date."
+            "Please select a rental start date."
         );
 
         return;
@@ -1107,11 +1084,47 @@ if (product) {
 
 
     /* =========================
-       TOTAL
+       EXPECTED RETURN DATE
     ========================= */
 
+    const date =
+        new Date(
+            startDate + "T00:00:00"
+        );
+
+
+    date.setDate(
+        date.getDate() + 5
+    );
+
+
+    const year =
+        date.getFullYear();
+
+    const month =
+        String(date.getMonth() + 1)
+            .padStart(2, "0");
+
+    const day =
+        String(date.getDate())
+            .padStart(2, "0");
+
+
+    const expectedReturnDate =
+        `${year}-${month}-${day}`;
+
+
+    /* =========================
+       RENTAL DETAILS
+    ========================= */
+
+    const rentalDays = 5;
+
+    const baseRentalPrice =
+        product.price;
+
     const totalPrice =
-        product.price * rentalDays;
+        product.price;
 
 
     /* =========================
@@ -1134,9 +1147,15 @@ if (product) {
 
         startDate: startDate,
 
-        endDate: endDate,
+        expectedReturnDate: expectedReturnDate,
 
         rentalDays: rentalDays,
+
+        allowedRentalDays: 5,
+
+        baseRentalPrice: baseRentalPrice,
+
+        lateFeePerDay: 500,
 
         totalPrice: totalPrice
 
@@ -1183,20 +1202,12 @@ if (product) {
     );
 
 }
-        
-
-
-    
-
-       
-
-   
-
 
 
 /* =========================
    CART COUNT
 ========================= */
+
 function updateCartCount() {
 
     const cart =
@@ -1204,12 +1215,10 @@ function updateCartCount() {
             localStorage.getItem("cart")
         ) || [];
 
-    const cartCounts =
-        document.querySelectorAll(
-            ".cart-count"
-        );
 
-    cartCounts.forEach(
+    document.querySelectorAll(
+        ".cart-count"
+    ).forEach(
         function(count) {
 
             count.textContent =
@@ -1221,19 +1230,12 @@ function updateCartCount() {
 }
 
 
-updateCartCount();
-
-function updateCartCount() {
-
-    const cart =
-        JSON.parse(localStorage.getItem("cart")) || [];
-
-    document.querySelectorAll(".cart-count").forEach(function(count) {
-        count.textContent = cart.length;
-    });
-}
+/* =========================
+   INITIAL CART COUNT
+========================= */
 
 updateCartCount();
+
 
 </script>
 

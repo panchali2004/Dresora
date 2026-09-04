@@ -687,7 +687,7 @@
 function getCart() {
 
     return JSON.parse(
-        localStorage.getItem("dresoraCart")
+        localStorage.getItem("cart")
     ) || [];
 
 }
@@ -767,9 +767,8 @@ function displaySummary() {
 
     cart.forEach(function(item) {
 
-        const itemTotal =
-            Number(item.total || 0);
-
+       const itemTotal =
+    Number(item.totalPrice || 0);
         total += itemTotal;
 
 
@@ -780,34 +779,43 @@ function displaySummary() {
             "summary-item";
 
 
-        itemDiv.innerHTML = `
+        
 
-            <img
-                src="${item.image}"
-                alt="${item.name}"
-            >
+           itemDiv.innerHTML = `
 
-            <div class="summary-item-info">
+    <img
+        src="${item.image}"
+        alt="${item.name}"
+    >
 
-                <h3>
-                    ${item.name}
-                </h3>
+    <div class="summary-item-info">
 
-                <p>
-                    Size: ${item.size || "Not selected"}
-                </p>
+        <h3>
+            ${item.name}
+        </h3>
 
-                <p>
-                    Rental Days: ${item.days || "Not selected"}
-                </p>
+        <p>
+            Size: ${item.size || "Not selected"}
+        </p>
 
-                <p>
-                    Rs. ${itemTotal.toLocaleString()}
-                </p>
+        <p>
+            Rental Days: ${item.rentalDays || "Not selected"}
+        </p>
 
-            </div>
+        <p>
+            Rental Dates:
+            ${item.startDate || "N/A"}
+            to
+            ${item.endDate || "N/A"}
+        </p>
 
-        `;
+        <p>
+            Rs. ${itemTotal.toLocaleString()}
+        </p>
+
+    </div>
+
+`;
 
 
         summaryItems.appendChild(itemDiv);
@@ -951,8 +959,12 @@ function placeOrder() {
         items:
             cart,
 
+        totalAmount: cart.reduce(function(total, item) {
+    return total + Number(item.totalPrice || 0);
+}, 0),
         orderDate:
             new Date().toLocaleString()
+            
 
     };
 
@@ -968,8 +980,8 @@ function placeOrder() {
     /* CLEAR CART */
 
     localStorage.removeItem(
-        "dresoraCart"
-    );
+    "cart"
+);
 
 
     /* HIDE CHECKOUT */
