@@ -1131,36 +1131,40 @@ function addToCart() {
        CART ITEM
     ========================= */
 
-    const cartItem = {
+    
+const cartItem = {
 
-        id: productId,
+    id: productId,
 
-        name: product.name,
+    name: product.name,
 
-        category: product.category,
+    category: product.category,
 
-        price: product.price,
+    price: product.price,
 
-        image: product.image,
+    image: product.image,
 
-        size: size,
+    size: size,
 
-        startDate: startDate,
+    startDate: startDate,
 
-        expectedReturnDate: expectedReturnDate,
+    expectedReturnDate: expectedReturnDate,
 
-        rentalDays: rentalDays,
+    rentalDays: rentalDays,
 
-        allowedRentalDays: 5,
+    allowedRentalDays: 5,
 
-        baseRentalPrice: baseRentalPrice,
+    baseRentalPrice: baseRentalPrice,
 
-        lateFeePerDay: 500,
+    lateFeePerDay: 500,
 
-        totalPrice: totalPrice
+    totalPrice: totalPrice,
 
-    };
+    quantity: 1,
 
+    selected: true
+
+};
 
     /* =========================
        GET CART
@@ -1176,7 +1180,45 @@ function addToCart() {
        ADD ITEM
     ========================= */
 
+    /* =========================
+   CHECK EXISTING ITEM
+========================= */
+
+const existingItem =
+    cart.find(function(item) {
+
+        return (
+            String(item.id) === String(cartItem.id) &&
+            item.size === cartItem.size &&
+            item.startDate === cartItem.startDate
+        );
+
+    });
+
+
+/* =========================
+   INCREASE QUANTITY
+========================= */
+
+if (existingItem) {
+
+    existingItem.quantity =
+        Number(existingItem.quantity || 1) + 1;
+
+    existingItem.selected = true;
+
+}
+
+
+/* =========================
+   ADD NEW ITEM
+========================= */
+
+else {
+
     cart.push(cartItem);
+
+}
 
 
     /* =========================
@@ -1216,16 +1258,23 @@ function updateCartCount() {
         ) || [];
 
 
+    const totalQuantity =
+        cart.reduce(function(total, item) {
+
+            return total +
+                Number(item.quantity || 1);
+
+        }, 0);
+
+
     document.querySelectorAll(
         ".cart-count"
-    ).forEach(
-        function(count) {
+    ).forEach(function(count) {
 
-            count.textContent =
-                cart.length;
+        count.textContent =
+            totalQuantity;
 
-        }
-    );
+    });
 
 }
 

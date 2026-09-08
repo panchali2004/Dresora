@@ -17,35 +17,55 @@
     ========================== -->
 
     <header>
-       <nav>
+        <nav>
 
-    <div class="logo">
-        <span>DRESORA</span>
-        <small>DRESS RENTAL</small>
-    </div>
+            <div class="logo">
+                <span>DRESORA</span>
+                <small>DRESS RENTAL</small>
+            </div>
 
-    <!-- මෙතනින් පස්සේ search box එක -->
-    <div class="search-box">
-        <input type="text" placeholder="Search dresses...">
-        <button>Search</button>
-    </div>
+            <!-- Search Box -->
+            <div class="search-box">
+                <input
+                    type="text"
+                    id="homeSearchInput"
+                    placeholder="Search dresses..."
+                >
+                <button type="button" onclick="searchDresses()">
+                    Search
+                </button>
+            </div>
 
-    <!-- navigation links -->
-    <ul>
-    <li><a href="index.html">Home</a></li>
-    <li><a href="products.html">Shop</a></li>
-    <li><a href="about.html">About</a></li>
-    <li><a href="contact.html">Contact</a></li>
-    <li><a href="account.html">Login</a></li>
+            <!-- Navigation Links -->
+            <ul>
+                <li>
+                    <a href="index.html">Home</a>
+                </li>
 
-<li>
-    <a href="cart.html">
-        Cart <span class="cart-count">0</span>
-    </a>
-</li>
-</ul>
+                <li>
+                    <a href="products.html">Shop</a>
+                </li>
 
-</nav>
+                <li>
+                    <a href="about.html">About</a>
+                </li>
+
+                <li>
+                    <a href="contact.html">Contact</a>
+                </li>
+
+                <li>
+                    <a href="account.html">Login</a>
+                </li>
+
+                <li>
+                    <a href="cart.html">
+                        Cart <span class="cart-count">0</span>
+                    </a>
+                </li>
+            </ul>
+
+        </nav>
     </header>
 
 
@@ -72,13 +92,15 @@
             </p>
 
             <div class="hero-buttons">
-                <a href="products.html" class="btn">
-    Browse Dresses
-</a>
 
-<a href="products.html" class="btn secondary-btn">
-    Explore Collection
-</a>
+                <a href="products.html" class="btn">
+                    Browse Dresses
+                </a>
+
+                <a href="products.html" class="btn secondary-btn">
+                    Explore Collection
+                </a>
+
             </div>
 
         </div>
@@ -102,90 +124,125 @@
 
         <div class="category-container">
 
+            <!-- Wedding -->
             <div class="category-card">
-    <div class="category-icon">💍</div>
 
-    <h3>Wedding Dresses</h3>
+                <div class="category-icon">💍</div>
 
-    <p>
-        Elegant dresses for weddings and special occasions.
-    </p>
+                <h3>
+                    Wedding Dresses
+                </h3>
 
-    <a href="products.html?category=wedding">
-    View Wedding Dresses
-</a>
-</div>
+                <p>
+                    Elegant dresses for weddings and special occasions.
+                </p>
 
+                <a href="products.html?category=wedding">
+                    View Wedding Dresses
+                </a>
+
+            </div>
+
+
+            <!-- Party -->
             <div class="category-card">
-    <div class="category-icon">👗</div>
 
-    <h3>Party Dresses</h3>
+                <div class="category-icon">👗</div>
 
-    <p>
-        Stylish dresses for parties and celebrations.
-    </p>
+                <h3>
+                    Party Dresses
+                </h3>
 
-   <a href="products.html?category=party">
-    View Party Dresses
-</a>
-</div>
+                <p>
+                    Stylish dresses for parties and celebrations.
+                </p>
+
+                <a href="products.html?category=party">
+                    View Party Dresses
+                </a>
+
+            </div>
 
 
+            <!-- Evening -->
             <div class="category-card">
-    <div class="category-icon">✨</div>
 
-    <h3>Evening Dresses</h3>
+                <div class="category-icon">✨</div>
 
-    <p>
-        Beautiful dresses for evening events.
-    </p>
+                <h3>
+                    Evening Dresses
+                </h3>
 
-   <a href="products.html?category=evening">
-    View Evening Dresses
-</a>
-</div>
+                <p>
+                    Beautiful dresses for evening events.
+                </p>
 
-<div class="category-card">
-    <div class="category-icon">🌸</div>
+                <a href="products.html?category=evening">
+                    View Evening Dresses
+                </a>
 
-    <h3>Casual Dresses</h3>
+            </div>
 
-    <p>
-        Comfortable dresses for everyday occasions.
-    </p>
 
-   <a href="products.html?category=casual">
-    View Casual Dresses
-</a>
-</div>
+            <!-- Casual -->
+            <div class="category-card">
 
-<div class="category-card">
-    <div class="category-icon">🎉</div>
+                <div class="category-icon">🌸</div>
 
-    <h3>Cocktail Dresses</h3>
+                <h3>
+                    Casual Dresses
+                </h3>
 
-    <p>
-        Modern dresses for parties and dinner events.
-    </p>
+                <p>
+                    Comfortable dresses for everyday occasions.
+                </p>
 
-   <a href="products.html?category=cocktail">
-    View Cocktail Dresses
-</a>
-</div>
+                <a href="products.html?category=casual">
+                    View Casual Dresses
+                </a>
 
-<div class="category-card">
-    <div class="category-icon">👑</div>
+            </div>
 
-    <h3>Formal Dresses</h3>
 
-    <p>
-        Elegant outfits for formal occasions.
-    </p>
+            <!-- Cocktail -->
+            <div class="category-card">
 
-   <a href="products.html?category=formal">
-    View Formal Dresses
-</a>
-</div>
+                <div class="category-icon">🎉</div>
+
+                <h3>
+                    Cocktail Dresses
+                </h3>
+
+                <p>
+                    Modern dresses for parties and dinner events.
+                </p>
+
+                <a href="products.html?category=cocktail">
+                    View Cocktail Dresses
+                </a>
+
+            </div>
+
+
+            <!-- Formal -->
+            <div class="category-card">
+
+                <div class="category-icon">👑</div>
+
+                <h3>
+                    Formal Dresses
+                </h3>
+
+                <p>
+                    Elegant outfits for formal occasions.
+                </p>
+
+                <a href="products.html?category=formal">
+                    View Formal Dresses
+                </a>
+
+            </div>
+
         </div>
 
     </section>
@@ -214,50 +271,19 @@
         <div class="dress-container">
 
 
-            <!-- Dress 01 -->
+            <!-- =========================
+                 DRESS 01
+            ========================== -->
 
             <div class="dress-card">
 
                 <div class="dress-image">
+
                     <img
                         src="images/dress1.jpg"
-                        alt="Elegant Evening Dress"
-                    >
-                </div>
-
-                <div class="dress-info">
-
-                    <span class="dress-category">
-                        Evening Wear
-                    </span>
-
-                    <h3>
-                        Elegant Evening Dress
-                    </h3>
-
-                    <p class="price">
-                        Rs. 2,500
-                        <span>/ rental</span>
-                    </p>
-
-                   <a href="product1.html" class="btn">
-    View Details
-</a>
-
-                </div>
-
-            </div>
-
-
-            <!-- Dress 02 -->
-
-            <div class="dress-card">
-
-                <div class="dress-image">
-                    <img
-                        src="images/dress2.jpg"
                         alt="Classic Party Dress"
                     >
+
                 </div>
 
                 <div class="dress-info">
@@ -271,48 +297,103 @@
                     </h3>
 
                     <p class="price">
-                        Rs. 2,000
+                        Rs. 3,000
                         <span>/ rental</span>
                     </p>
 
-                    <a href="product2.html" class="btn">
-    View Details
-</a>
+                    <!-- Product ID 1 -->
+                    <a
+                        href="product-details.html?id=1"
+                        class="btn"
+                    >
+                        View Details
+                    </a>
 
                 </div>
 
             </div>
 
 
-            <!-- Dress 03 -->
+            <!-- =========================
+                 DRESS 02
+            ========================== -->
 
             <div class="dress-card">
 
                 <div class="dress-image">
+
                     <img
-                        src="images/dress3.jpg"
-                        alt="Floral Dress"
+                        src="images/dress2.jpg"
+                        alt="Sparkle Party Dress"
                     >
+
                 </div>
 
                 <div class="dress-info">
 
                     <span class="dress-category">
-                        Casual Wear
+                        Party Wear
                     </span>
 
                     <h3>
-                        Floral Dress
+                        Sparkle Party Dress
                     </h3>
 
                     <p class="price">
-                        Rs. 1,800
+                        Rs. 3,200
                         <span>/ rental</span>
                     </p>
 
-                    <a href="product3.html" class="btn">
-    View Details
-</a>
+                    <!-- Product ID 2 -->
+                    <a
+                        href="product-details.html?id=2"
+                        class="btn"
+                    >
+                        View Details
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 DRESS 03
+            ========================== -->
+
+            <div class="dress-card">
+
+                <div class="dress-image">
+
+                    <img
+                        src="images/dress3.jpg"
+                        alt="Rose Party Dress"
+                    >
+
+                </div>
+
+                <div class="dress-info">
+
+                    <span class="dress-category">
+                        Party Wear
+                    </span>
+
+                    <h3>
+                        Rose Party Dress
+                    </h3>
+
+                    <p class="price">
+                        Rs. 2,800
+                        <span>/ rental</span>
+                    </p>
+
+                    <!-- Product ID 3 -->
+                    <a
+                        href="product-details.html?id=3"
+                        class="btn"
+                    >
+                        View Details
+                    </a>
 
                 </div>
 
@@ -351,6 +432,7 @@
 
         <div class="benefits">
 
+            <!-- Benefit 1 -->
             <div class="benefit-card">
 
                 <div class="benefit-icon">
@@ -369,6 +451,7 @@
             </div>
 
 
+            <!-- Benefit 2 -->
             <div class="benefit-card">
 
                 <div class="benefit-icon">
@@ -387,6 +470,7 @@
             </div>
 
 
+            <!-- Benefit 3 -->
             <div class="benefit-card">
 
                 <div class="benefit-icon">
@@ -432,198 +516,311 @@
             </p>
 
             <a href="products.html" class="btn">
-    Explore Collection
-</a>
+                Explore Collection
+            </a>
+
         </div>
 
     </section>
 
-<!-- =========================
-     PROFESSIONAL FOOTER
-========================== -->
 
-<footer class="professional-footer">
+    <!-- =========================
+         PROFESSIONAL FOOTER
+    ========================== -->
 
-    <div class="footer-container">
+    <footer class="professional-footer">
 
-        <!-- Brand -->
-        <div class="footer-column footer-brand">
+        <div class="footer-container">
 
-            <h2>DRESORA</h2>
+            <!-- Brand -->
+            <div class="footer-column footer-brand">
 
-            <p class="footer-tagline">
-                DRESS RENTAL
-            </p>
+                <h2>
+                    DRESORA
+                </h2>
 
-            <p>
-                Find your perfect dress for every special
-                occasion. Stylish, affordable and easy to rent.
-            </p>
+                <p class="footer-tagline">
+                    DRESS RENTAL
+                </p>
 
-            <div class="footer-social">
-                <a href="#" aria-label="Instagram">Instagram</a>
-                <a href="#" aria-label="Facebook">Facebook</a>
-                <a href="#" aria-label="TikTok">TikTok</a>
+                <p>
+                    Find your perfect dress for every special
+                    occasion. Stylish, affordable and easy to rent.
+                </p>
+
+                <div class="footer-social">
+
+                    <a href="#" aria-label="Instagram">
+                        Instagram
+                    </a>
+
+                    <a href="#" aria-label="Facebook">
+                        Facebook
+                    </a>
+
+                    <a href="#" aria-label="TikTok">
+                        TikTok
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- Quick Links -->
+            <div class="footer-column">
+
+                <h3>
+                    Quick Links
+                </h3>
+
+                <ul>
+
+                    <li>
+                        <a href="index.html">
+                            Home
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="products.html">
+                            Shop
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="about.html">
+                            About Us
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="contact.html">
+                            Contact Us
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cart.html">
+                            My Cart
+                        </a>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <!-- Customer Service -->
+            <div class="footer-column">
+
+                <h3>
+                    Customer Service
+                </h3>
+
+                <ul>
+
+                    <li>
+                        <a href="contact.html">
+                            Help & Support
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="contact.html">
+                            Rental Information
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Rental Policy
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Privacy Policy
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Terms & Conditions
+                        </a>
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <!-- Contact -->
+            <div class="footer-column footer-contact">
+
+                <h3>
+                    Contact Us
+                </h3>
+
+                <p>
+                    <strong>Email</strong><br>
+                    info@dresora.com
+                </p>
+
+                <p>
+                    <strong>Phone</strong><br>
+                    +94 77 123 4567
+                </p>
+
+                <p>
+                    <strong>Location</strong><br>
+                    Sri Lanka
+                </p>
+
             </div>
 
         </div>
 
 
-        <!-- Quick Links -->
-        <div class="footer-column">
+        <!-- Newsletter / CTA -->
+        <div class="footer-newsletter">
 
-            <h3>Quick Links</h3>
+            <div>
 
-            <ul>
-                <li>
-                    <a href="index.html">Home</a>
-                </li>
+                <h3>
+                    Find Your Perfect Dress
+                </h3>
 
-                <li>
-                    <a href="products.html">Shop</a>
-                </li>
+                <p>
+                    Explore our collection and rent your favourite style today.
+                </p>
 
-                <li>
-                    <a href="about.html">About Us</a>
-                </li>
+            </div>
 
-                <li>
-                    <a href="contact.html">Contact Us</a>
-                </li>
-
-                <li>
-                    <a href="cart.html">My Cart</a>
-                </li>
-            </ul>
+            <a
+                href="products.html"
+                class="footer-shop-btn"
+            >
+                Explore Dresses →
+            </a>
 
         </div>
 
 
-        <!-- Customer Service -->
-        <div class="footer-column">
-
-            <h3>Customer Service</h3>
-
-            <ul>
-                <li>
-                    <a href="contact.html">Help & Support</a>
-                </li>
-
-                <li>
-                    <a href="contact.html">Rental Information</a>
-                </li>
-
-                <li>
-                    <a href="#">Rental Policy</a>
-                </li>
-
-                <li>
-                    <a href="#">Privacy Policy</a>
-                </li>
-
-                <li>
-                    <a href="#">Terms & Conditions</a>
-                </li>
-            </ul>
-
-        </div>
-
-
-        <!-- Contact -->
-        <div class="footer-column footer-contact">
-
-            <h3>Contact Us</h3>
+        <!-- Bottom -->
+        <div class="footer-bottom">
 
             <p>
-                <strong>Email</strong><br>
-                info@dresora.com
+                © 2026 DRESORA. All Rights Reserved.
             </p>
 
             <p>
-                <strong>Phone</strong><br>
-                +94 77 123 4567
-            </p>
-
-            <p>
-                <strong>Location</strong><br>
-                Sri Lanka
+                Online Dress Rental
             </p>
 
         </div>
 
-    </div>
+    </footer>
 
 
-    <!-- Newsletter / CTA -->
-    <div class="footer-newsletter">
+    <!-- =========================
+         JAVASCRIPT
+    ========================== -->
 
-        <div>
-            <h3>Find Your Perfect Dress</h3>
+    <script>
 
-            <p>
-                Explore our collection and rent your favourite style today.
-            </p>
-        </div>
+        /* ==========================================
+           HOME PAGE SEARCH
+        ========================================== */
 
-        <a href="products.html" class="footer-shop-btn">
-            Explore Dresses →
-        </a>
+        function searchDresses() {
 
-    </div>
+            const searchInput =
+                document.getElementById("homeSearchInput");
 
+            const searchValue =
+                searchInput.value.trim();
 
-    <!-- Bottom -->
-    <div class="footer-bottom">
+            if (searchValue === "") {
 
-        <p>
-            © 2026 DRESORA. All Rights Reserved.
-        </p>
+                alert("Please enter a dress name to search.");
 
-        <p>
-            Online Dress Rental
-        </p>
+                return;
+            }
 
-    </div>
+            /*
+             * Send the search keyword to products.html
+             * Example:
+             * products.html?search=party
+             */
 
-</footer>
-    
-
-    
- <script>
-function updateCartCount() {
-
-    const cart =
-        JSON.parse(localStorage.getItem("cart")) || [];
-
-    const cartCounts =
-        document.querySelectorAll(".cart-count");
-
-    cartCounts.forEach(function(count) {
-        count.textContent = cart.length;
-    });
-}
-
-updateCartCount();
+            window.location.href =
+                "products.html?search=" +
+                encodeURIComponent(searchValue);
+        }
 
 
-function updateCartCount() {
+        /* ==========================================
+           SEARCH USING ENTER KEY
+        ========================================== */
 
-    const cart =
-        JSON.parse(localStorage.getItem("cart")) || [];
+        document
+            .getElementById("homeSearchInput")
+            .addEventListener("keypress", function(event) {
 
-    const cartCounts =
-        document.querySelectorAll(".cart-count");
+                if (event.key === "Enter") {
 
-    cartCounts.forEach(function(count) {
-        count.textContent = cart.length;
-    });
-}
+                    searchDresses();
 
-updateCartCount();
-</script>
+                }
+
+            });
 
 
+        /* ==========================================
+           UPDATE CART COUNT
+        ========================================== */
+
+        function updateCartCount() {
+
+            const cart =
+                JSON.parse(localStorage.getItem("cart")) || [];
+
+            /*
+             * Count quantities instead of counting
+             * only the number of cart rows.
+             */
+
+            const totalQuantity =
+                cart.reduce(function(total, item) {
+
+                    return total +
+                        Number(item.quantity || 1);
+
+                }, 0);
+
+
+            const cartCounts =
+                document.querySelectorAll(".cart-count");
+
+
+            cartCounts.forEach(function(count) {
+
+                count.textContent = totalQuantity;
+
+            });
+
+        }
+
+
+        /* ==========================================
+           INITIAL LOAD
+        ========================================== */
+
+        updateCartCount();
+
+    </script>
 
 </body>
-</html>
 
+</html>

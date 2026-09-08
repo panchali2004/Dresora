@@ -508,13 +508,7 @@
                     Price: High to Low
                 </option>
 
-                <option value="a-z">
-                    Name: A to Z
-                </option>
-
-                <option value="z-a">
-                    Name: Z to A
-                </option>
+                
 
             </select>
 
@@ -2004,77 +1998,54 @@
 
 <script>
 
-
 /* =========================
    FILTER PRODUCTS
 ========================= */
 
 function applyFilters() {
 
-
     const category =
-        document.getElementById(
-            "categoryFilter"
-        ).value;
-
+        document.getElementById("categoryFilter").value;
 
     const sort =
-        document.getElementById(
-            "sortFilter"
-        ).value;
-
+        document.getElementById("sortFilter").value;
 
     const search =
-        document.getElementById(
-            "searchInput"
-        )
-        .value
-        .toLowerCase()
-        .trim();
-
+        document.getElementById("searchInput")
+            .value
+            .toLowerCase()
+            .trim();
 
     const container =
-        document.getElementById(
-            "productsContainer"
-        );
-
+        document.getElementById("productsContainer");
 
     const noProducts =
-        document.getElementById(
-            "noProducts"
-        );
-
+        document.getElementById("noProducts");
 
     const products =
         Array.from(
-            container.querySelectorAll(
-                ".product-card"
-            )
+            container.querySelectorAll(".product-card")
         );
-
 
     let visibleProducts = [];
 
 
     /* =========================
-       FILTER
+       FILTER PRODUCTS
     ========================= */
 
     products.forEach(function(product) {
 
-
         const productCategory =
-            product.dataset.category;
-
+            product.dataset.category.toLowerCase();
 
         const productName =
-            product.dataset.name
-            .toLowerCase();
+            product.dataset.name.toLowerCase();
 
 
         const categoryMatch =
             category === "all" ||
-            productCategory === category;
+            productCategory === category.toLowerCase();
 
 
         const searchMatch =
@@ -2082,22 +2053,15 @@ function applyFilters() {
             productCategory.includes(search);
 
 
-        if (
-            categoryMatch &&
-            searchMatch
-        ) {
+        if (categoryMatch && searchMatch) {
 
-            product.style.display =
-                "block";
+            product.style.display = "block";
 
-            visibleProducts.push(
-                product
-            );
+            visibleProducts.push(product);
 
         } else {
 
-            product.style.display =
-                "none";
+            product.style.display = "none";
 
         }
 
@@ -2105,75 +2069,52 @@ function applyFilters() {
 
 
     /* =========================
-       SORT
+       SORT PRODUCTS
     ========================= */
 
     if (sort === "low-high") {
 
-        visibleProducts.sort(
-            function(a, b) {
+        visibleProducts.sort(function(a, b) {
 
-                return Number(
-                    a.dataset.price
-                )
-                -
-                Number(
-                    b.dataset.price
-                );
+            return Number(a.dataset.price) -
+                   Number(b.dataset.price);
 
-            }
-        );
+        });
 
     }
-
 
     else if (sort === "high-low") {
 
-        visibleProducts.sort(
-            function(a, b) {
+        visibleProducts.sort(function(a, b) {
 
-                return Number(
-                    b.dataset.price
-                )
-                -
-                Number(
-                    a.dataset.price
-                );
+            return Number(b.dataset.price) -
+                   Number(a.dataset.price);
 
-            }
-        );
+        });
 
     }
-
 
     else if (sort === "a-z") {
 
-        visibleProducts.sort(
-            function(a, b) {
+        visibleProducts.sort(function(a, b) {
 
-                return a.dataset.name
-                    .localeCompare(
-                        b.dataset.name
-                    );
+            return a.dataset.name.localeCompare(
+                b.dataset.name
+            );
 
-            }
-        );
+        });
 
     }
 
-
     else if (sort === "z-a") {
 
-        visibleProducts.sort(
-            function(a, b) {
+        visibleProducts.sort(function(a, b) {
 
-                return b.dataset.name
-                    .localeCompare(
-                        a.dataset.name
-                    );
+            return b.dataset.name.localeCompare(
+                a.dataset.name
+            );
 
-            }
-        );
+        });
 
     }
 
@@ -2182,32 +2123,24 @@ function applyFilters() {
        REORDER PRODUCTS
     ========================= */
 
-    visibleProducts.forEach(
-        function(product) {
+    visibleProducts.forEach(function(product) {
 
-            container.appendChild(
-                product
-            );
+        container.appendChild(product);
 
-        }
-    );
+    });
 
 
     /* =========================
-       NO PRODUCTS
+       NO PRODUCTS MESSAGE
     ========================= */
 
-    if (
-        visibleProducts.length === 0
-    ) {
+    if (visibleProducts.length === 0) {
 
-        noProducts.style.display =
-            "block";
+        noProducts.style.display = "block";
 
     } else {
 
-        noProducts.style.display =
-            "none";
+        noProducts.style.display = "none";
 
     }
 
@@ -2215,7 +2148,7 @@ function applyFilters() {
 
 
 /* =========================
-   HOME PAGE CATEGORY
+   READ URL PARAMETERS
 ========================= */
 
 const urlParams =
@@ -2224,42 +2157,104 @@ const urlParams =
     );
 
 
+/* =========================
+   CATEGORY FROM HOME PAGE
+========================= */
+
 const selectedCategory =
-    urlParams.get(
-        "category"
-    );
+    urlParams.get("category");
 
 
 if (selectedCategory) {
 
     const categoryFilter =
-        document.getElementById(
-            "categoryFilter"
-        );
-
+        document.getElementById("categoryFilter");
 
     categoryFilter.value =
         selectedCategory;
 
+}
+
+
+/* =========================
+   SEARCH FROM HOME PAGE
+========================= */
+
+const selectedSearch =
+    urlParams.get("search");
+
+
+if (selectedSearch) {
+
+    const searchInput =
+        document.getElementById("searchInput");
+
+
+    /* Put search text inside search box */
+
+    searchInput.value =
+        selectedSearch;
+
+
+    /* Apply search */
 
     applyFilters();
 
 }
 
 
+/* =========================
+   CATEGORY ONLY
+========================= */
+
+else if (selectedCategory) {
+
+    applyFilters();
+
+}
+
+
+/* =========================
+   UPDATE CART COUNT
+========================= */
+
 function updateCartCount() {
 
     const cart =
-        JSON.parse(localStorage.getItem("cart")) || [];
+        JSON.parse(
+            localStorage.getItem("cart")
+        ) || [];
 
-    document.querySelectorAll(".cart-count").forEach(function(count) {
-        count.textContent = cart.length;
-    });
+
+    /*
+     * Count quantities
+     * instead of counting cart rows
+     */
+
+    const totalQuantity =
+        cart.reduce(function(total, item) {
+
+            return total +
+                Number(item.quantity || 1);
+
+        }, 0);
+
+
+    document
+        .querySelectorAll(".cart-count")
+        .forEach(function(count) {
+
+            count.textContent =
+                totalQuantity;
+
+        });
+
 }
 
-updateCartCount();
-</script>
 
+updateCartCount();
+
+</script>
 
 </body>
 
