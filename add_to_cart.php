@@ -4,18 +4,13 @@ session_start();
 
 require_once "config/database.php";
 
-
-// Check login
 if (!isset($_SESSION["user_id"])) {
     echo "Please login first.";
     exit;
 }
 
-
 $user_id = $_SESSION["user_id"];
 
-
-// Get data from product-details.html
 $product_id = $_POST["product_id"];
 $product_name = $_POST["product_name"];
 $category = $_POST["category"];
@@ -31,7 +26,6 @@ $late_fee_per_day = $_POST["late_fee_per_day"];
 $quantity = $_POST["quantity"];
 
 
-// Check whether same item already exists
 $check_sql = "SELECT cart_item_id, quantity
               FROM cart_items
               WHERE user_id = ?
@@ -62,13 +56,11 @@ if (!$check_stmt->execute()) {
 $result = $check_stmt->get_result();
 
 
-// If item already exists
 if ($result->num_rows > 0) {
 
     $row = $result->fetch_assoc();
 
     $new_quantity = $row["quantity"] + $quantity;
-
 
     $update_sql = "UPDATE cart_items
                    SET quantity = ?
@@ -94,8 +86,6 @@ if ($result->num_rows > 0) {
 
     $update_stmt->close();
 
-
-// If item is new
 } else {
 
     $insert_sql = "INSERT INTO cart_items
@@ -118,7 +108,6 @@ if ($result->num_rows > 0) {
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-
     $insert_stmt = $conn->prepare($insert_sql);
 
     if (!$insert_stmt) {
@@ -126,12 +115,10 @@ if ($result->num_rows > 0) {
         exit;
     }
 
-
     $selected = 1;
 
-
-    $insert_stmt->bind_param(
-        "iissdssssiiddi",
+   $insert_stmt->bind_param(
+    "iissdssssiiddii",
         $user_id,
         $product_id,
         $product_name,
@@ -149,16 +136,13 @@ if ($result->num_rows > 0) {
         $selected
     );
 
-
     if (!$insert_stmt->execute()) {
         echo "Insert execute error: " . $insert_stmt->error;
         exit;
     }
 
-
     $insert_stmt->close();
 }
-
 
 $check_stmt->close();
 $conn->close();
