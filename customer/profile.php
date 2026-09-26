@@ -58,16 +58,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $user_id
             );
 
-            if ($stmt->execute()) {
+          if ($stmt->execute()) {
 
-                $success = "Profile details updated successfully.";
+    $success = "Profile details updated successfully.";
 
-                // Update session name
-                $_SESSION["name"] = $name;
+    $_SESSION["name"] = $name;
 
-            } else {
-                $error = "Failed to update profile.";
-            }
+} else {
+
+    $error = "Database Error: " . $stmt->error;
+}
 
             $stmt->close();
 
@@ -567,9 +567,9 @@ if (!$user) {
         </li>
 
         <li>
-            <a href="logout.php">
-                🚪 Logout
-            </a>
+           <a href="logout.php" onclick="return confirm('Are you sure you want to logout?');">
+    🚪 Logout
+</a>
         </li>
 
     </ul>
