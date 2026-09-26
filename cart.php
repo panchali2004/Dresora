@@ -365,7 +365,7 @@
 
         <li>
 
-            <a href="cart.html">
+            <a href="cart.php">
 
                 Cart
 
