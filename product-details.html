@@ -334,7 +334,7 @@
         <ul>
 
             <li>
-                <a href="index.html">
+                <a href="index.php">
                     Home
                 </a>
             </li>
@@ -358,7 +358,7 @@
             </li>
 
             <li>
-                <a href="cart.html">
+                <a href="cart.php">
                     Cart
                     <span class="cart-count">0</span>
                 </a>
@@ -1208,127 +1208,157 @@ function addToCart() {
     const baseRentalPrice =
         product.price;
 
-    const totalPrice =
-        product.price;
+   
+    const quantity = 1;
 
 
     /* =========================
-       CART ITEM
+       SEND TO DATABASE
     ========================= */
 
-    
-const cartItem = {
+    const formData =
+        new FormData();
 
-    id: productId,
 
-    name: product.name,
+    formData.append(
+        "product_id",
+        productId
+    );
 
-    category: product.category,
+    formData.append(
+        "product_name",
+        product.name
+    );
 
-    price: product.price,
+    formData.append(
+        "category",
+        product.category
+    );
 
-    image: product.image,
+    formData.append(
+        "price",
+        product.price
+    );
 
-    size: size,
+    formData.append(
+        "image",
+        product.image
+    );
 
-    startDate: startDate,
+    formData.append(
+        "size",
+        size
+    );
 
-    expectedReturnDate: expectedReturnDate,
+    formData.append(
+        "start_date",
+        startDate
+    );
 
-    rentalDays: rentalDays,
+    formData.append(
+        "expected_return_date",
+        expectedReturnDate
+    );
 
-    allowedRentalDays: 5,
+    formData.append(
+        "rental_days",
+        rentalDays
+    );
 
-    baseRentalPrice: baseRentalPrice,
+    formData.append(
+        "allowed_rental_days",
+        5
+    );
 
-    lateFeePerDay: 500,
+    formData.append(
+        "base_rental_price",
+        baseRentalPrice
+    );
 
-    totalPrice: totalPrice,
+    formData.append(
+        "late_fee_per_day",
+        500
+    );
 
-    quantity: 1,
+    formData.append(
+        "quantity",
+        quantity
+    );
 
-    selected: true
-
-};
 
     /* =========================
-       GET CART
+       SEND REQUEST
     ========================= */
 
-    let cart =
-        JSON.parse(
-            localStorage.getItem("cart")
-        ) || [];
+    fetch("add_to_cart.php", {
 
+        method: "POST",
 
-    /* =========================
-       ADD ITEM
-    ========================= */
+        body: formData
 
-    /* =========================
-   CHECK EXISTING ITEM
-========================= */
+    })
 
-const existingItem =
-    cart.find(function(item) {
+    .then(function(response) {
 
-        return (
-            String(item.id) === String(cartItem.id) &&
-            item.size === cartItem.size &&
-            item.startDate === cartItem.startDate
+        return response.text();
+
+    })
+
+    .then(function(result) {
+
+        if (result.trim() === "success") {
+
+            updateCartCount();
+
+            alert(
+                product.name +
+                " has been added to your cart."
+            );
+
+        }
+
+        else {
+
+            alert(result);
+
+        }
+
+    })
+
+    .catch(function(error) {
+
+        console.error(error);
+
+        alert(
+            "Something went wrong while adding the item to the cart."
         );
 
     });
 
-
-/* =========================
-   INCREASE QUANTITY
-========================= */
-
-if (existingItem) {
-
-    existingItem.quantity =
-        Number(existingItem.quantity || 1) + 1;
-
-    existingItem.selected = true;
-
 }
 
 
-/* =========================
-   ADD NEW ITEM
-========================= */
+    
 
-else {
-
-    cart.push(cartItem);
-
-}
+    
 
 
-    /* =========================
-       SAVE CART
-    ========================= */
-
-    localStorage.setItem(
-        "cart",
-        JSON.stringify(cart)
-    );
+    
 
 
-    /* =========================
-       UPDATE COUNT
-    ========================= */
 
-    updateCartCount();
+   
 
 
-    alert(
-        product.name +
-        " has been added to your cart."
-    );
 
-}
+ 
+
+
+
+
+
+
+    
 
 
 /* =========================

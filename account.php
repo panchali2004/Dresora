@@ -1,3 +1,4 @@
+
 <?php
 
 session_start();
@@ -25,33 +26,42 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 LIMIT 1";
 
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
 
-        $result = $stmt->get_result();
+        if (!$stmt) {
 
-        if ($result->num_rows === 1) {
+            $message = "Database error. Please try again.";
+            $messageType = "error";
 
-            $user = $result->fetch_assoc();
+        } else {
 
-            if (password_verify($password, $user["password"])) {
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
 
-                // Store login information in session
-                $_SESSION["user_id"] = $user["user_id"];
-                $_SESSION["name"] = $user["name"];
-                $_SESSION["email"] = $user["email"];
-                $_SESSION["role"] = $user["role"];
+            $result = $stmt->get_result();
 
-                // Redirect according to role
-                if ($user["role"] === "admin") {
+            if ($result->num_rows === 1) {
 
-                    header("Location: admin/dashboard.php");
+                $user = $result->fetch_assoc();
+
+                if (password_verify($password, $user["password"])) {
+
+                    // Store login information in PHP session
+                    $_SESSION["user_id"] = $user["user_id"];
+                    $_SESSION["name"] = $user["name"];
+                    $_SESSION["email"] = $user["email"];
+                    $_SESSION["role"] = $user["role"];
+
+                    // Tell the home page to show login success message
+                    $_SESSION["login_success"] = true;
+
+                    // Go back to the home page
+                    header("Location: index.php");
                     exit;
 
                 } else {
 
-                    header("Location: customer/dashboard.php");
-                    exit;
+                    $message = "Incorrect email or password.";
+                    $messageType = "error";
                 }
 
             } else {
@@ -60,13 +70,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $messageType = "error";
             }
 
-        } else {
-
-            $message = "Incorrect email or password.";
-            $messageType = "error";
+            $stmt->close();
         }
-
-        $stmt->close();
     }
 }
 
@@ -114,7 +119,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <body>
 
-
 <!-- =========================
      NAVIGATION BAR
 ========================== -->
@@ -133,11 +137,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         </div>
 
-
         <ul>
 
             <li>
-                <a href="index.html">
+                <a href="index.php">
                     Home
                 </a>
             </li>
@@ -210,13 +213,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <?php endif; ?>
 
 
-
-
         <!-- LOGIN FORM -->
 
         <form method="POST"
               action="account.php">
-
 
             <div class="form-group">
 
@@ -336,7 +336,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <ul>
 
                 <li>
-                    <a href="index.html">
+                    <a href="index.php">
                         Home
                     </a>
                 </li>
@@ -360,7 +360,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 </li>
 
                 <li>
-                    <a href="cart.html">
+                    <a href="cart.php">
                         My Cart
                     </a>
                 </li>
@@ -488,3 +488,4 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 </body>
 
 </html>
+

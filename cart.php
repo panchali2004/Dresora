@@ -340,7 +340,7 @@
     <ul>
 
         <li>
-            <a href="index.html">
+            <a href="index.php">
                 Home
             </a>
         </li>

@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $email === "" ||
         $phone === "" ||
         $shipping_address === "" ||
-        $billing_address === "" ||
+       
         $password === "" ||
         $confirm_password === ""
     ) {
@@ -540,7 +540,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <nav>
 
-    <a href="index.html" class="logo">
+    <a href="index.php" class="logo">
 
         DRESORA
 
@@ -552,7 +552,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <ul>
 
         <li>
-            <a href="index.html">Home</a>
+            <a href="index.php">Home</a>
         </li>
 
         <li>

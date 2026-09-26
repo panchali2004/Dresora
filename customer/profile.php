@@ -448,6 +448,98 @@ if (!$user) {
             color: #666;
             margin-bottom: 6px;
         }
+        /* =========================
+   Logout Modal
+========================= */
+
+.logout-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background: rgba(0, 0, 0, 0.5);
+
+    justify-content: center;
+    align-items: center;
+
+    z-index: 9999;
+}
+
+.logout-box {
+    background: white;
+
+    width: 380px;
+
+    padding: 30px;
+
+    border-radius: 15px;
+
+    text-align: center;
+
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.logout-box h3 {
+    color: #5d405c;
+
+    font-size: 22px;
+
+    margin-bottom: 12px;
+}
+
+.logout-box p {
+    color: #666;
+
+    font-size: 14px;
+
+    margin-bottom: 25px;
+}
+
+.logout-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 12px;
+}
+
+.cancel-btn,
+.confirm-logout-btn {
+    padding: 11px 25px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+
+    cursor: pointer;
+
+    text-decoration: none;
+
+    border: none;
+}
+
+.cancel-btn {
+    background: #eeeeee;
+
+    color: #555;
+}
+
+.cancel-btn:hover {
+    background: #dddddd;
+}
+
+.confirm-logout-btn {
+    background: #8b5a83;
+
+    color: white;
+}
+
+.confirm-logout-btn:hover {
+    background: #6f4569;
+}
 
         /* =========================
            Responsive
@@ -518,11 +610,7 @@ if (!$user) {
 
     <ul>
 
-        <li>
-            <a href="dashboard.php">
-                🏠 Dashboard
-            </a>
-        </li>
+       
 
         <li>
             <a href="profile.php" class="active">
@@ -531,7 +619,7 @@ if (!$user) {
         </li>
 
         <li>
-            <a href="cart.php">
+            <a href="cart.html">
                 🛒 My Cart
             </a>
         </li>
@@ -567,7 +655,7 @@ if (!$user) {
         </li>
 
         <li>
-           <a href="logout.php" onclick="return confirm('Are you sure you want to logout?');">
+        <a href="#" onclick="openLogoutModal(); return false;">
     🚪 Logout
 </a>
         </li>
@@ -781,6 +869,33 @@ if (!$user) {
     </div>
 
 </div>
+<!-- Logout Confirmation Modal -->
+<div id="logoutModal" class="logout-modal">
+    <div class="logout-box">
+        <h3>Logout</h3>
+
+        <p>Are you sure you want to logout?</p>
+
+        <div class="logout-buttons">
+            <button onclick="closeLogoutModal()" class="cancel-btn">
+                Cancel
+            </button>
+
+            <a href="logout.php" class="confirm-logout-btn">
+                Logout
+            </a>
+        </div>
+    </div>
+</div>
 
 </body>
+<script>
+function openLogoutModal() {
+    document.getElementById("logoutModal").style.display = "flex";
+}
+
+function closeLogoutModal() {
+    document.getElementById("logoutModal").style.display = "none";
+}
+</script>
 </html>
