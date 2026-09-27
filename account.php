@@ -54,9 +54,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     // Tell the home page to show login success message
                     $_SESSION["login_success"] = true;
 
-                    // Go back to the home page
-                    header("Location: index.php");
-                    exit;
+                  if ($user["role"] === "admin") {
+
+    header("Location: admin/dashboard.php");
+    exit;
+
+} else {
+
+    $_SESSION["login_success"] = true;
+
+    header("Location: index.php");
+    exit;
+}
 
                 } else {
 
