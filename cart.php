@@ -1,321 +1,559 @@
+
+<?php
+
+session_start();
+
+/* ==========================================
+   BLOCK ADMIN FROM CART
+========================================== */
+
+if (isset($_SESSION["role"]) && $_SESSION["role"] === "admin") {
+    header("Location: admin/dashboard.php");
+    exit;
+}
+
+
+/* ==========================================
+   REQUIRE CUSTOMER LOGIN
+========================================== */
+
+if (!isset($_SESSION["user_id"])) {
+    header("Location: account.php");
+    exit;
+}
+
+
+require_once "config/database.php";
+
+$user_id = $_SESSION["user_id"];
+
+
+/* ==========================================
+   HANDLE QUANTITY UPDATE
+========================================== */
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+    $cart_item_id = intval($_POST["cart_item_id"] ?? 0);
+    $action = $_POST["action"] ?? "";
+
+    if ($cart_item_id > 0) {
+
+        /* =========================
+           INCREASE
+        ========================= */
+
+        if ($action === "increase") {
+
+            $sql = "UPDATE cart_items
+                    SET quantity = quantity + 1
+                    WHERE cart_item_id = ?
+                    AND user_id = ?";
+
+            $stmt = $conn->prepare($sql);
+
+            if ($stmt) {
+
+                $stmt->bind_param(
+                    "ii",
+                    $cart_item_id,
+                    $user_id
+                );
+
+                $stmt->execute();
+
+                $stmt->close();
+            }
+        }
+
+
+        /* =========================
+           DECREASE
+        ========================= */
+
+        elseif ($action === "decrease") {
+
+            /* First get current quantity */
+
+            $sql = "SELECT quantity
+                    FROM cart_items
+                    WHERE cart_item_id = ?
+                    AND user_id = ?";
+
+            $stmt = $conn->prepare($sql);
+
+            if ($stmt) {
+
+                $stmt->bind_param(
+                    "ii",
+                    $cart_item_id,
+                    $user_id
+                );
+
+                $stmt->execute();
+
+                $result = $stmt->get_result();
+
+                if ($result->num_rows === 1) {
+
+                    $item = $result->fetch_assoc();
+
+                    $quantity =
+                        intval($item["quantity"]);
+
+                    $stmt->close();
+
+
+                    if ($quantity <= 1) {
+
+                        /* Remove item */
+
+                        $delete_sql =
+                            "DELETE FROM cart_items
+                             WHERE cart_item_id = ?
+                             AND user_id = ?";
+
+                        $delete_stmt =
+                            $conn->prepare($delete_sql);
+
+                        if ($delete_stmt) {
+
+                            $delete_stmt->bind_param(
+                                "ii",
+                                $cart_item_id,
+                                $user_id
+                            );
+
+                            $delete_stmt->execute();
+
+                            $delete_stmt->close();
+                        }
+
+                    } else {
+
+                        /* Reduce quantity */
+
+                        $update_sql =
+                            "UPDATE cart_items
+                             SET quantity = quantity - 1
+                             WHERE cart_item_id = ?
+                             AND user_id = ?";
+
+                        $update_stmt =
+                            $conn->prepare($update_sql);
+
+                        if ($update_stmt) {
+
+                            $update_stmt->bind_param(
+                                "ii",
+                                $cart_item_id,
+                                $user_id
+                            );
+
+                            $update_stmt->execute();
+
+                            $update_stmt->close();
+                        }
+                    }
+                } else {
+
+                    $stmt->close();
+                }
+            }
+        }
+
+
+        /* =========================
+           TOGGLE SELECTED
+        ========================= */
+
+        elseif ($action === "toggle") {
+
+            $selected =
+                intval($_POST["selected"] ?? 0);
+
+            $sql =
+                "UPDATE cart_items
+                 SET selected = ?
+                 WHERE cart_item_id = ?
+                 AND user_id = ?";
+
+            $stmt = $conn->prepare($sql);
+
+            if ($stmt) {
+
+                $stmt->bind_param(
+                    "iii",
+                    $selected,
+                    $cart_item_id,
+                    $user_id
+                );
+
+                $stmt->execute();
+
+                $stmt->close();
+            }
+        }
+    }
+
+    /*
+       Redirect after POST.
+       This prevents duplicate form submission
+       when refreshing the page.
+    */
+
+    header("Location: cart.php");
+    exit;
+}
+
+
+/* ==========================================
+   GET CURRENT USER CART
+========================================== */
+
+$sql = "SELECT
+            cart_item_id,
+            product_id,
+            product_name,
+            category,
+            price,
+            image,
+            size,
+            start_date,
+            expected_return_date,
+            rental_days,
+            allowed_rental_days,
+            base_rental_price,
+            late_fee_per_day,
+            quantity,
+            selected
+        FROM cart_items
+        WHERE user_id = ?
+        ORDER BY created_at DESC";
+
+
+$stmt = $conn->prepare($sql);
+
+$cart_items = [];
+
+if ($stmt) {
+
+    $stmt->bind_param(
+        "i",
+        $user_id
+    );
+
+    $stmt->execute();
+
+    $result =
+        $stmt->get_result();
+
+    while ($row = $result->fetch_assoc()) {
+
+        $cart_items[] = $row;
+    }
+
+    $stmt->close();
+}
+
+
+/* ==========================================
+   CALCULATE SUMMARY
+========================================== */
+
+$totalItems = 0;
+$subtotal = 0;
+
+foreach ($cart_items as $item) {
+
+    if ((int)$item["selected"] === 1) {
+
+        $quantity =
+            (int)$item["quantity"];
+
+        $price =
+            (float)$item["price"];
+
+        $totalItems +=
+            $quantity;
+
+        $subtotal +=
+            $price * $quantity;
+    }
+}
+
+?>
+
 <!DOCTYPE html>
 
 <html lang="en">
 
 <head>
 
-```
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
 <title>Dresora - Shopping Cart</title>
 
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet"
+      href="style.css">
 
 <style>
 
-    .cart-page {
-        max-width: 1100px;
-        margin: auto;
-        padding: 70px 30px;
-    }
+.cart-page {
+    max-width: 1100px;
+    margin: auto;
+    padding: 70px 30px;
+}
 
-    .cart-page h1 {
-        color: #5d405c;
-        margin-bottom: 30px;
-    }
+.cart-page h1 {
+    color: #5d405c;
+    margin-bottom: 30px;
+}
+
+.cart-layout {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.cart-items {
+    flex: 1;
+}
+
+.cart-item {
+    display: flex;
+    gap: 20px;
+    background: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(120, 80, 110, 0.10);
+    transition: 0.3s;
+}
+
+.cart-item.unselected {
+    opacity: 0.55;
+}
+
+.cart-item img {
+    width: 130px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.cart-item-info {
+    flex: 1;
+}
+
+.cart-item-info h3 {
+    color: #5d405c;
+    margin: 0 0 10px;
+}
+
+.cart-item-info p {
+    color: #777078;
+    margin: 6px 0;
+}
+
+.cart-item-price {
+    color: #8b5a83;
+    font-weight: bold;
+    font-size: 18px;
+    margin-top: 10px;
+}
+
+
+/* =========================
+   CHECKBOX
+========================= */
+
+.select-item {
+    width: 22px;
+    height: 22px;
+    margin-top: 5px;
+    accent-color: #8b5a83;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+
+/* =========================
+   QUANTITY
+========================= */
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.quantity-control button {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #dcc6d8;
+    background: white;
+    color: #8b5a83;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.quantity-control button:hover {
+    background: #8b5a83;
+    color: white;
+}
+
+.quantity-number {
+    min-width: 25px;
+    text-align: center;
+    font-weight: bold;
+    color: #5d405c;
+}
+
+
+/* =========================
+   SUMMARY
+========================= */
+
+.cart-summary {
+    width: 320px;
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(120, 80, 110, 0.10);
+}
+
+.cart-summary h2 {
+    color: #5d405c;
+    margin-top: 0;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 15px 0;
+    color: #665966;
+}
+
+.summary-total {
+    border-top: 1px solid #dcc6d8;
+    padding-top: 15px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #5d405c;
+}
+
+.summary-total span {
+    color: #8b5a83;
+}
+
+
+/* =========================
+   CHECKOUT
+========================= */
+
+.checkout-btn {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    margin-top: 20px;
+    padding: 13px;
+    background: #8b5a83;
+    color: white;
+    border-radius: 25px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.checkout-btn:hover {
+    background: #6f4568;
+}
+
+
+/* =========================
+   CONTINUE SHOPPING
+========================= */
+
+.continue-shopping {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    color: #8b5a83;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+
+/* =========================
+   EMPTY CART
+========================= */
+
+.empty-cart {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(120, 80, 110, 0.10);
+}
+
+.empty-cart h2 {
+    color: #5d405c;
+}
+
+.empty-cart p {
+    color: #777078;
+}
+
+.shop-btn {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 12px 25px;
+    background: #8b5a83;
+    color: white;
+    text-decoration: none;
+    border-radius: 25px;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
 
     .cart-layout {
-        display: flex;
-        gap: 30px;
-        align-items: flex-start;
+        flex-direction: column;
     }
 
-    .cart-items {
-        flex: 1;
+    .cart-summary {
+        width: auto;
     }
 
     .cart-item {
-        display: flex;
-        gap: 20px;
-        background: white;
-        padding: 20px;
-        margin-bottom: 20px;
-        border-radius: 15px;
-        box-shadow: 0 5px 20px rgba(120, 80, 110, 0.10);
-        transition: 0.3s;
-    }
-
-    .cart-item.unselected {
-        opacity: 0.55;
+        flex-direction: column;
     }
 
     .cart-item img {
-        width: 130px;
-        height: 160px;
-        object-fit: cover;
-        border-radius: 10px;
+        width: 100%;
+        height: 300px;
     }
 
-    .cart-item-info {
-        flex: 1;
-    }
-
-    .cart-item-info h3 {
-        color: #5d405c;
-        margin: 0 0 10px;
-    }
-
-    .cart-item-info p {
-        color: #777078;
-        margin: 6px 0;
-    }
-
-    .cart-item-price {
-        color: #8b5a83;
-        font-weight: bold;
-        font-size: 18px;
-        margin-top: 10px;
-    }
-
-
-    /* =========================
-       CHECKBOX
-    ========================= */
-
-    .select-item {
-        width: 22px;
-        height: 22px;
-        margin-top: 5px;
-        accent-color: #8b5a83;
-        cursor: pointer;
-        flex-shrink: 0;
-    }
-
-    .select-label {
-        color: #5d405c;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-
-    /* =========================
-       QUANTITY
-    ========================= */
-
-    .quantity-control {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-top: 15px;
-    }
-
-    .quantity-control button {
-        width: 32px;
-        height: 32px;
-
-        border: 1px solid #dcc6d8;
-
-        background: white;
-        color: #8b5a83;
-
-        border-radius: 6px;
-
-        cursor: pointer;
-
-        font-size: 18px;
-        font-weight: bold;
-
-        transition: 0.2s;
-    }
-
-    .quantity-control button:hover {
-        background: #8b5a83;
-        color: white;
-    }
-
-    .quantity-number {
-        min-width: 25px;
-        text-align: center;
-
-        font-weight: bold;
-        color: #5d405c;
-    }
-
-
-    /* =========================
-       SUMMARY
-    ========================= */
-
-    .cart-summary {
-        width: 320px;
-
-        background: white;
-
-        padding: 25px;
-
-        border-radius: 15px;
-
-        box-shadow:
-            0 5px 20px
-            rgba(120, 80, 110, 0.10);
-    }
-
-    .cart-summary h2 {
-        color: #5d405c;
-        margin-top: 0;
-    }
-
-    .summary-row {
-        display: flex;
-        justify-content: space-between;
-
-        margin: 15px 0;
-
-        color: #665966;
-    }
-
-    .summary-total {
-        border-top: 1px solid #dcc6d8;
-
-        padding-top: 15px;
-
-        font-size: 20px;
-
-        font-weight: bold;
-
-        color: #5d405c;
-    }
-
-    .summary-total span {
-        color: #8b5a83;
-    }
-
-
-    /* =========================
-       CHECKOUT
-    ========================= */
-
-    .checkout-btn {
-        display: block;
-
-        text-align: center;
-
-        text-decoration: none;
-
-        margin-top: 20px;
-
-        padding: 13px;
-
-        background: #8b5a83;
-
-        color: white;
-
-        border-radius: 25px;
-
-        font-weight: bold;
-
-        transition: 0.3s;
-    }
-
-    .checkout-btn:hover {
-        background: #6f4568;
-    }
-
-
-    /* =========================
-       CONTINUE SHOPPING
-    ========================= */
-
-    .continue-shopping {
-        display: block;
-
-        text-align: center;
-
-        margin-top: 15px;
-
-        color: #8b5a83;
-
-        font-weight: bold;
-
-        text-decoration: none;
-    }
-
-
-    /* =========================
-       EMPTY CART
-    ========================= */
-
-    .empty-cart {
-        text-align: center;
-
-        padding: 60px 20px;
-
-        background: white;
-
-        border-radius: 15px;
-
-        box-shadow:
-            0 5px 20px
-            rgba(120, 80, 110, 0.10);
-    }
-
-    .empty-cart h2 {
-        color: #5d405c;
-    }
-
-    .empty-cart p {
-        color: #777078;
-    }
-
-    .shop-btn {
-        display: inline-block;
-
-        margin-top: 15px;
-
-        padding: 12px 25px;
-
-        background: #8b5a83;
-
-        color: white;
-
-        text-decoration: none;
-
-        border-radius: 25px;
-    }
-
-
-    /* =========================
-       RESPONSIVE
-    ========================= */
-
-    @media (max-width: 768px) {
-
-        .cart-layout {
-            flex-direction: column;
-        }
-
-        .cart-summary {
-            width: auto;
-        }
-
-        .cart-item {
-            flex-direction: column;
-        }
-
-        .cart-item img {
-            width: 100%;
-            height: 300px;
-        }
-
-    }
+}
 
 </style>
-```
 
 </head>
 
+
 <body>
+
 
 <!-- =========================
      HEADER
@@ -323,7 +561,6 @@
 
 <header>
 
-```
 <nav>
 
     <div class="logo">
@@ -370,7 +607,7 @@
                 Cart
 
                 <span class="cart-count">
-                    0
+                    <?php echo $totalItems; ?>
                 </span>
 
             </a>
@@ -380,9 +617,9 @@
     </ul>
 
 </nav>
-```
 
 </header>
+
 
 <!-- =========================
      MAIN
@@ -392,392 +629,131 @@
 
 <section class="cart-page">
 
-```
 <h1>
     Shopping Cart
 </h1>
 
 
-<!-- =========================
-     EMPTY CART
-========================= -->
-
-<div id="emptyCart"
-     class="empty-cart">
-
-    <h2>
-        Your cart is empty
-    </h2>
-
-    <p>
-        You haven't added any dresses
-        to your cart yet.
-    </p>
-
-    <a href="products.html"
-       class="shop-btn">
-
-        Continue Shopping
-
-    </a>
-
-</div>
-
-
-<!-- =========================
-     CART LAYOUT
-========================= -->
-
-<div id="cartLayout"
-     class="cart-layout"
-     style="display:none;">
-
+<?php if (count($cart_items) === 0): ?>
 
     <!-- =========================
-         CART ITEMS
+         EMPTY CART
     ========================= -->
 
-    <div id="cartItems"
-         class="cart-items">
-    </div>
-
-
-    <!-- =========================
-         ORDER SUMMARY
-    ========================= -->
-
-    <div class="cart-summary">
-
+    <div class="empty-cart">
 
         <h2>
-            Order Summary
+            Your cart is empty
         </h2>
 
-
-        <div class="summary-row">
-
-            <span>
-                Selected Items
-            </span>
-
-            <span id="totalItems">
-                0
-            </span>
-
-        </div>
-
-
-        <div class="summary-row">
-
-            <span>
-                Subtotal
-            </span>
-
-            <span>
-
-                Rs.
-                <span id="subtotal">
-                    0
-                </span>
-
-            </span>
-
-        </div>
-
-
-        <div class="summary-row summary-total">
-
-            <span>
-                Total
-            </span>
-
-            <span>
-
-                Rs.
-                <span id="totalPrice">
-                    0
-                </span>
-
-            </span>
-
-        </div>
-
-
-        <a href="checkout.html"
-           class="checkout-btn">
-
-            Proceed to Checkout
-
-        </a>
-
+        <p>
+            You haven't added any dresses
+            to your cart yet.
+        </p>
 
         <a href="products.html"
-           class="continue-shopping">
+           class="shop-btn">
 
-            ← Continue Shopping
+            Continue Shopping
 
         </a>
 
     </div>
 
-</div>
-```
 
-</section>
+<?php else: ?>
 
-</main>
 
-<!-- =========================
-     FOOTER
-========================= -->
+    <!-- =========================
+         CART LAYOUT
+    ========================= -->
 
-<footer>
+    <div class="cart-layout">
 
-```
-<div class="footer-bottom">
 
-    <p style="text-align:center;">
+        <!-- =========================
+             CART ITEMS
+        ========================= -->
 
-        © 2026 Dresora.
-        All Rights Reserved.
+        <div class="cart-items">
 
-    </p>
 
-</div>
-```
+        <?php foreach ($cart_items as $item): ?>
 
-</footer>
+            <?php
 
-<script>
+            $quantity =
+                (int)$item["quantity"];
 
+            $price =
+                (float)$item["price"];
 
-/* ==========================================
-   GET CART FROM LOCAL STORAGE
-========================================== */
+            $itemTotal =
+                $price * $quantity;
 
-function getCart() {
+            $selected =
+                (int)$item["selected"] === 1;
 
-    return JSON.parse(
-        localStorage.getItem("cart")
-    ) || [];
+            ?>
 
-}
 
+            <div class="cart-item
+                <?php echo !$selected ? "unselected" : ""; ?>">
 
-/* ==========================================
-   SAVE CART
-========================================== */
 
-function saveCart(cart) {
+                <!-- =========================
+                     SELECT CHECKBOX
+                ========================= -->
 
-    localStorage.setItem(
-        "cart",
-        JSON.stringify(cart)
-    );
+                <form method="POST">
 
-}
+                    <input
+                        type="hidden"
+                        name="cart_item_id"
+                        value="<?php echo $item["cart_item_id"]; ?>">
 
+                    <input
+                        type="hidden"
+                        name="action"
+                        value="toggle">
 
-/* ==========================================
-   DISPLAY CART
-========================================== */
+                    <input
+                        type="hidden"
+                        name="selected"
+                        value="<?php echo $selected ? 0 : 1; ?>">
 
-function displayCart() {
+                    <input
+                        type="checkbox"
+                        class="select-item"
+                        <?php echo $selected ? "checked" : ""; ?>
+                        onchange="this.form.submit()"
+                        title="Select this item">
 
-    let cart = getCart();
+                </form>
 
 
-    const emptyCart =
-        document.getElementById(
-            "emptyCart"
-        );
-
-
-    const cartLayout =
-        document.getElementById(
-            "cartLayout"
-        );
-
-
-    const cartItems =
-        document.getElementById(
-            "cartItems"
-        );
-
-
-    /* ==========================================
-       CHECK WHETHER CART IS EMPTY
-    ========================================== */
-
-    if (cart.length === 0) {
-
-        emptyCart.style.display =
-            "block";
-
-        cartLayout.style.display =
-            "none";
-
-        updateCartCount();
-
-        return;
-
-    }
-
-
-    /* ==========================================
-       SHOW CART
-    ========================================== */
-
-    emptyCart.style.display =
-        "none";
-
-    cartLayout.style.display =
-        "flex";
-
-
-    cartItems.innerHTML = "";
-
-
-    let subtotal = 0;
-
-    let totalQuantity = 0;
-
-
-    /* ==========================================
-       DISPLAY EACH CART ITEM
-    ========================================== */
-
-    cart.forEach(
-        function(item, index) {
-
-
-            /* ==================================
-               OLD CART ITEMS
-            ================================== */
-
-            if (
-                item.quantity === undefined ||
-                item.quantity === null
-            ) {
-
-                item.quantity = 1;
-
-            }
-
-
-            /* ==================================
-               OLD CART ITEMS
-               ARE SELECTED BY DEFAULT
-            ================================== */
-
-            if (
-                item.selected === undefined
-            ) {
-
-                item.selected = true;
-
-            }
-
-
-            const quantity =
-                Number(item.quantity);
-
-
-            /* ==================================
-               UNIT PRICE
-
-               totalPrice already represents
-               the rental price for 5 days.
-            ================================== */
-
-            const unitPrice =
-                Number(
-                    String(
-                        item.totalPrice ||
-                        item.price ||
-                        "0"
-                    ).replace(/,/g, "")
-                );
-
-
-            const itemTotal =
-                unitPrice * quantity;
-
-
-            /* ==================================
-               ONLY SELECTED ITEMS COUNT
-            ================================== */
-
-            if (item.selected) {
-
-                subtotal += itemTotal;
-
-                totalQuantity += quantity;
-
-            }
-
-
-            /* ==================================
-               CREATE CART ID
-            ================================== */
-
-            if (!item.cartId) {
-
-                item.cartId =
-                    Date.now() +
-                    "-" +
-                    index;
-
-            }
-
-
-            /* ==================================
-               CREATE CART ITEM
-            ================================== */
-
-            const itemDiv =
-                document.createElement(
-                    "div"
-                );
-
-
-            itemDiv.className =
-                "cart-item";
-
-
-            if (!item.selected) {
-
-                itemDiv.classList.add(
-                    "unselected"
-                );
-
-            }
-
-
-            itemDiv.innerHTML = `
-
-                <!-- CHECKBOX -->
-
-                <input
-                    type="checkbox"
-                    class="select-item"
-                    ${item.selected ? "checked" : ""}
-                    onchange="toggleItem('${item.cartId}')"
-                    title="Select this item"
-                >
-
+                <!-- =========================
+                     IMAGE
+                ========================= -->
 
                 <img
-                    src="${item.image}"
-                    alt="${item.name}"
-                >
+                    src="<?php echo htmlspecialchars($item["image"]); ?>"
+                    alt="<?php echo htmlspecialchars($item["product_name"]); ?>">
 
+
+                <!-- =========================
+                     INFORMATION
+                ========================= -->
 
                 <div class="cart-item-info">
 
 
                     <h3>
-                        ${item.name}
+                        <?php
+                        echo htmlspecialchars(
+                            $item["product_name"]
+                        );
+                        ?>
                     </h3>
 
 
@@ -787,7 +763,11 @@ function displayCart() {
                             Category:
                         </strong>
 
-                        ${item.category || "Dress"}
+                        <?php
+                        echo htmlspecialchars(
+                            $item["category"]
+                        );
+                        ?>
 
                     </p>
 
@@ -798,7 +778,11 @@ function displayCart() {
                             Size:
                         </strong>
 
-                        ${item.size || "N/A"}
+                        <?php
+                        echo htmlspecialchars(
+                            $item["size"]
+                        );
+                        ?>
 
                     </p>
 
@@ -809,7 +793,11 @@ function displayCart() {
                             Rental Start:
                         </strong>
 
-                        ${item.startDate || "N/A"}
+                        <?php
+                        echo htmlspecialchars(
+                            $item["start_date"]
+                        );
+                        ?>
 
                     </p>
 
@@ -820,11 +808,11 @@ function displayCart() {
                             Expected Return:
                         </strong>
 
-                        ${
-                            item.expectedReturnDate ||
-                            item.endDate ||
-                            "N/A"
-                        }
+                        <?php
+                        echo htmlspecialchars(
+                            $item["expected_return_date"]
+                        );
+                        ?>
 
                     </p>
 
@@ -835,7 +823,12 @@ function displayCart() {
                             Rental Period:
                         </strong>
 
-                        ${item.rentalDays || 5}
+                        <?php
+                        echo htmlspecialchars(
+                            $item["rental_days"]
+                        );
+                        ?>
+
                         days
 
                     </p>
@@ -844,37 +837,79 @@ function displayCart() {
                     <div class="cart-item-price">
 
                         Rs.
-                        ${itemTotal.toLocaleString()}
+
+                        <?php
+                        echo number_format(
+                            $itemTotal,
+                            2
+                        );
+                        ?>
 
                     </div>
 
 
-                    <!-- QUANTITY -->
+                    <!-- =========================
+                         QUANTITY
+                    ========================= -->
 
                     <div class="quantity-control">
 
 
-                        <button
-                            onclick="decreaseQuantity('${item.cartId}')">
+                        <!-- DECREASE -->
 
-                            −
+                        <form method="POST">
 
-                        </button>
+                            <input
+                                type="hidden"
+                                name="cart_item_id"
+                                value="<?php echo $item["cart_item_id"]; ?>">
+
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="decrease">
+
+                            <button
+                                type="submit">
+
+                                −
+
+                            </button>
+
+                        </form>
 
 
                         <span class="quantity-number">
 
-                            ${quantity}
+                            <?php
+                            echo $quantity;
+                            ?>
 
                         </span>
 
 
-                        <button
-                            onclick="increaseQuantity('${item.cartId}')">
+                        <!-- INCREASE -->
 
-                            +
+                        <form method="POST">
 
-                        </button>
+                            <input
+                                type="hidden"
+                                name="cart_item_id"
+                                value="<?php echo $item["cart_item_id"]; ?>">
+
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="increase">
+
+                            <button
+                                type="submit">
+
+                                +
+
+                            </button>
+
+                        </form>
 
 
                     </div>
@@ -882,236 +917,146 @@ function displayCart() {
 
                 </div>
 
-            `;
 
+            </div>
 
-            cartItems.appendChild(
-                itemDiv
-            );
 
-        }
-    );
+        <?php endforeach; ?>
 
 
-    /* ==========================================
-       SAVE UPDATED CART
-    ========================================== */
+        </div>
 
-    saveCart(cart);
 
+        <!-- =========================
+             ORDER SUMMARY
+        ========================= -->
 
-    /* ==========================================
-       UPDATE SUMMARY
-    ========================================== */
+        <div class="cart-summary">
 
-    document.getElementById(
-        "totalItems"
-    ).textContent =
-        totalQuantity;
 
+            <h2>
+                Order Summary
+            </h2>
 
-    document.getElementById(
-        "subtotal"
-    ).textContent =
-        subtotal.toLocaleString();
 
+            <div class="summary-row">
 
-    document.getElementById(
-        "totalPrice"
-    ).textContent =
-        subtotal.toLocaleString();
+                <span>
+                    Selected Items
+                </span>
 
+                <span>
 
-    /* ==========================================
-       UPDATE NAVBAR COUNT
-    ========================================== */
+                    <?php
+                    echo $totalItems;
+                    ?>
 
-    updateCartCount();
+                </span>
 
-}
+            </div>
 
 
-/* ==========================================
-   CHECK / UNCHECK ITEM
-========================================== */
+            <div class="summary-row">
 
-function toggleItem(cartId) {
+                <span>
+                    Subtotal
+                </span>
 
-    let cart = getCart();
+                <span>
 
+                    Rs.
 
-    const item =
-        cart.find(
-            function(item) {
-
-                return item.cartId === cartId;
-
-            }
-        );
-
-
-    if (item) {
-
-        item.selected =
-            !item.selected;
-
-    }
-
-
-    saveCart(cart);
-
-
-    displayCart();
-
-}
-
-
-/* ==========================================
-   INCREASE QUANTITY
-========================================== */
-
-function increaseQuantity(cartId) {
-
-    let cart = getCart();
-
-
-    const item =
-        cart.find(
-            function(item) {
-
-                return item.cartId === cartId;
-
-            }
-        );
-
-
-    if (item) {
-
-        item.quantity =
-            Number(item.quantity || 1) + 1;
-
-    }
-
-
-    saveCart(cart);
-
-
-    displayCart();
-
-}
-
-
-/* ==========================================
-   DECREASE QUANTITY
-========================================== */
-
-function decreaseQuantity(cartId) {
-
-    let cart = getCart();
-
-
-    const item =
-        cart.find(
-            function(item) {
-
-                return item.cartId === cartId;
-
-            }
-        );
-
-
-    if (item) {
-
-        item.quantity =
-            Number(item.quantity || 1) - 1;
-
-
-        /* ================================
-           REMOVE WHEN QUANTITY = 0
-        ================================= */
-
-        if (item.quantity <= 0) {
-
-            cart =
-                cart.filter(
-                    function(cartItem) {
-
-                        return (
-                            cartItem.cartId !==
-                            cartId
-                        );
-
-                    }
-                );
-
-        }
-
-    }
-
-
-    saveCart(cart);
-
-
-    displayCart();
-
-}
-
-
-/* ==========================================
-   UPDATE CART BADGE
-========================================== */
-
-function updateCartCount() {
-
-    const cart = getCart();
-
-
-    let totalQuantity = 0;
-
-
-    cart.forEach(
-        function(item) {
-
-            /* Only selected items */
-
-            if (
-                item.selected !== false
-            ) {
-
-                totalQuantity +=
-                    Number(
-                        item.quantity || 1
+                    <?php
+                    echo number_format(
+                        $subtotal,
+                        2
                     );
+                    ?>
 
-            }
+                </span>
 
-        }
-    );
-
-
-    document.querySelectorAll(
-        ".cart-count"
-    ).forEach(
-        function(count) {
-
-            count.textContent =
-                totalQuantity;
-
-        }
-    );
-
-}
+            </div>
 
 
-/* ==========================================
-   INITIAL DISPLAY
-========================================== */
+            <div class="summary-row summary-total">
 
-displayCart();
+                <span>
+                    Total
+                </span>
+
+                <span>
+
+                    Rs.
+
+                    <?php
+                    echo number_format(
+                        $subtotal,
+                        2
+                    );
+                    ?>
+
+                </span>
+
+            </div>
 
 
-</script>
+            <a href="checkout.html"
+               class="checkout-btn">
+
+                Proceed to Checkout
+
+            </a>
+
+
+            <a href="products.html"
+               class="continue-shopping">
+
+                ← Continue Shopping
+
+            </a>
+
+
+        </div>
+
+
+    </div>
+
+
+<?php endif; ?>
+
+
+</section>
+
+</main>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+<div class="footer-bottom">
+
+    <p style="text-align:center;">
+
+        © 2026 Dresora.
+        All Rights Reserved.
+
+    </p>
+
+</div>
+
+</footer>
+
 
 </body>
 
 </html>
+
+<?php
+
+$conn->close();
+
+?>
+

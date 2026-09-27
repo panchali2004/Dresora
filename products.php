@@ -1,3 +1,80 @@
+<?php
+
+session_start();
+
+require_once "config/database.php";
+
+/* =========================
+   LOAD ADMIN ADDED DRESSES
+========================= */
+
+$dbProducts = [];
+
+$sql = "SELECT 
+            d.dress_id,
+            d.dress_name,
+            d.description,
+            d.size,
+            d.colour,
+            d.rental_price,
+            d.stock_quantity,
+            d.image_url,
+            c.category_name
+        FROM dresses d
+        LEFT JOIN categories c
+            ON d.category_id = c.category_id
+        ORDER BY d.created_at DESC";
+
+$result = $conn->query($sql);
+
+if ($result) {
+
+    while ($row = $result->fetch_assoc()) {
+        $dbProducts[] = $row;
+    }
+
+}
+
+
+/* =========================
+   CART COUNT
+========================= */
+
+$totalCartItems = 0;
+
+if (isset($_SESSION["user_id"]) && $_SESSION["role"] !== "admin") {
+
+    $user_id = $_SESSION["user_id"];
+
+    $cartSql = "SELECT COALESCE(SUM(quantity), 0) AS total
+                FROM cart_items
+                WHERE user_id = ?";
+
+    $cartStmt = $conn->prepare($cartSql);
+
+    if ($cartStmt) {
+
+        $cartStmt->bind_param("i", $user_id);
+        $cartStmt->execute();
+
+        $cartResult = $cartStmt->get_result();
+
+        if ($cartRow = $cartResult->fetch_assoc()) {
+            $totalCartItems = (int)$cartRow["total"];
+        }
+
+        $cartStmt->close();
+    }
+}
+
+?>
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 
