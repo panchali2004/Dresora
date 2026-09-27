@@ -73,11 +73,6 @@ if (isset($_SESSION["user_id"]) && $_SESSION["role"] !== "admin") {
 
 <html lang="en">
 
-
-
-<!DOCTYPE html>
-<html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -424,7 +419,7 @@ if (isset($_SESSION["user_id"]) && $_SESSION["role"] !== "admin") {
         </li>
 
         <li>
-            <a href="/Dresora/products.html">
+            <a href="/Dresora/products.php">
                 Shop
             </a>
         </li>
@@ -444,7 +439,9 @@ if (isset($_SESSION["user_id"]) && $_SESSION["role"] !== "admin") {
         <li>
             <a href="/Dresora/cart.php">
                 Cart
-                <span class="cart-count">0</span>
+                <span class="cart-count">
+    <?php echo $totalCartItems; ?>
+</span>
             </a>
         </li>
 
@@ -1892,6 +1889,107 @@ if (isset($_SESSION["user_id"]) && $_SESSION["role"] !== "admin") {
 
         </div>
 
+<?php if (!empty($dbProducts)): ?>
+
+
+<!-- =========================
+     ADMIN ADDED DRESSES
+========================= -->
+
+<?php foreach ($dbProducts as $dress): ?>
+
+    <?php
+
+    $categoryName = strtolower(
+        trim($dress["category_name"] ?? "")
+    );
+
+    /*
+     * Convert database category name
+     * into filter value
+     *
+     * Party Dress   -> party
+     * Wedding Dress -> wedding
+     */
+
+    $categoryValue = str_replace(
+        " dress",
+        "",
+        $categoryName
+    );
+
+    $image = trim($dress["image_url"] ?? "");
+    <img
+    src="<?php echo htmlspecialchars($image); ?>"
+    alt="<?php echo htmlspecialchars($dress["dress_name"]); ?>"
+>
+
+    /*
+     * If admin entered an empty image,
+     * use a simple fallback image.
+     */
+
+    if ($image === "") {
+        $image = "images/no-image.jpg";
+    }
+
+    ?>
+
+    <div class="product-card"
+         data-category="<?php echo htmlspecialchars($categoryValue); ?>"
+         data-name="<?php echo htmlspecialchars($dress["dress_name"]); ?>"
+         data-price="<?php echo (float)$dress["rental_price"]; ?>">
+
+        <div class="product-image">
+
+            <img
+                src="<?php echo htmlspecialchars($image); ?>"
+                alt="<?php echo htmlspecialchars($dress["dress_name"]); ?>"
+                onerror="this.src='images/no-image.jpg';"
+            >
+
+        </div>
+
+        <div class="product-info">
+
+            <span class="product-category">
+                <?php echo htmlspecialchars($dress["category_name"]); ?>
+            </span>
+
+            <h3>
+                <?php echo htmlspecialchars($dress["dress_name"]); ?>
+            </h3>
+
+            <p class="product-price">
+                Rs.
+                <?php echo number_format((float)$dress["rental_price"], 2); ?>
+                <span>/ day</span>
+            </p>
+
+            <a
+                href="product-details.php?id=<?php echo (int)$dress["dress_id"]; ?>"
+                class="product-btn"
+            >
+                View Details
+            </a>
+
+        </div>
+
+    </div>
+
+<?php endforeach; ?>
+
+
+<?php endif; ?>
+
+<!-- NO PRODUCTS MESSAGE -->
+
+<p
+    class="no-products"
+    id="noProducts"
+>
+    No dresses found.
+</p>
 
 
         <!-- NO PRODUCTS MESSAGE -->
@@ -1960,7 +2058,7 @@ if (isset($_SESSION["user_id"]) && $_SESSION["role"] !== "admin") {
                 </li>
 
                 <li>
-                    <a href="products.html">Shop</a>
+                    <a href="products.php">Shop</a>
                 </li>
 
                 <li>
@@ -2045,7 +2143,7 @@ if (isset($_SESSION["user_id"]) && $_SESSION["role"] !== "admin") {
             </p>
         </div>
 
-        <a href="products.html" class="footer-shop-btn">
+        <a href="products.php" class="footer-shop-btn">
             Explore Dresses →
         </a>
 
@@ -2290,45 +2388,11 @@ else if (selectedCategory) {
 }
 
 
-/* =========================
-   UPDATE CART COUNT
-========================= */
-
-function updateCartCount() {
-
-    const cart =
-        JSON.parse(
-            localStorage.getItem("cart")
-        ) || [];
 
 
-    /*
-     * Count quantities
-     * instead of counting cart rows
-     */
-
-    const totalQuantity =
-        cart.reduce(function(total, item) {
-
-            return total +
-                Number(item.quantity || 1);
-
-        }, 0);
 
 
-    document
-        .querySelectorAll(".cart-count")
-        .forEach(function(count) {
 
-            count.textContent =
-                totalQuantity;
-
-        });
-
-}
-
-
-updateCartCount();
 
 </script>
 

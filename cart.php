@@ -583,7 +583,7 @@ foreach ($cart_items as $item) {
         </li>
 
         <li>
-            <a href="products.html">
+            <a href="products.php">
                 Shop
             </a>
         </li>
@@ -651,7 +651,7 @@ foreach ($cart_items as $item) {
             to your cart yet.
         </p>
 
-        <a href="products.html"
+        <a href="products.php"
            class="shop-btn">
 
             Continue Shopping
@@ -1008,7 +1008,7 @@ foreach ($cart_items as $item) {
             </a>
 
 
-            <a href="products.html"
+            <a href="products.php"
                class="continue-shopping">
 
                 ← Continue Shopping

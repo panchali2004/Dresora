@@ -204,7 +204,7 @@ unset($_SESSION["login_success"]);
 
             <li>
 
-                <a href="products.html">
+                <a href="products.php">
                     Shop
                 </a>
 
@@ -312,7 +312,7 @@ unset($_SESSION["login_success"]);
         <div class="hero-buttons">
 
             <a
-                href="products.html"
+                href="products.php"
                 class="btn">
 
                 Browse Dresses
@@ -403,7 +403,7 @@ unset($_SESSION["login_success"]);
                 special occasions.
             </p>
 
-            <a href="products.html?category=wedding">
+            <a href="products.php?category=wedding">
                 View Wedding Dresses
             </a>
 
@@ -428,7 +428,7 @@ unset($_SESSION["login_success"]);
                 and celebrations.
             </p>
 
-            <a href="products.html?category=party">
+            <a href="products.php?category=party">
                 View Party Dresses
             </a>
 
@@ -452,7 +452,7 @@ unset($_SESSION["login_success"]);
                 Beautiful dresses for evening events.
             </p>
 
-            <a href="products.html?category=evening">
+            <a href="products.php?category=evening">
                 View Evening Dresses
             </a>
 
@@ -476,7 +476,7 @@ unset($_SESSION["login_success"]);
                 Comfortable dresses for everyday occasions.
             </p>
 
-            <a href="products.html?category=casual">
+            <a href="products.php?category=casual">
                 View Casual Dresses
             </a>
 
@@ -500,7 +500,7 @@ unset($_SESSION["login_success"]);
                 Modern dresses for parties and dinner events.
             </p>
 
-            <a href="products.html?category=cocktail">
+            <a href="products.php?category=cocktail">
                 View Cocktail Dresses
             </a>
 
@@ -524,7 +524,7 @@ unset($_SESSION["login_success"]);
                 Elegant outfits for formal occasions.
             </p>
 
-            <a href="products.html?category=formal">
+            <a href="products.php?category=formal">
                 View Formal Dresses
             </a>
 
@@ -859,7 +859,7 @@ unset($_SESSION["login_success"]);
 
 
         <a
-            href="products.html"
+            href="products.php"
             class="btn">
 
             Explore Collection
@@ -944,7 +944,7 @@ unset($_SESSION["login_success"]);
 
 
                 <li>
-                    <a href="products.html">
+                    <a href="products.php">
                         Shop
                     </a>
                 </li>
@@ -1102,7 +1102,7 @@ unset($_SESSION["login_success"]);
 
 
         <a
-            href="products.html"
+            href="products.php"
             class="footer-shop-btn">
 
             Explore Dresses →
@@ -1227,7 +1227,7 @@ function searchDresses() {
 
 
     window.location.href =
-        "products.html?search=" +
+        "products.php?search=" +
         encodeURIComponent(searchValue);
 
 }

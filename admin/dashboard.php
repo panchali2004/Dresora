@@ -330,7 +330,7 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "admin") {
 
             <!-- SHOP -->
 
-            <a href="../products.html" class="card website-card">
+            <a href="../products.php" class="card website-card">
 
                 <h3>
                     👗 Shop

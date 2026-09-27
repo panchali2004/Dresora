@@ -556,7 +556,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </li>
 
         <li>
-            <a href="products.html">Shop</a>
+            <a href="products.php">Shop</a>
         </li>
 
         <li>

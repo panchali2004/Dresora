@@ -155,7 +155,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </li>
 
             <li>
-                <a href="products.html">
+                <a href="products.php">
                     Shop
                 </a>
             </li>
@@ -351,7 +351,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 </li>
 
                 <li>
-                    <a href="products.html">
+                    <a href="products.php">
                         Shop
                     </a>
                 </li>
@@ -468,7 +468,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         </div>
 
-        <a href="products.html"
+        <a href="products.php"
            class="footer-shop-btn">
 
             Explore Dresses →
