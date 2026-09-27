@@ -238,7 +238,7 @@ unset($_SESSION["login_success"]);
                 <?php if ($loggedIn): ?>
 
                     <a href="<?php echo htmlspecialchars($dashboard); ?>">
-                        Dashboard
+                        Account
                     </a>
 
                 <?php else: ?>

@@ -27,56 +27,163 @@ $error = "";
 /* =========================
    Update Profile
 ========================= */
+
+      
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    $name = trim($_POST["name"]);
-    $phone = trim($_POST["phone"]);
-    $shipping_address = trim($_POST["shipping_address"]);
-    $billing_address = trim($_POST["billing_address"]);
+    /* =========================
+       Change Password
+    ========================= */
 
-    if ($name === "") {
-        $error = "Please enter your name.";
-    } else {
+    if (isset($_POST["change_password"])) {
 
-        $sql = "UPDATE users
-                SET name = ?,
-                    phone = ?,
-                    shipping_address = ?,
-                    billing_address = ?
-                WHERE user_id = ?";
+        $current_password = $_POST["current_password"];
+        $new_password = $_POST["new_password"];
+        $confirm_password = $_POST["confirm_password"];
 
-        $stmt = $conn->prepare($sql);
+        if (
+            $current_password === "" ||
+            $new_password === "" ||
+            $confirm_password === ""
+        ) {
 
-        if ($stmt) {
+            $error = "Please fill in all password fields.";
 
-            $stmt->bind_param(
-                "ssssi",
-                $name,
-                $phone,
-                $shipping_address,
-                $billing_address,
-                $user_id
-            );
+        } elseif ($new_password !== $confirm_password) {
 
-          if ($stmt->execute()) {
+            $error = "New passwords do not match.";
 
-    $success = "Profile details updated successfully.";
+        } elseif (strlen($new_password) < 8) {
 
-    $_SESSION["name"] = $name;
+            $error = "Password must contain at least 8 characters.";
 
-} else {
+        } else {
 
-    $error = "Database Error: " . $stmt->error;
-}
+            /* Get current hashed password */
+
+            $sql = "SELECT password
+                    FROM users
+                    WHERE user_id = ?";
+
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+            $user_data = $result->fetch_assoc();
 
             $stmt->close();
 
+
+            if (!$user_data) {
+
+                $error = "User account not found.";
+
+            } elseif (
+                !password_verify(
+                    $current_password,
+                    $user_data["password"]
+                )
+            ) {
+
+                $error = "Current password is incorrect.";
+
+            } else {
+
+                /* Create new hashed password */
+
+                $hashed_password = password_hash(
+                    $new_password,
+                    PASSWORD_DEFAULT
+                );
+
+
+                /* Update password */
+
+                $sql = "UPDATE users
+                        SET password = ?
+                        WHERE user_id = ?";
+
+                $stmt = $conn->prepare($sql);
+
+                $stmt->bind_param(
+                    "si",
+                    $hashed_password,
+                    $user_id
+                );
+
+
+                if ($stmt->execute()) {
+
+                    $success = "Password changed successfully.";
+
+                } else {
+
+                    $error = "Failed to change password.";
+                }
+
+                $stmt->close();
+            }
+        }
+
+
+    } else {
+
+        /* =========================
+           Update Profile
+        ========================= */
+
+        $name = trim($_POST["name"]);
+        $phone = trim($_POST["phone"]);
+        $shipping_address = trim($_POST["shipping_address"]);
+        $billing_address = trim($_POST["billing_address"]);
+
+        if ($name === "") {
+
+            $error = "Please enter your name.";
+
         } else {
-            $error = "Database error.";
+
+            $sql = "UPDATE users
+                    SET name = ?,
+                        phone = ?,
+                        shipping_address = ?,
+                        billing_address = ?
+                    WHERE user_id = ?";
+
+            $stmt = $conn->prepare($sql);
+
+            if ($stmt) {
+
+                $stmt->bind_param(
+                    "ssssi",
+                    $name,
+                    $phone,
+                    $shipping_address,
+                    $billing_address,
+                    $user_id
+                );
+
+                if ($stmt->execute()) {
+
+                    $success = "Profile details updated successfully.";
+
+                    $_SESSION["name"] = $name;
+
+                } else {
+
+                    $error = "Database Error: " . $stmt->error;
+                }
+
+                $stmt->close();
+
+            } else {
+
+                $error = "Database error.";
+            }
         }
     }
 }
-
 /* =========================
    Get User Details
 ========================= */
@@ -650,7 +757,7 @@ if (!$user) {
 
         <li>
             <a href="settings.php">
-                ⚙️ Settings
+                ⚙️ Change Password
             </a>
         </li>
 
@@ -838,8 +945,7 @@ if (!$user) {
 
                 </form>
 
-
-                <!-- Account Information -->
+          <!-- Account Information -->
 
                 <div class="account-info">
 
