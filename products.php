@@ -1891,94 +1891,69 @@ if (isset($_SESSION["user_id"]) && $_SESSION["role"] !== "admin") {
 
 <?php if (!empty($dbProducts)): ?>
 
-
-<!-- =========================
-     ADMIN ADDED DRESSES
-========================= -->
-
 <?php foreach ($dbProducts as $dress): ?>
 
-    <?php
+<?php
+    $categoryName = trim($dress["category_name"] ?? "");
+    $categoryValue = strtolower($categoryName);
 
-    $categoryName = strtolower(
-        trim($dress["category_name"] ?? "")
-    );
-
-    /*
-     * Convert database category name
-     * into filter value
-     *
-     * Party Dress   -> party
-     * Wedding Dress -> wedding
-     */
-
-    $categoryValue = str_replace(
-        " dress",
-        "",
-        $categoryName
-    );
+    if (str_ends_with($categoryValue, " dress")) {
+        $categoryValue = substr($categoryValue, 0, -6);
+    }
 
     $image = trim($dress["image_url"] ?? "");
-    <img
-    src="<?php echo htmlspecialchars($image); ?>"
-    alt="<?php echo htmlspecialchars($dress["dress_name"]); ?>"
->
-
-    /*
-     * If admin entered an empty image,
-     * use a simple fallback image.
-     */
 
     if ($image === "") {
         $image = "images/no-image.jpg";
+    
     }
+    
+?>
 
-    ?>
 
-    <div class="product-card"
-         data-category="<?php echo htmlspecialchars($categoryValue); ?>"
-         data-name="<?php echo htmlspecialchars($dress["dress_name"]); ?>"
-         data-price="<?php echo (float)$dress["rental_price"]; ?>">
+<div class="product-card"
+     data-category="<?php echo htmlspecialchars($categoryValue); ?>"
+     data-name="<?php echo htmlspecialchars($dress["dress_name"] ?? ""); ?>"
+     data-price="<?php echo (float)($dress["rental_price"] ?? 0); ?>">
 
-        <div class="product-image">
+    <div class="product-image">
 
-            <img
-                src="<?php echo htmlspecialchars($image); ?>"
-                alt="<?php echo htmlspecialchars($dress["dress_name"]); ?>"
-                onerror="this.src='images/no-image.jpg';"
-            >
-
-        </div>
-
-        <div class="product-info">
-
-            <span class="product-category">
-                <?php echo htmlspecialchars($dress["category_name"]); ?>
-            </span>
-
-            <h3>
-                <?php echo htmlspecialchars($dress["dress_name"]); ?>
-            </h3>
-
-            <p class="product-price">
-                Rs.
-                <?php echo number_format((float)$dress["rental_price"], 2); ?>
-                <span>/ day</span>
-            </p>
-
-            <a
-                href="product-details.php?id=<?php echo (int)$dress["dress_id"]; ?>"
-                class="product-btn"
-            >
-                View Details
-            </a>
-
-        </div>
+        <img
+            src="<?php echo htmlspecialchars($image); ?>"
+            alt="<?php echo htmlspecialchars($dress["dress_name"] ?? "Dress"); ?>"
+            onerror="this.onerror=null; this.src='images/no-image.jpg';"
+        >
 
     </div>
 
-<?php endforeach; ?>
+    <div class="product-info">
 
+        <span class="product-category">
+            <?php echo htmlspecialchars($categoryName); ?>
+        </span>
+
+        <h3>
+            <?php echo htmlspecialchars($dress["dress_name"] ?? ""); ?>
+        </h3>
+
+        <p class="product-price">
+            Rs.
+            <?php echo number_format((float)($dress["rental_price"] ?? 0), 2); ?>
+            <span>/ day</span>
+        </p>
+
+        <a
+            href="product-details.php?dress_id=<?php echo (int)$dress["dress_id"]; ?>"
+            class="product-btn"
+        >
+            View Details
+        </a>
+
+    </div>
+
+</div>
+
+<?php endforeach; ?>
 
 <?php endif; ?>
 

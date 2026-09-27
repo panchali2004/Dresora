@@ -381,8 +381,7 @@ $dresses = $conn->query(
     <div class="form-box">
 
         <h2>Add New Dress</h2>
-
-        <form method="POST">
+<form method="POST" enctype="multipart/form-data">
 
             <div class="form-grid">
 
@@ -518,15 +517,15 @@ $dresses = $conn->query(
                 <div class="form-group full">
 
                     <label>
-                        Image URL
+                       Dress Image
                     </label>
 
-                    <input
-                        type="text"
-                        name="image_url"
-                        placeholder="images/dress1.jpg"
-                    >
-
+                    
+                     <input
+    type="file"
+    name="dress_image"
+    accept="image/*"
+>
                 </div>
 
             </div>
