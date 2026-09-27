@@ -54,7 +54,43 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $colour = trim($_POST["colour"] ?? "");
     $rental_price = floatval($_POST["rental_price"] ?? 0);
     $stock_quantity = intval($_POST["stock_quantity"] ?? 0);
-    $image_url = trim($_POST["image_url"] ?? "");
+   $image_url = "";
+
+if (isset($_FILES["dress_image"]) && $_FILES["dress_image"]["error"] === UPLOAD_ERR_OK) {
+
+    $uploadDir = "../images/";
+
+    $fileName = $_FILES["dress_image"]["name"];
+    $tmpName = $_FILES["dress_image"]["tmp_name"];
+
+    $extension = strtolower(
+        pathinfo($fileName, PATHINFO_EXTENSION)
+    );
+
+    $allowedExtensions = ["jpg", "jpeg", "png", "webp"];
+
+    if (in_array($extension, $allowedExtensions)) {
+
+        $newFileName = uniqid("dress_", true) . "." . $extension;
+
+        $destination = $uploadDir . $newFileName;
+
+        if (move_uploaded_file($tmpName, $destination)) {
+
+            $image_url = "images/" . $newFileName;
+
+        } else {
+
+            $message = "Failed to upload image.";
+            $messageType = "error";
+        }
+
+    } else {
+
+        $message = "Only JPG, JPEG, PNG and WEBP images are allowed.";
+        $messageType = "error";
+    }
+}
 
 
     // Validation
