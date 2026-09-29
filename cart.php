@@ -999,14 +999,9 @@ foreach ($cart_items as $item) {
 
             </div>
 
-
-            <a href="checkout.html"
-               class="checkout-btn">
-
-                Proceed to Checkout
-
-            </a>
-
+<a href="checkout.php" class="checkout-btn">
+    Proceed to Checkout
+</a>
 
             <a href="products.php"
                class="continue-shopping">
