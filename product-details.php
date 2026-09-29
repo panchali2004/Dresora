@@ -905,6 +905,43 @@ const products = {
    GET PRODUCT ID
 ========================= */
 
+<?php
+require_once "config/database.php";
+
+$dbProduct = null;
+
+if (isset($_GET["db_id"])) {
+
+    $db_id = intval($_GET["db_id"]);
+
+    $sql = "SELECT
+                d.dress_id,
+                d.dress_name,
+                d.description,
+                d.size,
+                d.colour,
+                d.rental_price,
+                d.stock_quantity,
+                d.image_url,
+                c.category_name
+            FROM dresses d
+            LEFT JOIN categories c
+                ON d.category_id = c.category_id
+            WHERE d.dress_id = ?";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $db_id);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $dbProduct = $result->fetch_assoc();
+    }
+
+    $stmt->close();
+}
+?>
 const urlParams =
     new URLSearchParams(
         window.location.search
@@ -913,8 +950,31 @@ const urlParams =
 const productId =
     urlParams.get("id");
 
-const product =
-    products[productId];
+const dbProduct =
+    <?php echo json_encode($dbProduct); ?>;
+
+let product = null;
+
+if (dbProduct) {
+
+    product = {
+        id: dbProduct.dress_id,
+        name: dbProduct.dress_name,
+        category: dbProduct.category_name || "Dress",
+        price: Number(dbProduct.rental_price),
+        image: dbProduct.image_url || "images/no-image.jpg",
+        images: [
+            dbProduct.image_url || "images/no-image.jpg"
+        ],
+        description: dbProduct.description || "",
+        size: dbProduct.size || ""
+    };
+
+} else if (productId) {
+
+    product = products[productId];
+
+}
 
 
 /* =========================
@@ -1220,10 +1280,10 @@ function addToCart() {
         new FormData();
 
 
-    formData.append(
-        "product_id",
-        productId
-    );
+   formData.append(
+    "product_id",
+    product.id
+);
 
     formData.append(
         "product_name",

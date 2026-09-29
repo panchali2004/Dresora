@@ -199,10 +199,9 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "admin") {
     <h2>
         DRESORA Admin Dashboard
     </h2>
-
-    <a href="../logout.php" class="logout">
-        Logout
-    </a>
+<a href="../customer/logout.php" class="logout">
+    Logout
+</a>
 
 </div>
 

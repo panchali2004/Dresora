@@ -604,7 +604,7 @@ unset($_SESSION["login_success"]);
 
 
                 <a
-                    href="product-details.html?id=1"
+                    href="product-details.php?id=1"
                     class="btn">
 
                     View Details
@@ -655,7 +655,7 @@ unset($_SESSION["login_success"]);
 
 
                 <a
-                    href="product-details.html?id=2"
+                    href="product-details.php?id=2"
                     class="btn">
 
                     View Details
@@ -706,7 +706,7 @@ unset($_SESSION["login_success"]);
 
 
                 <a
-                    href="product-details.html?id=3"
+                    href="product-details.php?id=3"
                     class="btn">
 
                     View Details
