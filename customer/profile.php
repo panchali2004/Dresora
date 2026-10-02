@@ -3,439 +3,469 @@ session_start();
 
 require_once "../config/database.php";
 
-/* =========================
-   Check Login
-========================= */
+/* =========================================================
+   LOGIN CHECK
+========================================================= */
 if (!isset($_SESSION["user_id"])) {
-    header("Location: ../account.php");
-    exit;
+    header("Location: ../login.php");
+    exit();
 }
 
-/* =========================
-   Allow Customers Only
-========================= */
-if ($_SESSION["role"] !== "customer") {
-    header("Location: ../account.php");
-    exit;
+$user_id = (int)$_SESSION["user_id"];
+
+/* =========================================================
+   CUSTOMER CHECK
+========================================================= */
+if (isset($_SESSION["role"]) && $_SESSION["role"] === "admin") {
+    header("Location: ../admin/dashboard.php");
+    exit();
 }
 
-$user_id = $_SESSION["user_id"];
 
-$success = "";
-$error = "";
+/* =========================================================
+   PROFILE UPDATE
+========================================================= */
+$profileMessage = "";
+$profileMessageType = "";
 
-/* =========================
-   Update Profile
-========================= */
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["update_profile"])) {
 
-      
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $name = trim($_POST["name"] ?? "");
+    $email = trim($_POST["email"] ?? "");
+    $phone = trim($_POST["phone"] ?? "");
+    $shipping_address = trim($_POST["shipping_address"] ?? "");
+    $billing_address = trim($_POST["billing_address"] ?? "");
 
-    /* =========================
-       Change Password
-    ========================= */
+    if ($name === "" || $email === "") {
 
-    if (isset($_POST["change_password"])) {
+        $profileMessage = "Name and email are required.";
+        $profileMessageType = "error";
 
-        $current_password = $_POST["current_password"];
-        $new_password = $_POST["new_password"];
-        $confirm_password = $_POST["confirm_password"];
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
-        if (
-            $current_password === "" ||
-            $new_password === "" ||
-            $confirm_password === ""
-        ) {
-
-            $error = "Please fill in all password fields.";
-
-        } elseif ($new_password !== $confirm_password) {
-
-            $error = "New passwords do not match.";
-
-        } elseif (strlen($new_password) < 8) {
-
-            $error = "Password must contain at least 8 characters.";
-
-        } else {
-
-            /* Get current hashed password */
-
-            $sql = "SELECT password
-                    FROM users
-                    WHERE user_id = ?";
-
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("i", $user_id);
-            $stmt->execute();
-
-            $result = $stmt->get_result();
-            $user_data = $result->fetch_assoc();
-
-            $stmt->close();
-
-
-            if (!$user_data) {
-
-                $error = "User account not found.";
-
-            } elseif (
-                !password_verify(
-                    $current_password,
-                    $user_data["password"]
-                )
-            ) {
-
-                $error = "Current password is incorrect.";
-
-            } else {
-
-                /* Create new hashed password */
-
-                $hashed_password = password_hash(
-                    $new_password,
-                    PASSWORD_DEFAULT
-                );
-
-
-                /* Update password */
-
-                $sql = "UPDATE users
-                        SET password = ?
-                        WHERE user_id = ?";
-
-                $stmt = $conn->prepare($sql);
-
-                $stmt->bind_param(
-                    "si",
-                    $hashed_password,
-                    $user_id
-                );
-
-
-                if ($stmt->execute()) {
-
-                    $success = "Password changed successfully.";
-
-                } else {
-
-                    $error = "Failed to change password.";
-                }
-
-                $stmt->close();
-            }
-        }
-
+        $profileMessage = "Please enter a valid email address.";
+        $profileMessageType = "error";
 
     } else {
 
-        /* =========================
-           Update Profile
-        ========================= */
+        /* Check whether email already belongs to another user */
+        $checkStmt = $conn->prepare("
+            SELECT user_id
+            FROM users
+            WHERE email = ?
+              AND user_id != ?
+            LIMIT 1
+        ");
 
-        $name = trim($_POST["name"]);
-        $phone = trim($_POST["phone"]);
-        $shipping_address = trim($_POST["shipping_address"]);
-        $billing_address = trim($_POST["billing_address"]);
+        $checkStmt->bind_param("si", $email, $user_id);
+        $checkStmt->execute();
 
-        if ($name === "") {
+        $checkResult = $checkStmt->get_result();
 
-            $error = "Please enter your name.";
+        if ($checkResult->num_rows > 0) {
+
+            $profileMessage = "This email address is already used by another account.";
+            $profileMessageType = "error";
 
         } else {
 
-            $sql = "UPDATE users
-                    SET name = ?,
-                        phone = ?,
-                        shipping_address = ?,
-                        billing_address = ?
-                    WHERE user_id = ?";
+            $updateStmt = $conn->prepare("
+                UPDATE users
+                SET
+                    name = ?,
+                    email = ?,
+                    phone = ?,
+                    shipping_address = ?,
+                    billing_address = ?
+                WHERE user_id = ?
+            ");
 
-            $stmt = $conn->prepare($sql);
+            $updateStmt->bind_param(
+                "sssssi",
+                $name,
+                $email,
+                $phone,
+                $shipping_address,
+                $billing_address,
+                $user_id
+            );
 
-            if ($stmt) {
+            if ($updateStmt->execute()) {
 
-                $stmt->bind_param(
-                    "ssssi",
-                    $name,
-                    $phone,
-                    $shipping_address,
-                    $billing_address,
-                    $user_id
-                );
+                $_SESSION["name"] = $name;
+                $_SESSION["email"] = $email;
 
-                if ($stmt->execute()) {
-
-                    $success = "Profile details updated successfully.";
-
-                    $_SESSION["name"] = $name;
-
-                } else {
-
-                    $error = "Database Error: " . $stmt->error;
-                }
-
-                $stmt->close();
+                $profileMessage = "Profile updated successfully.";
+                $profileMessageType = "success";
 
             } else {
 
-                $error = "Database error.";
+                $profileMessage = "Failed to update profile.";
+                $profileMessageType = "error";
             }
+
+            $updateStmt->close();
         }
+
+        $checkStmt->close();
     }
 }
-/* =========================
-   Get User Details
-========================= */
 
-$sql = "SELECT
-            user_id,
-            name,
-            email,
-            phone,
-            shipping_address,
-            billing_address,
-            role,
-            created_at
-        FROM users
-        WHERE user_id = ?";
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
+/* =========================================================
+   LOAD USER DETAILS
+========================================================= */
+$userStmt = $conn->prepare("
+    SELECT
+        user_id,
+        name,
+        email,
+        phone,
+        shipping_address,
+        billing_address,
+        role
+    FROM users
+    WHERE user_id = ?
+    LIMIT 1
+");
 
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
+$userStmt->bind_param("i", $user_id);
+$userStmt->execute();
 
-$stmt->close();
+$userResult = $userStmt->get_result();
+$user = $userResult->fetch_assoc();
+
+$userStmt->close();
+
 
 if (!$user) {
     session_destroy();
-    header("Location: ../account.php");
-    exit;
+    header("Location: ../login.php");
+    exit();
 }
 
+
+/* =========================================================
+   NOTIFICATION UNREAD COUNT
+========================================================= */
+$notificationCount = 0;
+
+$notificationStmt = $conn->prepare("
+    SELECT COUNT(*) AS unread_count
+    FROM notifications
+    WHERE user_id = ?
+      AND is_read = 0
+");
+
+$notificationStmt->bind_param("i", $user_id);
+$notificationStmt->execute();
+
+$notificationResult = $notificationStmt->get_result();
+$notificationData = $notificationResult->fetch_assoc();
+
+$notificationCount = (int)($notificationData["unread_count"] ?? 0);
+
+$notificationStmt->close();
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>My Profile - DRESORA</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>My Profile - Dresora</title>
 
     <style>
 
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             background: #fffafc;
             color: #5d405c;
         }
 
-        /* =========================
-           Sidebar
-        ========================= */
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
 
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
 
-            width: 240px;
-            height: 100vh;
+        /* =====================================================
+           HEADER
+        ===================================================== */
 
-            background: #5d405c;
-            color: white;
+        .header {
+            width: 100%;
+            background: white;
+            border-bottom: 1px solid #eee;
+            padding: 18px 60px;
 
-            padding: 25px 15px;
-
-            overflow-y: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .logo {
-            text-align: center;
-            margin-bottom: 35px;
+            font-size: 27px;
+            font-weight: bold;
+            color: #8b5a83;
+            letter-spacing: 2px;
         }
 
         .logo span {
             display: block;
-            font-size: 25px;
-            font-weight: bold;
-            letter-spacing: 2px;
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: #a66b9b;
+            margin-top: 3px;
         }
 
-        .logo small {
-            font-size: 11px;
-            letter-spacing: 2px;
-            opacity: 0.8;
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .home-btn {
+            padding: 10px 18px;
+            border: 1px solid #a66b9b;
+            border-radius: 8px;
+            color: #8b5a83;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .home-btn:hover {
+            background: #a66b9b;
+            color: white;
+        }
+
+
+        /* =====================================================
+           MAIN LAYOUT
+        ===================================================== */
+
+        .container {
+            max-width: 1250px;
+            margin: 40px auto;
+            padding: 0 25px;
+
+            display: flex;
+            gap: 30px;
+        }
+
+
+        /* =====================================================
+           SIDEBAR
+        ===================================================== */
+
+        .sidebar {
+            width: 270px;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(139, 90, 131, 0.08);
+            height: fit-content;
+        }
+
+        .profile-mini {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+
+        .profile-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #f4e7f1;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin: 0 auto 12px;
+
+            font-size: 32px;
+        }
+
+        .profile-mini h3 {
+            font-size: 17px;
+            color: #5d405c;
+            margin-bottom: 5px;
+        }
+
+        .profile-mini p {
+            font-size: 12px;
+            color: #999;
+            word-break: break-word;
         }
 
         .sidebar ul {
             list-style: none;
         }
 
-        .sidebar ul li {
-            margin-bottom: 8px;
+        .sidebar li {
+            margin-bottom: 5px;
         }
 
-        .sidebar ul li a {
-            display: block;
+        .sidebar li a {
+            padding: 13px 14px;
+            border-radius: 9px;
 
-            text-decoration: none;
-            color: white;
+            display: flex;
+            align-items: center;
 
-            padding: 13px 15px;
-
-            border-radius: 8px;
-
+            color: #666;
             font-size: 14px;
 
             transition: 0.3s;
         }
 
-        .sidebar ul li a:hover,
-        .sidebar ul li a.active {
-            background: #8b5a83;
+        .sidebar li a:hover {
+            background: #f8edf6;
+            color: #8b5a83;
         }
 
-        /* =========================
-           Main Content
-        ========================= */
-
-        .main {
-            margin-left: 240px;
-            min-height: 100vh;
+        .sidebar li a.active {
+            background: #f4e7f1;
+            color: #8b5a83;
+            font-weight: bold;
         }
 
-        /* =========================
-           Top Navigation
-        ========================= */
 
-        .topbar {
-            height: 70px;
+        /* =====================================================
+           NOTIFICATION BADGE
+        ===================================================== */
 
-            background: white;
+        .notification-link {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            gap: 10px;
+        }
+
+        .notification-link span:first-child {
+            display: flex;
+            align-items: center;
+        }
+
+        .notification-badge {
+            min-width: 22px;
+            height: 22px;
+
+            padding: 2px 7px;
 
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
 
-            padding: 0 35px;
+            background: #a66b9b;
+            color: #ffffff;
 
-            border-bottom: 1px solid #eee;
+            border-radius: 50%;
 
-            position: sticky;
-            top: 0;
-
-            z-index: 10;
+            font-size: 11px;
+            font-weight: bold;
+            line-height: 1;
         }
 
-        .topbar h2 {
-            font-size: 22px;
-            color: #5d405c;
-        }
 
-        .user-name {
-            background: #fff0f7;
-            padding: 10px 16px;
-            border-radius: 20px;
-
-            color: #8b5a83;
-            font-weight: 600;
-
-            font-size: 14px;
-        }
-
-        /* =========================
-           Content
-        ========================= */
+        /* =====================================================
+           CONTENT
+        ===================================================== */
 
         .content {
-            padding: 35px;
+            flex: 1;
         }
 
-        .profile-container {
-            max-width: 850px;
-            margin: 0 auto;
+        .page-title {
+            margin-bottom: 25px;
         }
 
-        .profile-card {
-            background: white;
-
-            border-radius: 15px;
-
-            padding: 35px;
-
-            box-shadow: 0 5px 20px rgba(93, 64, 92, 0.08);
-        }
-
-        .profile-header {
-            margin-bottom: 30px;
-        }
-
-        .profile-header h1 {
-            font-size: 25px;
-            margin-bottom: 8px;
+        .page-title h1 {
             color: #5d405c;
+            font-size: 30px;
+            margin-bottom: 7px;
         }
 
-        .profile-header p {
-            color: #777;
+        .page-title p {
+            color: #999;
             font-size: 14px;
         }
 
-        /* =========================
-           Messages
-        ========================= */
 
-        .success-message {
-            background: #e9f8ef;
-            color: #267342;
+        /* =====================================================
+           MESSAGE
+        ===================================================== */
 
-            padding: 12px 15px;
-
-            border-radius: 8px;
-
+        .message {
+            padding: 14px 18px;
+            border-radius: 9px;
             margin-bottom: 20px;
-
             font-size: 14px;
         }
 
-        .error-message {
-            background: #fdecec;
+        .message.success {
+            background: #eaf7ed;
+            color: #287a3e;
+            border: 1px solid #c7e8cf;
+        }
+
+        .message.error {
+            background: #fff0f0;
             color: #b33a3a;
-
-            padding: 12px 15px;
-
-            border-radius: 8px;
-
-            margin-bottom: 20px;
-
-            font-size: 14px;
+            border: 1px solid #f0caca;
         }
 
-        /* =========================
-           Form
-        ========================= */
 
-        .form-row {
+        /* =====================================================
+           CARD
+        ===================================================== */
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(139, 90, 131, 0.08);
+            margin-bottom: 25px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            color: #8b5a83;
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+
+        /* =====================================================
+           FORM
+        ===================================================== */
+
+        .form-grid {
             display: grid;
-
             grid-template-columns: 1fr 1fr;
-
             gap: 20px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 5px;
         }
 
         .form-group.full {
@@ -444,258 +474,180 @@ if (!$user) {
 
         .form-group label {
             display: block;
-
-            margin-bottom: 8px;
-
-            font-size: 14px;
-
-            font-weight: 600;
-
+            font-size: 13px;
+            font-weight: bold;
             color: #5d405c;
+            margin-bottom: 8px;
         }
 
         .form-group input,
         .form-group textarea {
             width: 100%;
-
             padding: 12px 14px;
 
             border: 1px solid #ddd;
-
             border-radius: 8px;
 
+            font-family: inherit;
             font-size: 14px;
 
             outline: none;
-
             transition: 0.3s;
+        }
 
-            font-family: Arial, sans-serif;
+        .form-group textarea {
+            min-height: 90px;
+            resize: vertical;
         }
 
         .form-group input:focus,
         .form-group textarea:focus {
             border-color: #a66b9b;
-
-            box-shadow: 0 0 0 3px rgba(166, 107, 155, 0.1);
-        }
-
-        .form-group input[readonly] {
-            background: #f7f7f7;
-            color: #777;
-            cursor: not-allowed;
-        }
-
-        .form-group textarea {
-            min-height: 110px;
-            resize: vertical;
-        }
-
-        .form-note {
-            font-size: 12px;
-            color: #888;
-            margin-top: 5px;
-        }
-
-        /* =========================
-           Buttons
-        ========================= */
-
-        .button-area {
-            margin-top: 10px;
-
-            display: flex;
-            justify-content: flex-end;
+            box-shadow: 0 0 0 3px rgba(166, 107, 155, 0.08);
         }
 
         .save-btn {
-            border: none;
+            margin-top: 22px;
 
+            border: none;
             background: #8b5a83;
             color: white;
 
-            padding: 13px 28px;
+            padding: 12px 25px;
 
             border-radius: 8px;
 
-            font-size: 14px;
-
-            font-weight: 600;
-
             cursor: pointer;
+
+            font-size: 14px;
+            font-weight: bold;
 
             transition: 0.3s;
         }
 
         .save-btn:hover {
-            background: #6f4569;
+            background: #a66b9b;
         }
 
-        /* =========================
-           Account Info
-        ========================= */
 
-        .account-info {
-            margin-top: 25px;
+        /* =====================================================
+           LOGOUT MODAL
+        ===================================================== */
 
-            background: #fff6fa;
+        .modal-overlay {
+            display: none;
 
-            padding: 20px;
+            position: fixed;
+            inset: 0;
 
-            border-radius: 10px;
+            background: rgba(40, 25, 38, 0.5);
+
+            align-items: center;
+            justify-content: center;
+
+            z-index: 9999;
         }
 
-        .account-info h3 {
-            margin-bottom: 12px;
-            font-size: 16px;
+        .modal-overlay.show {
+            display: flex;
         }
 
-        .account-info p {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 6px;
+        .logout-modal {
+            width: 90%;
+            max-width: 420px;
+
+            background: white;
+            border-radius: 15px;
+
+            padding: 30px;
+
+            text-align: center;
+
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
         }
-        /* =========================
-   Logout Modal
-========================= */
 
-.logout-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+        .logout-icon {
+            width: 60px;
+            height: 60px;
 
-    background: rgba(0, 0, 0, 0.5);
+            margin: 0 auto 15px;
 
-    justify-content: center;
-    align-items: center;
+            border-radius: 50%;
 
-    z-index: 9999;
-}
+            background: #f4e7f1;
 
-.logout-box {
-    background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
-    width: 380px;
+            font-size: 27px;
+        }
 
-    padding: 30px;
+        .logout-modal h2 {
+            color: #5d405c;
+            margin-bottom: 10px;
+        }
 
-    border-radius: 15px;
+        .logout-modal p {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
 
-    text-align: center;
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
 
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-}
+        .modal-btn {
+            padding: 11px 22px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
 
-.logout-box h3 {
-    color: #5d405c;
+        .cancel-btn {
+            background: #eee;
+            color: #555;
+        }
 
-    font-size: 22px;
+        .confirm-logout-btn {
+            background: #8b5a83;
+            color: white;
+        }
 
-    margin-bottom: 12px;
-}
+        .confirm-logout-btn:hover {
+            background: #a66b9b;
+        }
 
-.logout-box p {
-    color: #666;
 
-    font-size: 14px;
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
 
-    margin-bottom: 25px;
-}
+        @media (max-width: 850px) {
 
-.logout-buttons {
-    display: flex;
+            .header {
+                padding: 15px 25px;
+            }
 
-    justify-content: center;
-
-    gap: 12px;
-}
-
-.cancel-btn,
-.confirm-logout-btn {
-    padding: 11px 25px;
-
-    border-radius: 8px;
-
-    font-size: 14px;
-
-    cursor: pointer;
-
-    text-decoration: none;
-
-    border: none;
-}
-
-.cancel-btn {
-    background: #eeeeee;
-
-    color: #555;
-}
-
-.cancel-btn:hover {
-    background: #dddddd;
-}
-
-.confirm-logout-btn {
-    background: #8b5a83;
-
-    color: white;
-}
-
-.confirm-logout-btn:hover {
-    background: #6f4569;
-}
-
-        /* =========================
-           Responsive
-        ========================= */
-
-        @media (max-width: 800px) {
+            .container {
+                flex-direction: column;
+            }
 
             .sidebar {
-                width: 200px;
+                width: 100%;
             }
 
-            .main {
-                margin-left: 200px;
-            }
-
-            .form-row {
+            .form-grid {
                 grid-template-columns: 1fr;
             }
 
             .form-group.full {
                 grid-column: auto;
             }
-
-        }
-
-        @media (max-width: 600px) {
-
-            .sidebar {
-                position: relative;
-                width: 100%;
-                height: auto;
-            }
-
-            .main {
-                margin-left: 0;
-            }
-
-            .topbar {
-                padding: 0 20px;
-            }
-
-            .content {
-                padding: 20px;
-            }
-
-            .profile-card {
-                padding: 22px;
-            }
-
         }
 
     </style>
@@ -704,304 +656,413 @@ if (!$user) {
 
 <body>
 
-<!-- =========================
-     Sidebar
-========================= -->
 
-<div class="sidebar">
+<!-- =========================================================
+     HEADER
+========================================================= -->
 
-    <div class="logo">
-        <span>DRESORA</span>
-        <small>DRESS RENTAL</small>
+<header class="header">
+
+    <a href="../index.php" class="logo">
+        DRESORA
+        <span>DRESS RENTAL</span>
+    </a>
+
+    <div class="header-right">
+
+        <a href="../index.php" class="home-btn">
+            🏠 Home
+        </a>
+
     </div>
 
-    <ul>
-
-       
-
-        <li>
-            <a href="profile.php" class="active">
-                👤 My Profile
-            </a>
-        </li>
-
-        <li>
-            <a href="../cart.php">
-                🛒 My Cart
-            </a>
-        </li>
-
-        <li>
-            <a href="rental-requests.php">
-                📋 Rental Requests
-            </a>
-        </li>
-
-        <li>
-            <a href="my-orders.php">
-                📦 My Orders
-            </a>
-        </li>
-
-        <li>
-            <a href="wishlist.php">
-                ❤️ Wishlist
-            </a>
-        </li>
-
-        <li>
-            <a href="notifications.php">
-                🔔 Notifications
-            </a>
-        </li>
-
-        <li>
-            <a href="settings.php">
-                ⚙️ Change Password
-            </a>
-        </li>
-
-        <li>
-        <a href="#" onclick="openLogoutModal(); return false;">
-    🚪 Logout
-</a>
-        </li>
-
-    </ul>
-
-</div>
+</header>
 
 
-<!-- =========================
-     Main
-========================= -->
+<!-- =========================================================
+     MAIN
+========================================================= -->
 
-<div class="main">
+<div class="container">
 
-    <!-- Topbar -->
 
-    <div class="topbar">
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
 
-        <h2>My Profile</h2>
+    <aside class="sidebar">
 
-        <div class="user-name">
-            👤 <?php echo htmlspecialchars($user["name"]); ?>
+        <div class="profile-mini">
+
+            <div class="profile-icon">
+                👤
+            </div>
+
+            <h3>
+                <?php echo htmlspecialchars($user["name"]); ?>
+            </h3>
+
+            <p>
+                <?php echo htmlspecialchars($user["email"]); ?>
+            </p>
+
         </div>
 
-    </div>
 
+        <ul>
 
-    <!-- Content -->
+            <li>
+                <a href="profile.php" class="active">
+                    👤 My Profile
+                </a>
+            </li>
 
-    <div class="content">
 
-        <div class="profile-container">
+            <li>
+                <a href="../cart.php">
+                    🛒 My Cart
+                </a>
+            </li>
 
-            <div class="profile-card">
 
-                <div class="profile-header">
+            <li>
+                <a href="rental-requests.php">
+                    📋 Rental Requests
+                </a>
+            </li>
 
-                    <h1>Profile Information</h1>
 
-                    <p>
-                        Manage your personal information and rental addresses.
-                    </p>
+            <li>
+                <a href="my-orders.php">
+                    📦 My Orders
+                </a>
+            </li>
 
-                </div>
 
+            <li>
+                <a href="wishlist.php">
+                    ❤️ Wishlist
+                </a>
+            </li>
 
-                <?php if ($success): ?>
 
-                    <div class="success-message">
-                        <?php echo htmlspecialchars($success); ?>
-                    </div>
+            <li>
 
-                <?php endif; ?>
+                <a
+                    href="notifications.php"
+                    class="notification-link"
+                >
 
+                    <span>
+                        🔔 Notifications
+                    </span>
 
-                <?php if ($error): ?>
+                    <?php if ($notificationCount > 0): ?>
 
-                    <div class="error-message">
-                        <?php echo htmlspecialchars($error); ?>
-                    </div>
+                        <span class="notification-badge">
+                            <?php echo $notificationCount; ?>
+                        </span>
 
-                <?php endif; ?>
+                    <?php endif; ?>
 
+                </a>
 
-                <!-- Profile Form -->
+            </li>
 
-                <form method="POST" action="">
 
-                    <div class="form-row">
+            <li>
+                <a href="settings.php">
+                    ⚙️ Change Password
+                </a>
+            </li>
 
-                        <!-- Name -->
 
-                        <div class="form-group">
+            <li>
+                <a
+                    href="#"
+                    onclick="openLogoutModal(); return false;"
+                >
+                    🚪 Logout
+                </a>
+            </li>
 
-                            <label for="name">
-                                Full Name
-                            </label>
+        </ul>
 
-                            <input
-                                type="text"
-                                id="name"
-                                name="name"
-                                value="<?php echo htmlspecialchars($user["name"]); ?>"
-                                required
-                            >
+    </aside>
 
-                        </div>
 
+    <!-- =====================================================
+         CONTENT
+    ====================================================== -->
 
-                        <!-- Email -->
+    <main class="content">
 
-                        <div class="form-group">
+        <div class="page-title">
 
-                            <label for="email">
-                                Email Address
-                            </label>
+            <h1>
+                My Profile
+            </h1>
 
-                            <input
-                                type="email"
-                                id="email"
-                                value="<?php echo htmlspecialchars($user["email"]); ?>"
-                                readonly
-                            >
+            <p>
+                Manage your personal information and account settings.
+            </p>
 
-                            <div class="form-note">
-                                Email address cannot be changed here.
-                            </div>
+        </div>
 
-                        </div>
 
+        <!-- =================================================
+             PROFILE MESSAGE
+        ================================================== -->
 
-                        <!-- Phone -->
+        <?php if ($profileMessage !== ""): ?>
 
-                        <div class="form-group">
+            <div class="message <?php echo $profileMessageType; ?>">
 
-                            <label for="phone">
-                                Phone Number
-                            </label>
-
-                            <input
-                                type="text"
-                                id="phone"
-                                name="phone"
-                                value="<?php echo htmlspecialchars($user["phone"] ?? ""); ?>"
-                                placeholder="Enter your phone number"
-                            >
-
-                        </div>
-
-
-                        <!-- Shipping Address -->
-
-                        <div class="form-group">
-
-                            <label for="shipping_address">
-                                Shipping Address
-                            </label>
-
-                            <textarea
-                                id="shipping_address"
-                                name="shipping_address"
-                                placeholder="Enter your shipping address"
-                            ><?php echo htmlspecialchars($user["shipping_address"] ?? ""); ?></textarea>
-
-                        </div>
-
-
-                        <!-- Billing Address -->
-
-                        <div class="form-group full">
-
-                            <label for="billing_address">
-                                Billing Address
-                            </label>
-
-                            <textarea
-                                id="billing_address"
-                                name="billing_address"
-                                placeholder="Enter your billing address"
-                            ><?php echo htmlspecialchars($user["billing_address"] ?? ""); ?></textarea>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Save -->
-
-                    <div class="button-area">
-
-                        <button
-                            type="submit"
-                            class="save-btn"
-                        >
-                            Save Changes
-                        </button>
-
-                    </div>
-
-                </form>
-
-          <!-- Account Information -->
-
-                <div class="account-info">
-
-                    <h3>Account Information</h3>
-
-                    <p>
-                        <strong>Account Type:</strong>
-                        <?php echo ucfirst(htmlspecialchars($user["role"])); ?>
-                    </p>
-
-                    <p>
-                        <strong>Member Since:</strong>
-                        <?php
-                        echo date(
-                            "F d, Y",
-                            strtotime($user["created_at"])
-                        );
-                        ?>
-                    </p>
-
-                </div>
+                <?php echo htmlspecialchars($profileMessage); ?>
 
             </div>
 
+        <?php endif; ?>
+
+
+        <!-- =================================================
+             PERSONAL INFORMATION
+        ================================================== -->
+
+        <div class="card">
+
+            <h2 class="card-title">
+                Personal Information
+            </h2>
+
+            <form
+                method="POST"
+                action=""
+            >
+
+                <div class="form-grid">
+
+
+                    <div class="form-group">
+
+                        <label for="name">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value="<?php echo htmlspecialchars($user["name"] ?? ""); ?>"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="email">
+                            Email Address
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value="<?php echo htmlspecialchars($user["email"] ?? ""); ?>"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="phone">
+                            Phone Number
+                        </label>
+
+                        <input
+                            type="text"
+                            id="phone"
+                            name="phone"
+                            value="<?php echo htmlspecialchars($user["phone"] ?? ""); ?>"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Account Type
+                        </label>
+
+                        <input
+                            type="text"
+                            value="<?php echo htmlspecialchars(ucfirst($user["role"] ?? "customer")); ?>"
+                            readonly
+                        >
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label for="shipping_address">
+                            Shipping Address
+                        </label>
+
+                        <textarea
+                            id="shipping_address"
+                            name="shipping_address"
+                        ><?php echo htmlspecialchars($user["shipping_address"] ?? ""); ?></textarea>
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label for="billing_address">
+                            Billing Address
+                        </label>
+
+                        <textarea
+                            id="billing_address"
+                            name="billing_address"
+                        ><?php echo htmlspecialchars($user["billing_address"] ?? ""); ?></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    name="update_profile"
+                    class="save-btn"
+                >
+                    Save Changes
+                </button>
+
+            </form>
+
         </div>
 
-    </div>
+    </main>
 
 </div>
-<!-- Logout Confirmation Modal -->
-<div id="logoutModal" class="logout-modal">
-    <div class="logout-box">
-        <h3>Logout</h3>
 
-        <p>Are you sure you want to logout?</p>
 
-        <div class="logout-buttons">
-            <button onclick="closeLogoutModal()" class="cancel-btn">
+<!-- =========================================================
+     LOGOUT MODAL
+========================================================= -->
+
+<div
+    class="modal-overlay"
+    id="logoutModal"
+>
+
+    <div class="logout-modal">
+
+        <div class="logout-icon">
+            🚪
+        </div>
+
+        <h2>
+            Logout?
+        </h2>
+
+        <p>
+            Are you sure you want to logout from your account?
+        </p>
+
+        <div class="modal-buttons">
+
+            <button
+                type="button"
+                class="modal-btn cancel-btn"
+                onclick="closeLogoutModal()"
+            >
                 Cancel
             </button>
 
-            <a href="logout.php" class="confirm-logout-btn">
-                Logout
-            </a>
+            <button
+                type="button"
+                class="modal-btn confirm-logout-btn"
+                onclick="confirmLogout()"
+            >
+                Yes, Logout
+            </button>
+
         </div>
+
     </div>
+
 </div>
 
-</body>
-<script>
-function openLogoutModal() {
-    document.getElementById("logoutModal").style.display = "flex";
-}
 
-function closeLogoutModal() {
-    document.getElementById("logoutModal").style.display = "none";
-}
+<script>
+
+    /* =========================================================
+       LOGOUT MODAL
+    ========================================================= */
+
+    function openLogoutModal() {
+
+        document
+            .getElementById("logoutModal")
+            .classList.add("show");
+
+    }
+
+
+    function closeLogoutModal() {
+
+        document
+            .getElementById("logoutModal")
+            .classList.remove("show");
+
+    }
+
+
+    function confirmLogout() {
+
+        window.location.href = "../logout.php";
+
+    }
+
+
+    /* Close modal when clicking outside */
+
+    document
+        .getElementById("logoutModal")
+        .addEventListener("click", function(event) {
+
+            if (event.target === this) {
+
+                closeLogoutModal();
+
+            }
+
+        });
+
+
+    /* Close modal with ESC */
+
+    document.addEventListener("keydown", function(event) {
+
+        if (event.key === "Escape") {
+
+            closeLogoutModal();
+
+        }
+
+    });
+
 </script>
+
+
+</body>
 </html>

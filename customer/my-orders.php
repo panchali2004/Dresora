@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 
@@ -281,7 +280,7 @@ $stmt->close();
 
             border-collapse: collapse;
 
-            min-width: 700px;
+            min-width: 800px;
         }
 
         .orders-table th {
@@ -433,6 +432,128 @@ $stmt->close();
         }
 
         /* =========================
+           Action Buttons
+        ========================= */
+
+        .view-btn {
+            display: inline-block;
+
+            text-decoration: none;
+
+            background: #8b5a83;
+
+            color: white;
+
+            padding: 8px 14px;
+
+            border-radius: 7px;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            transition: 0.3s;
+        }
+
+        .view-btn:hover {
+            background: #6f4569;
+        }
+
+        .cancel-btn {
+            display: inline-block;
+
+            background: #fdecec;
+
+            color: #b33a3a;
+
+            border: 1px solid #f3caca;
+
+            padding: 8px 14px;
+
+            border-radius: 7px;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition: 0.3s;
+        }
+
+        .cancel-btn:hover {
+            background: #b33a3a;
+
+            color: white;
+        }
+
+        /* =========================
+           Pay Now Button
+        ========================= */
+
+        .pay-btn {
+            display: inline-block;
+
+            text-decoration: none;
+
+            background: #a66b9b;
+
+            color: white;
+
+            padding: 8px 14px;
+
+            border-radius: 7px;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            transition: 0.3s;
+
+            box-shadow: 0 3px 8px rgba(166, 107, 155, 0.20);
+        }
+
+        .pay-btn:hover {
+            background: #8b5a83;
+
+            transform: translateY(-1px);
+        }
+
+        /* =========================
+           Paid Button
+        ========================= */
+
+        .paid-btn {
+            display: inline-block;
+
+            background: #e9f8ef;
+
+            color: #267342;
+
+            padding: 8px 14px;
+
+            border-radius: 7px;
+
+            font-size: 12px;
+
+            font-weight: 600;
+        }
+
+        /* =========================
+           Action Buttons
+        ========================= */
+
+        .action-buttons {
+            display: flex;
+
+            gap: 7px;
+
+            align-items: center;
+
+            flex-wrap: wrap;
+        }
+
+        /* =========================
            Responsive
         ========================= */
 
@@ -478,49 +599,7 @@ $stmt->close();
                 padding: 20px;
             }
 
-
         }
-        .view-btn {
-    display: inline-block;
-    text-decoration: none;
-    background: #8b5a83;
-    color: white;
-    padding: 8px 14px;
-    border-radius: 7px;
-    font-size: 12px;
-    font-weight: 600;
-    transition: 0.3s;
-}
-
-.view-btn:hover {
-    background: #6f4569;
-}
-
-.cancel-btn {
-    display: inline-block;
-    text-decoration: none;
-    background: #fdecec;
-    color: #b33a3a;
-    border: 1px solid #f3caca;
-    padding: 8px 14px;
-    border-radius: 7px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.cancel-btn:hover {
-    background: #b33a3a;
-    color: white;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 7px;
-    align-items: center;
-    flex-wrap: wrap;
-}
 
     </style>
 
@@ -535,8 +614,11 @@ $stmt->close();
 <div class="sidebar">
 
     <div class="logo">
+
         <span>DRESORA</span>
+
         <small>DRESS RENTAL</small>
+
     </div>
 
     <ul>
@@ -607,7 +689,9 @@ $stmt->close();
         <h2>My Orders</h2>
 
         <div class="user-name">
+
             👤 <?php echo htmlspecialchars($_SESSION["name"]); ?>
+
         </div>
 
     </div>
@@ -641,12 +725,18 @@ $stmt->close();
                             <thead>
 
                                 <tr>
-<th>Order ID</th>
-<th>Date</th>
-<th>Total Amount</th>
-<th>Payment Method</th>
-<th>Status</th>
-<th>Action</th>
+
+                                    <th>Order ID</th>
+
+                                    <th>Date</th>
+
+                                    <th>Total Amount</th>
+
+                                    <th>Payment Method</th>
+
+                                    <th>Status</th>
+
+                                    <th>Action</th>
 
                                 </tr>
 
@@ -656,102 +746,185 @@ $stmt->close();
 
                                 <?php foreach ($orders as $order): ?>
 
+                                    <?php
+                                    $status = strtolower(
+                                        trim($order["status"])
+                                    );
+                                    ?>
+
                                     <tr>
 
+                                        <!-- Order ID -->
+
                                         <td>
+
                                             <span class="order-id">
-                                                #<?php echo htmlspecialchars($order["order_id"]); ?>
+
+                                                #<?php
+                                                echo htmlspecialchars(
+                                                    $order["order_id"]
+                                                );
+                                                ?>
+
                                             </span>
+
                                         </td>
 
+
+                                        <!-- Date -->
+
                                         <td>
+
                                             <?php
-                                           echo date(
-    "M d, Y",
-    strtotime($order["order_date"])
-);
+
+                                            echo date(
+                                                "M d, Y",
+                                                strtotime(
+                                                    $order["order_date"]
+                                                )
+                                            );
+
                                             ?>
+
                                         </td>
 
+
+                                        <!-- Amount -->
+
                                         <td>
+
                                             <span class="amount">
+
                                                 Rs.
+
                                                 <?php
+
                                                 echo number_format(
                                                     $order["total_amount"],
                                                     2
                                                 );
+
                                                 ?>
+
                                             </span>
+
                                         </td>
 
+
+                                        <!-- Payment Method -->
+
                                         <td>
+
                                             <span class="payment-method">
+
                                                 <?php
+
                                                 echo htmlspecialchars(
                                                     $order["payment_method"]
                                                 );
+
                                                 ?>
+
                                             </span>
+
                                         </td>
+
+
+                                        <!-- Status -->
 
                                         <td>
 
-                                            <?php
-                                            $status = strtolower(
-                                                $order["status"]
-                                            );
-                                            ?>
-
-                                            <span class="status <?php echo htmlspecialchars($status); ?>">
+                                            <span class="status <?php
+                                                echo htmlspecialchars($status);
+                                            ?>">
 
                                                 <?php
+
                                                 echo ucfirst(
                                                     htmlspecialchars(
                                                         $order["status"]
                                                     )
                                                 );
+
                                                 ?>
 
                                             </span>
 
                                         </td>
+
+
+                                        <!-- Actions -->
+
                                         <td>
 
-    <div class="action-buttons">
+                                            <div class="action-buttons">
 
-        <a
-            href="order-details.php?order_id=<?php echo (int)$order["order_id"]; ?>"
-            class="view-btn"
-        >
-            View Details
-        </a>
+                                                <!-- View Details -->
 
-        <?php if (strtolower($order["status"]) === "pending"): ?>
+                                                <a
+                                                    href="order-details.php?order_id=<?php echo (int)$order["order_id"]; ?>"
+                                                    class="view-btn"
+                                                >
+                                                    View Details
+                                                </a>
 
-            <form method="POST" style="margin: 0;">
 
-                <input
-                    type="hidden"
-                    name="cancel_order_id"
-                    value="<?php echo (int)$order["order_id"]; ?>"
-                >
+                                                <!-- Pending Order -->
 
-                <button
-                    type="submit"
-                    class="cancel-btn"
-                    onclick="return confirm('Are you sure you want to cancel this order?');"
-                >
-                    Cancel Order
-                </button>
+                                                <?php if ($status === "pending"): ?>
 
-            </form>
+                                                    <form
+                                                        method="POST"
+                                                        style="margin: 0;"
+                                                    >
 
-        <?php endif; ?>
+                                                        <input
+                                                            type="hidden"
+                                                            name="cancel_order_id"
+                                                            value="<?php echo (int)$order["order_id"]; ?>"
+                                                        >
 
-    </div>
+                                                        <button
+                                                            type="submit"
+                                                            class="cancel-btn"
+                                                            onclick="return confirm('Are you sure you want to cancel this order?');"
+                                                        >
+                                                            Cancel Order
+                                                        </button>
 
-</td>
+                                                    </form>
+
+                                                <?php endif; ?>
+
+
+                                                <!-- Confirmed Order -->
+
+                                               <?php
+$paymentMethod = strtolower(
+    trim($order["payment_method"] ?? "")
+);
+?>
+
+<?php if (
+    $status === "confirmed" &&
+    (
+        $paymentMethod === "online payment" ||
+        $paymentMethod === "online" ||
+        $paymentMethod === "payhere"
+    )
+): ?>
+
+    <a
+        href="../payment/payhere-checkout.php?order_id=<?php echo (int)$order["order_id"]; ?>"
+        class="pay-btn"
+    >
+        💳 Pay Now
+    </a>
+
+<?php endif; ?>
+                                            </div>
+
+                                        </td>
 
                                     </tr>
 
@@ -777,7 +950,10 @@ $stmt->close();
                             You have not placed any rental orders yet.
                         </p>
 
-                        <a href="../products.php" class="shop-btn">
+                        <a
+                            href="../products.php"
+                            class="shop-btn"
+                        >
                             Browse Dresses
                         </a>
 
@@ -796,4 +972,3 @@ $stmt->close();
 </body>
 
 </html>
-

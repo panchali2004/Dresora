@@ -11,9 +11,156 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "admin") {
 }
 
 
-/* =========================
+/* =========================================================
+   CONFIRM / CANCEL ORDER
+========================================================= */
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+    $orderId = intval($_POST["order_id"] ?? 0);
+    $action = $_POST["action"] ?? "";
+
+    if ($orderId > 0 && in_array($action, ["confirm", "cancel"], true)) {
+
+        /*
+         * Get current order details
+         */
+        $getOrder = $conn->prepare("
+            SELECT order_id, user_id, status
+            FROM orders
+            WHERE order_id = ?
+            LIMIT 1
+        ");
+
+        $getOrder->bind_param("i", $orderId);
+        $getOrder->execute();
+
+        $orderResult = $getOrder->get_result();
+
+        if ($orderResult->num_rows === 1) {
+
+            $order = $orderResult->fetch_assoc();
+
+            $userId = (int)$order["user_id"];
+            $currentStatus = strtolower(trim($order["status"]));
+
+            /*
+             * Only pending orders can be confirmed/cancelled
+             */
+            if ($currentStatus === "pending") {
+
+                if ($action === "confirm") {
+
+                    $newStatus = "confirmed";
+
+                    $title = "Order Confirmed";
+
+                    $message =
+                        "Your order #" . $orderId .
+                        " has been confirmed. Please proceed with payment.";
+
+                    $notificationType = "order_confirmed";
+
+                } else {
+
+                    $newStatus = "cancelled";
+
+                    $title = "Order Cancelled";
+
+                    $message =
+                        "Your order #" . $orderId .
+                        " has been cancelled by the admin.";
+
+                    $notificationType = "order_cancelled";
+                }
+
+
+                /*
+                 * Start transaction
+                 *
+                 * Order status update and notification insert
+                 * should both happen together.
+                 */
+                $conn->begin_transaction();
+
+                try {
+
+                    /*
+                     * Update order status
+                     */
+                    $updateOrder = $conn->prepare("
+                        UPDATE orders
+                        SET status = ?
+                        WHERE order_id = ?
+                    ");
+
+                    $updateOrder->bind_param(
+                        "si",
+                        $newStatus,
+                        $orderId
+                    );
+
+                    if (!$updateOrder->execute()) {
+                        throw new Exception("Failed to update order status.");
+                    }
+
+
+                    /*
+                     * Insert notification
+                     */
+                    $insertNotification = $conn->prepare("
+                        INSERT INTO notifications
+                        (
+                            user_id,
+                            title,
+                            message,
+                            notification_type,
+                            is_read
+                        )
+                        VALUES (?, ?, ?, ?, 0)
+                    ");
+
+                    $insertNotification->bind_param(
+                        "isss",
+                        $userId,
+                        $title,
+                        $message,
+                        $notificationType
+                    );
+
+                    if (!$insertNotification->execute()) {
+                        throw new Exception("Failed to create notification.");
+                    }
+
+
+                    /*
+                     * Everything successful
+                     */
+                    $conn->commit();
+
+                } catch (Exception $e) {
+
+                    /*
+                     * Something went wrong
+                     */
+                    $conn->rollback();
+
+                }
+            }
+        }
+
+        /*
+         * Refresh page
+         */
+        header("Location: orders.php");
+        exit;
+    }
+}
+
+
+/* =========================================================
    GET CUSTOMER ORDERS
-========================= */
+========================================================= */
 
 $sql = "SELECT
             o.order_id,
@@ -86,7 +233,7 @@ $result = $conn->query($sql);
 
         .container {
             width: 94%;
-            max-width: 1300px;
+            max-width: 1400px;
             margin: 35px auto;
         }
 
@@ -116,6 +263,7 @@ $result = $conn->query($sql);
             padding: 13px;
             border-bottom: 1px solid #eee;
             text-align: left;
+            vertical-align: middle;
         }
 
         th {
@@ -166,22 +314,85 @@ $result = $conn->query($sql);
             color: #5d405c;
         }
 
-        .view-btn {
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .view-btn,
+        .confirm-btn,
+        .cancel-btn {
             display: inline-block;
             text-decoration: none;
+            border: none;
+            cursor: pointer;
 
-            background: #8b5a83;
-            color: white;
-
-            padding: 8px 14px;
+            padding: 8px 12px;
             border-radius: 6px;
 
             font-size: 12px;
             font-weight: 600;
         }
 
+        .view-btn {
+            background: #8b5a83;
+            color: white;
+        }
+
         .view-btn:hover {
             background: #5d405c;
+        }
+
+        .confirm-btn {
+            background: #e9f8ef;
+            color: #267342;
+        }
+
+        .confirm-btn:hover {
+            background: #d5f0df;
+        }
+
+        .cancel-btn {
+            background: #fdecec;
+            color: #b33a3a;
+        }
+
+        .cancel-btn:hover {
+            background: #f8d7d7;
+        }
+
+        .action-form {
+            display: inline;
+            margin: 0;
+        }
+
+        .no-action {
+            color: #999;
+            font-size: 12px;
+        }
+
+        @media (max-width: 900px) {
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .container {
+                width: 96%;
+            }
+
+            .table-box {
+                padding: 15px;
+            }
+
+            th,
+            td {
+                padding: 10px;
+                font-size: 13px;
+            }
+
         }
 
     </style>
@@ -236,42 +447,69 @@ $result = $conn->query($sql);
                     <?php while ($order = $result->fetch_assoc()): ?>
 
                         <?php
-                        $status = strtolower($order["status"]);
+
+                        $status = strtolower(
+                            trim($order["status"] ?? "")
+                        );
+
                         ?>
 
                         <tr>
 
+                            <!-- ORDER ID -->
                             <td>
+
                                 <span class="order-id">
-                                    #<?php echo (int)$order["order_id"]; ?>
+
+                                    #<?php
+                                    echo (int)$order["order_id"];
+                                    ?>
+
                                 </span>
+
                             </td>
 
+
+                            <!-- CUSTOMER -->
                             <td>
+
                                 <?php
                                 echo htmlspecialchars(
                                     $order["name"]
                                 );
                                 ?>
+
                             </td>
 
+
+                            <!-- EMAIL -->
                             <td>
+
                                 <?php
                                 echo htmlspecialchars(
                                     $order["email"]
                                 );
                                 ?>
+
                             </td>
 
+
+                            <!-- DATE -->
                             <td>
+
                                 <?php
                                 echo date(
                                     "M d, Y",
-                                    strtotime($order["order_date"])
+                                    strtotime(
+                                        $order["order_date"]
+                                    )
                                 );
                                 ?>
+
                             </td>
 
+
+                            <!-- TOTAL -->
                             <td>
 
                                 <span class="amount">
@@ -288,17 +526,27 @@ $result = $conn->query($sql);
 
                             </td>
 
+
+                            <!-- PAYMENT METHOD -->
                             <td>
+
                                 <?php
                                 echo htmlspecialchars(
-                                    $order["payment_method"]
+                                    $order["payment_method"] ?? "-"
                                 );
                                 ?>
+
                             </td>
 
+
+                            <!-- STATUS -->
                             <td>
 
-                                <span class="status <?php echo htmlspecialchars($status); ?>">
+                                <span
+                                    class="status <?php
+                                    echo htmlspecialchars($status);
+                                    ?>"
+                                >
 
                                     <?php
                                     echo ucfirst(
@@ -312,14 +560,103 @@ $result = $conn->query($sql);
 
                             </td>
 
+
+                            <!-- ACTION -->
                             <td>
 
-                                <a
-                                    href="order-details.php?order_id=<?php echo (int)$order["order_id"]; ?>"
-                                    class="view-btn"
-                                >
-                                    View
-                                </a>
+                                <div class="action-buttons">
+
+                                    <!-- VIEW -->
+                                    <a
+                                        href="order-details.php?order_id=<?php
+                                        echo (int)$order["order_id"];
+                                        ?>"
+                                        class="view-btn"
+                                    >
+                                        View
+                                    </a>
+
+
+                                    <?php if ($status === "pending"): ?>
+
+                                        <!-- CONFIRM -->
+                                        <form
+                                            method="POST"
+                                            class="action-form"
+                                            onsubmit="return confirm(
+                                                'Are you sure you want to confirm Order #<?php
+                                                echo (int)$order["order_id"];
+                                                ?>?'
+                                            );"
+                                        >
+
+                                            <input
+                                                type="hidden"
+                                                name="order_id"
+                                                value="<?php
+                                                echo (int)$order["order_id"];
+                                                ?>"
+                                            >
+
+                                            <input
+                                                type="hidden"
+                                                name="action"
+                                                value="confirm"
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                class="confirm-btn"
+                                            >
+                                                Confirm
+                                            </button>
+
+                                        </form>
+
+
+                                        <!-- CANCEL -->
+                                        <form
+                                            method="POST"
+                                            class="action-form"
+                                            onsubmit="return confirm(
+                                                'Are you sure you want to cancel Order #<?php
+                                                echo (int)$order["order_id"];
+                                                ?>?'
+                                            );"
+                                        >
+
+                                            <input
+                                                type="hidden"
+                                                name="order_id"
+                                                value="<?php
+                                                echo (int)$order["order_id"];
+                                                ?>"
+                                            >
+
+                                            <input
+                                                type="hidden"
+                                                name="action"
+                                                value="cancel"
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                class="cancel-btn"
+                                            >
+                                                Cancel
+                                            </button>
+
+                                        </form>
+
+                                    <?php else: ?>
+
+                                        <span class="no-action">
+                                            No action
+                                        </span>
+
+                                    <?php endif; ?>
+
+                                </div>
 
                             </td>
 
@@ -332,7 +669,9 @@ $result = $conn->query($sql);
                     <tr>
 
                         <td colspan="8">
+
                             No customer orders found.
+
                         </td>
 
                     </tr>
