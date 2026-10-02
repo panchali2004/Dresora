@@ -253,22 +253,22 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "admin") {
 
             <!-- RENTALS -->
 
-            <a href="#" class="card">
+          <a href="orders.php" class="card">
 
-                <h3>
-                    📦 Rentals
-                </h3>
+    <h3>
+        📦 Rentals
+    </h3>
 
-                <p>
-                    Manage customer rental
-                    orders and requests.
-                </p>
+    <p>
+        Manage customer rental
+        orders and requests.
+    </p>
 
-                <span class="card-button">
-                    Coming Soon
-                </span>
+    <span class="card-button">
+        Manage Orders
+    </span>
 
-            </a>
+</a>
 
 
             <!-- USERS -->

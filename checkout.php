@@ -1,8 +1,9 @@
-
 <?php
+
 session_start();
 
 require_once "config/database.php";
+
 
 /* =========================
    CUSTOMER LOGIN CHECK
@@ -20,7 +21,7 @@ $user_id = (int)$_SESSION["user_id"];
    GET SELECTED CART ITEMS
 ========================= */
 
-$sql = "SELECT
+$sql = "SELECT 
             cart_item_id,
             product_id,
             product_name,
@@ -38,6 +39,11 @@ $sql = "SELECT
         ORDER BY created_at DESC";
 
 $stmt = $conn->prepare($sql);
+
+if (!$stmt) {
+    die("Database Error: " . $conn->error);
+}
+
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 
@@ -45,6 +51,7 @@ $result = $stmt->get_result();
 
 $cart_items = [];
 $total_amount = 0;
+
 
 while ($row = $result->fetch_assoc()) {
 
@@ -66,6 +73,7 @@ $stmt->close();
 ========================= */
 
 if (count($cart_items) === 0) {
+
     header("Location: cart.php");
     exit;
 }
@@ -75,7 +83,7 @@ if (count($cart_items) === 0) {
    GET USER DETAILS
 ========================= */
 
-$user_sql = "SELECT
+$user_sql = "SELECT 
                 name,
                 email,
                 phone,
@@ -84,10 +92,16 @@ $user_sql = "SELECT
              WHERE user_id = ?";
 
 $user_stmt = $conn->prepare($user_sql);
+
+if (!$user_stmt) {
+    die("Database Error: " . $conn->error);
+}
+
 $user_stmt->bind_param("i", $user_id);
 $user_stmt->execute();
 
 $user_result = $user_stmt->get_result();
+
 $user = $user_result->fetch_assoc();
 
 $user_stmt->close();
@@ -98,8 +112,13 @@ $user_stmt->close();
 ========================= */
 
 $order_success = false;
+
 $order_id = null;
+
 $error_message = "";
+
+$payment_method = "";
+
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -133,18 +152,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     } else {
 
-        /*
-         * Start transaction
-         */
+
+        /* =========================
+           START TRANSACTION
+        ========================= */
+
         $conn->begin_transaction();
 
+
         try {
+
 
             /* =========================
                INSERT INTO ORDERS
             ========================= */
 
             $status = "Pending";
+
+
+            /*
+             * We do NOT store expected_return_date
+             * in orders because each dress can have
+             * its own rental date.
+             *
+             * Rental dates are stored in order_items.
+             */
 
             $order_sql = "INSERT INTO orders
                             (
@@ -163,7 +195,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                 ?
                             )";
 
+
             $order_stmt = $conn->prepare($order_sql);
+
+
+            if (!$order_stmt) {
+                throw new Exception(
+                    "Order prepare failed: " . $conn->error
+                );
+            }
+
 
             $order_stmt->bind_param(
                 "issd",
@@ -173,9 +214,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $total_amount
             );
 
-            $order_stmt->execute();
+
+            if (!$order_stmt->execute()) {
+
+                throw new Exception(
+                    "Order insert failed: " .
+                    $order_stmt->error
+                );
+            }
+
+
+            /* Get newly created Order ID */
 
             $order_id = $conn->insert_id;
+
 
             $order_stmt->close();
 
@@ -190,6 +242,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                 dress_id,
                                 quantity,
                                 size,
+                                start_date,
+                                expected_return_date,
+                                rental_days,
                                 rental_price
                             )
                          VALUES
@@ -198,29 +253,73 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                 ?,
                                 ?,
                                 ?,
+                                ?,
+                                ?,
+                                ?,
                                 ?
                             )";
 
+
             $item_stmt = $conn->prepare($item_sql);
+
+
+            if (!$item_stmt) {
+
+                throw new Exception(
+                    "Order item prepare failed: " .
+                    $conn->error
+                );
+            }
+
+
+            /*
+             * IMPORTANT:
+             * We must loop through every selected cart item.
+             */
 
             foreach ($cart_items as $item) {
 
+
                 $dress_id = (int)$item["product_id"];
+
                 $quantity = (int)$item["quantity"];
+
                 $size = $item["size"];
-                $rental_price = (float)$item["price"];
+
+                $start_date = $item["start_date"];
+
+                $expected_return_date =
+                    $item["expected_return_date"];
+
+                $rental_days =
+                    (int)$item["rental_days"];
+
+                $rental_price =
+                    (float)$item["price"];
+
 
                 $item_stmt->bind_param(
-                    "iiisd",
+                    "iiissiid",
                     $order_id,
                     $dress_id,
                     $quantity,
                     $size,
+                    $start_date,
+                    $expected_return_date,
+                    $rental_days,
                     $rental_price
                 );
 
-                $item_stmt->execute();
+
+                if (!$item_stmt->execute()) {
+
+                    throw new Exception(
+                        "Order item insert failed: " .
+                        $item_stmt->error
+                    );
+                }
             }
+
 
             $item_stmt->close();
 
@@ -233,14 +332,39 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                            WHERE user_id = ?
                            AND selected = 1";
 
+
             $delete_stmt = $conn->prepare($delete_sql);
-            $delete_stmt->bind_param("i", $user_id);
-            $delete_stmt->execute();
+
+
+            if (!$delete_stmt) {
+
+                throw new Exception(
+                    "Cart delete prepare failed: " .
+                    $conn->error
+                );
+            }
+
+
+            $delete_stmt->bind_param(
+                "i",
+                $user_id
+            );
+
+
+            if (!$delete_stmt->execute()) {
+
+                throw new Exception(
+                    "Cart delete failed: " .
+                    $delete_stmt->error
+                );
+            }
+
+
             $delete_stmt->close();
 
 
             /* =========================
-               COMMIT
+               COMMIT TRANSACTION
             ========================= */
 
             $conn->commit();
@@ -250,15 +374,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         } catch (Exception $e) {
 
+
+            /* =========================
+               ROLLBACK
+            ========================= */
+
             $conn->rollback();
 
-            $error_message = "Order Error: " . $e->getMessage();
+            $error_message =
+                "Order Error: " .
+                $e->getMessage();
         }
     }
 }
+
 ?>
 
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -283,7 +416,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
         body {
+
             font-family: Arial, sans-serif;
+
             background:
                 linear-gradient(
                     135deg,
@@ -292,6 +427,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 );
 
             color: #5d405c;
+
             min-height: 100vh;
         }
 
@@ -301,12 +437,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         ========================== */
 
         .navbar {
+
             background: #5d405c;
 
             padding: 18px 7%;
 
             display: flex;
+
             justify-content: space-between;
+
             align-items: center;
 
             box-shadow:
@@ -316,23 +455,33 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
         .logo {
+
             color: white;
+
             font-size: 27px;
+
             font-weight: bold;
+
             letter-spacing: 2px;
+
             text-decoration: none;
         }
 
 
         .nav-links {
+
             display: flex;
+
             gap: 25px;
         }
 
 
         .nav-links a {
+
             color: white;
+
             text-decoration: none;
+
             font-size: 15px;
 
             transition: 0.2s;
@@ -340,6 +489,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
         .nav-links a:hover {
+
             color: #f5dff0;
         }
 
@@ -349,7 +499,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         ========================== */
 
         .container {
+
             width: 92%;
+
             max-width: 1150px;
 
             margin: 45px auto;
@@ -361,20 +513,27 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         ========================== */
 
         .title {
+
             text-align: center;
+
             margin-bottom: 35px;
         }
 
 
         .title h1 {
+
             color: #5d405c;
+
             font-size: 34px;
+
             margin-bottom: 8px;
         }
 
 
         .title p {
+
             color: #777;
+
             font-size: 15px;
         }
 
@@ -384,6 +543,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         ========================== */
 
         .checkout-grid {
+
             display: grid;
 
             grid-template-columns:
@@ -400,7 +560,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         ========================== */
 
         .box {
-            background: rgba(255, 255, 255, 0.95);
+
+            background:
+                rgba(255, 255, 255, 0.95);
 
             padding: 28px;
 
@@ -415,6 +577,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
         .box h2 {
+
             color: #8b5a83;
 
             margin-bottom: 22px;
@@ -428,11 +591,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         ========================== */
 
         .form-group {
+
             margin-bottom: 19px;
         }
 
 
         .form-group label {
+
             display: block;
 
             margin-bottom: 8px;
@@ -533,29 +698,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             opacity: 0;
         }
 
-.payment-content {
 
-    height: 105px;
+        .payment-content {
 
-    padding: 17px;
+            height: 105px;
 
-    border:
-        2px solid #eadfea;
+            padding: 17px;
 
-    border-radius: 12px;
+            border:
+                2px solid #eadfea;
 
-    background: #fffafc;
+            border-radius: 12px;
 
-    display: flex;
+            background: #fffafc;
 
-    align-items: center;
+            display: flex;
 
-    gap: 12px;
+            align-items: center;
 
-    box-sizing: border-box;
+            gap: 12px;
 
-    transition: 0.25s;
-}
+            box-sizing: border-box;
+
+            transition: 0.25s;
+        }
 
 
         .payment-icon {
@@ -893,7 +1059,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 font-size: 13px;
             }
-
         }
 
 
@@ -935,7 +1100,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 font-size: 28px;
             }
-
         }
 
     </style>
@@ -996,13 +1160,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             🎉
         </div>
 
+
         <h1>
             Rental Order Successful!
         </h1>
 
+
         <p>
             Thank you for renting with Dresora.
         </p>
+
 
         <p class="order-number">
 
@@ -1014,15 +1181,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         </p>
 
+
         <p>
 
             Payment Method:
 
             <strong>
-                <?php echo htmlspecialchars($payment_method); ?>
+                <?php
+                echo htmlspecialchars(
+                    $payment_method
+                );
+                ?>
             </strong>
 
         </p>
+
 
         <p>
 
@@ -1035,7 +1208,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </p>
 
 
-        <a href="index.php" class="home-btn">
+        <a
+            href="index.php"
+            class="home-btn"
+        >
             Back to Home
         </a>
 
@@ -1101,6 +1277,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         Full Name
                     </label>
 
+
                     <input
                         type="text"
                         id="name"
@@ -1121,6 +1298,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <label for="phone">
                         Phone Number
                     </label>
+
 
                     <input
                         type="text"
@@ -1143,6 +1321,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         Email
                     </label>
 
+
                     <input
                         type="email"
                         id="email"
@@ -1163,6 +1342,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <label for="address">
                         Shipping Address
                     </label>
+
 
                     <textarea
                         id="address"
@@ -1299,6 +1479,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                         <div class="item-info">
 
+
                             <h3>
 
                                 <?php
@@ -1386,6 +1567,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                             </p>
 
+
                         </div>
 
                     </div>
@@ -1453,4 +1635,3 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 </body>
 
 </html>
-

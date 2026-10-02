@@ -284,6 +284,60 @@
             font-weight: bold;
         }
 
+        /* SIZE AVAILABILITY */
+
+        #sizeAvailability {
+            margin-top: 8px;
+            margin-bottom: 20px;
+            color: #777078;
+            font-size: 14px;
+        }
+
+        /* QUANTITY */
+
+        .quantity-selector {
+            margin-bottom: 20px;
+        }
+
+        .quantity-selector label {
+            display: block;
+            margin-bottom: 8px;
+            color: #5d405c;
+            font-weight: bold;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quantity-controls button {
+            width: 38px;
+            height: 38px;
+            border: 1px solid #dcc6d8;
+            border-radius: 8px;
+            background: white;
+            color: #5d405c;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .quantity-controls button:hover {
+            border-color: #8b5a83;
+        }
+
+        #quantity {
+            width: 55px;
+            height: 38px;
+            text-align: center;
+            border: 1px solid #dcc6d8;
+            border-radius: 8px;
+            color: #5d405c;
+            font-weight: bold;
+            outline: none;
+        }
+
         @media (max-width: 768px) {
 
             .details-container {
@@ -306,6 +360,7 @@
             .rental-dates input {
                 width: 100%;
             }
+
         }
 
     </style>
@@ -398,12 +453,16 @@
         <div class="details-gallery">
 
             <div class="details-image">
+
                 <img id="productImage"
                      src=""
                      alt="Dress">
+
             </div>
 
-            <div id="thumbnailContainer" class="thumbnail-container"></div>
+            <div id="thumbnailContainer"
+                 class="thumbnail-container">
+            </div>
 
         </div>
 
@@ -490,6 +549,30 @@
                         XL
                     </label>
 
+                </div>
+
+                <div id="sizeAvailability">
+                    Select a size to see availability.
+                </div>
+
+                <!-- QUANTITY -->
+                <div class="quantity-selector">
+                    <label for="quantity">Quantity</label>
+
+                    <div class="quantity-controls">
+                        <button type="button" onclick="changeQuantity(-1)">−</button>
+
+                        <input
+                            type="number"
+                            id="quantity"
+                            value="1"
+                            min="1"
+                            max="1"
+                            readonly
+                        >
+
+                        <button type="button" onclick="changeQuantity(1)">+</button>
+                    </div>
                 </div>
 
             </div>
@@ -628,7 +711,7 @@ const products = {
         category: "Party Dress",
         price: 3000,
         image: "images/party1.jpg",
-        images: ["images/party1.jpg", "images/party1-2.jpg"] ,
+        images: ["images/party1.jpg", "images/party1-2.jpg"],
         description: "A beautiful and elegant party dress suitable for special occasions and celebrations."
     },
 
@@ -637,7 +720,7 @@ const products = {
         category: "Party Dress",
         price: 3200,
         image: "images/party2.jpg",
-        images: ["images/party2.jpg", "images/party2-2.jpg"] ,
+        images: ["images/party2.jpg", "images/party2-2.jpg"],
         description: "A stylish sparkle dress designed for parties and special events."
     },
 
@@ -646,7 +729,7 @@ const products = {
         category: "Party Dress",
         price: 2800,
         image: "images/party3.jpg",
-        images: ["images/party3.jpg", "images/party3-2.jpg"] ,
+        images: ["images/party3.jpg", "images/party3-2.jpg"],
         description: "A charming rose-inspired party dress perfect for celebrations."
     },
 
@@ -655,7 +738,7 @@ const products = {
         category: "Party Dress",
         price: 3500,
         image: "images/party4.jpg",
-        images: ["images/party4.jpg", "images/party4-2.jpg"] ,
+        images: ["images/party4.jpg", "images/party4-2.jpg"],
         description: "A glamorous dress designed for parties and memorable occasions."
     },
 
@@ -664,7 +747,7 @@ const products = {
         category: "Party Dress",
         price: 3300,
         image: "images/party5.jpg",
-        images: ["images/party5.jpg", "images/party5-2.jpg"] ,
+        images: ["images/party5.jpg", "images/party5-2.jpg"],
         description: "A sophisticated velvet dress with an elegant party style."
     },
 
@@ -674,7 +757,7 @@ const products = {
         category: "Wedding Dress",
         price: 5000,
         image: "images/wedding1.jpg",
-        images: ["images/wedding1.jpg", "images/wedding1-2.jpg"] ,
+        images: ["images/wedding1.jpg", "images/wedding1-2.jpg"],
         description: "A beautiful wedding dress designed for an elegant bridal appearance."
     },
 
@@ -683,7 +766,7 @@ const products = {
         category: "Wedding Dress",
         price: 5500,
         image: "images/wedding2.jpg",
-        images: ["images/wedding2.jpg", "images/wedding2-2.jpg"] ,
+        images: ["images/wedding2.jpg", "images/wedding2-2.jpg"],
         description: "A princess-style wedding dress for a graceful and elegant look."
     },
 
@@ -692,7 +775,7 @@ const products = {
         category: "Wedding Dress",
         price: 4800,
         image: "images/wedding3.jpg",
-        images: ["images/wedding3.jpg", "images/wedding3-2.jpg"] ,
+        images: ["images/wedding3.jpg", "images/wedding3-2.jpg"],
         description: "An elegant bridal dress suitable for special wedding celebrations."
     },
 
@@ -701,7 +784,7 @@ const products = {
         category: "Wedding Dress",
         price: 5200,
         image: "images/wedding4.jpg",
-        images: ["images/wedding4.jpg", "images/wedding4-2.jpg"] ,
+        images: ["images/wedding4.jpg", "images/wedding4-2.jpg"],
         description: "A beautiful pearl-inspired wedding dress with a sophisticated design."
     },
 
@@ -710,7 +793,7 @@ const products = {
         category: "Wedding Dress",
         price: 4900,
         image: "images/wedding5.jpg",
-        images: ["images/wedding5.jpg", "images/wedding5-2.jpg"] ,
+        images: ["images/wedding5.jpg", "images/wedding5-2.jpg"],
         description: "A classic bridal gown designed for a timeless wedding look."
     },
 
@@ -720,7 +803,7 @@ const products = {
         category: "Evening Dress",
         price: 3500,
         image: "images/evening1.jpg",
-        images: ["images/evening1.jpg", "images/evening1-2.jpg"] ,
+        images: ["images/evening1.jpg", "images/evening1-2.jpg"],
         description: "An elegant evening dress suitable for dinners and special events."
     },
 
@@ -729,7 +812,7 @@ const products = {
         category: "Evening Dress",
         price: 3700,
         image: "images/evening2.jpg",
-        images: ["images/evening2.jpg", "images/evening2-2.jpg"] ,
+        images: ["images/evening2.jpg", "images/evening2-2.jpg"],
         description: "A stylish satin dress perfect for evening occasions."
     },
 
@@ -738,7 +821,7 @@ const products = {
         category: "Evening Dress",
         price: 3400,
         image: "images/evening3.jpg",
-        images: ["images/evening3.jpg", "images/evening3-2.jpg"] ,
+        images: ["images/evening3.jpg", "images/evening3-2.jpg"],
         description: "A classic black evening dress with a sophisticated appearance."
     },
 
@@ -747,7 +830,7 @@ const products = {
         category: "Evening Dress",
         price: 4200,
         image: "images/evening4.jpg",
-        images: ["images/evening4.jpg", "images/evening4-2.jpg"] ,
+        images: ["images/evening4.jpg", "images/evening4-2.jpg"],
         description: "A graceful long gown designed for elegant evening occasions."
     },
 
@@ -756,7 +839,7 @@ const products = {
         category: "Evening Dress",
         price: 3900,
         image: "images/evening5.jpg",
-        images: ["images/evening5.jpg", "images/evening5-2.jpg"] ,
+        images: ["images/evening5.jpg", "images/evening5-2.jpg"],
         description: "A beautiful shimmer dress that adds an elegant touch to special events."
     },
 
@@ -766,7 +849,7 @@ const products = {
         category: "Casual Dress",
         price: 2500,
         image: "images/casual1.jpg",
-        images: ["images/casual1.jpg", "images/casual1-2.jpg"] ,
+        images: ["images/casual1.jpg", "images/casual1-2.jpg"],
         description: "A fresh floral dress suitable for casual daytime occasions."
     },
 
@@ -775,7 +858,7 @@ const products = {
         category: "Casual Dress",
         price: 2200,
         image: "images/casual2.jpg",
-        images: ["images/casual2.jpg", "images/casual2-2.jpg"] ,
+        images: ["images/casual2.jpg", "images/casual2-2.jpg"],
         description: "A comfortable cotton dress for a simple and relaxed look."
     },
 
@@ -784,7 +867,7 @@ const products = {
         category: "Casual Dress",
         price: 2400,
         image: "images/casual3.jpg",
-        images: ["images/casual3.jpg", "images/casual3-2.jpg"] ,
+        images: ["images/casual3.jpg", "images/casual3-2.jpg"],
         description: "A stylish midi dress suitable for casual occasions."
     },
 
@@ -793,7 +876,7 @@ const products = {
         category: "Casual Dress",
         price: 2300,
         image: "images/casual4.jpg",
-        images: ["images/casual4.jpg", "images/casual4-2.jpg"] ,
+        images: ["images/casual4.jpg", "images/casual4-2.jpg"],
         description: "A light and comfortable dress perfect for summer days."
     },
 
@@ -802,7 +885,7 @@ const products = {
         category: "Casual Dress",
         price: 2100,
         image: "images/casual5.jpg",
-        images: ["images/casual5.jpg", "images/casual5-2.jpg"] ,
+        images: ["images/casual5.jpg", "images/casual5-2.jpg"],
         description: "A comfortable casual dress designed for everyday occasions."
     },
 
@@ -812,7 +895,7 @@ const products = {
         category: "Cocktail Dress",
         price: 3200,
         image: "images/cocktail1.jpg",
-        images: ["images/cocktail1.jpg", "images/cocktail1-2.jpg"] ,
+        images: ["images/cocktail1.jpg", "images/cocktail1-2.jpg"],
         description: "A modern cocktail dress suitable for stylish celebrations."
     },
 
@@ -821,7 +904,7 @@ const products = {
         category: "Cocktail Dress",
         price: 3400,
         image: "images/cocktail2.jpg",
-        images: ["images/cocktail2.jpg", "images/cocktail2-2.jpg"] ,
+        images: ["images/cocktail2.jpg", "images/cocktail2-2.jpg"],
         description: "A sophisticated satin cocktail dress for special occasions."
     },
 
@@ -830,7 +913,7 @@ const products = {
         category: "Cocktail Dress",
         price: 3100,
         image: "images/cocktail3.jpg",
-        images: ["images/cocktail3.jpg", "images/cocktail3-2.jpg"] ,
+        images: ["images/cocktail3.jpg", "images/cocktail3-2.jpg"],
         description: "A chic dress designed for elegant cocktail events."
     },
 
@@ -839,7 +922,7 @@ const products = {
         category: "Cocktail Dress",
         price: 3000,
         image: "images/cocktail4.jpg",
-        images: ["images/cocktail4.jpg", "images/cocktail4-2.jpg"] ,
+        images: ["images/cocktail4.jpg", "images/cocktail4-2.jpg"],
         description: "A classic cocktail dress with a timeless style."
     },
 
@@ -848,7 +931,7 @@ const products = {
         category: "Cocktail Dress",
         price: 2900,
         image: "images/cocktail5.jpg",
-        images: ["images/cocktail5.jpg", "images/cocktail5-2.jpg"] ,
+        images: ["images/cocktail5.jpg", "images/cocktail5-2.jpg"],
         description: "A stylish short cocktail dress suitable for parties and events."
     },
 
@@ -858,7 +941,7 @@ const products = {
         category: "Formal Dress",
         price: 3600,
         image: "images/formal1.jpg",
-        images: ["images/formal1.jpg", "images/formal1-2.jpg"] ,
+        images: ["images/formal1.jpg", "images/formal1-2.jpg"],
         description: "An elegant formal dress suitable for professional and formal events."
     },
 
@@ -867,7 +950,7 @@ const products = {
         category: "Formal Dress",
         price: 4000,
         image: "images/formal2.jpg",
-        images: ["images/formal2.jpg", "images/formal2-2.jpg"] ,
+        images: ["images/formal2.jpg", "images/formal2-2.jpg"],
         description: "A classic formal gown designed for sophisticated occasions."
     },
 
@@ -876,7 +959,7 @@ const products = {
         category: "Formal Dress",
         price: 2800,
         image: "images/formal3.jpg",
-        images: ["images/formal3.jpg", "images/formal3-2.jpg"] ,
+        images: ["images/formal3.jpg", "images/formal3-2.jpg"],
         description: "A professional formal dress suitable for office and business occasions."
     },
 
@@ -885,7 +968,7 @@ const products = {
         category: "Formal Dress",
         price: 3800,
         image: "images/formal4.jpg",
-        images: ["images/formal4.jpg", "images/formal4-2.jpg"] ,
+        images: ["images/formal4.jpg", "images/formal4-2.jpg"],
         description: "A graceful long formal dress for important occasions."
     },
 
@@ -894,7 +977,7 @@ const products = {
         category: "Formal Dress",
         price: 4300,
         image: "images/formal5.jpg",
-        images: ["images/formal5.jpg", "images/formal5-2.jpg"] ,
+        images: ["images/formal5.jpg", "images/formal5-2.jpg"],
         description: "A premium formal dress designed for an elegant and professional appearance."
     }
 
@@ -902,17 +985,25 @@ const products = {
 
 
 /* =========================
-   GET PRODUCT ID
+   GET PRODUCT FROM DATABASE
 ========================= */
 
 <?php
+
 require_once "config/database.php";
 
 $dbProduct = null;
 
+$sizeStock = [];
+
 if (isset($_GET["db_id"])) {
 
     $db_id = intval($_GET["db_id"]);
+
+
+    /* =========================
+       GET PRODUCT
+    ========================= */
 
     $sql = "SELECT
                 d.dress_id,
@@ -929,50 +1020,220 @@ if (isset($_GET["db_id"])) {
                 ON d.category_id = c.category_id
             WHERE d.dress_id = ?";
 
+
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $db_id);
+
+    $stmt->bind_param(
+        "i",
+        $db_id
+    );
+
     $stmt->execute();
 
-    $result = $stmt->get_result();
+    $result =
+        $stmt->get_result();
+
 
     if ($result->num_rows > 0) {
-        $dbProduct = $result->fetch_assoc();
+
+        $dbProduct =
+            $result->fetch_assoc();
+
     }
 
+
     $stmt->close();
+
+
+    /* =========================
+       GET SIZE STOCK
+    ========================= */
+
+    $stock_sql = "SELECT
+                      size,
+                      quantity
+                  FROM dress_size_stock
+                  WHERE dress_id = ?
+                  ORDER BY FIELD(size, 'S', 'M', 'L', 'XL')";
+
+
+    $stock_stmt =
+        $conn->prepare($stock_sql);
+
+
+    $stock_stmt->bind_param(
+        "i",
+        $db_id
+    );
+
+
+    $stock_stmt->execute();
+
+
+    $stock_result =
+        $stock_stmt->get_result();
+
+
+    while (
+        $stock_row =
+        $stock_result->fetch_assoc()
+    ) {
+
+        $sizeStock[
+            $stock_row["size"]
+        ] =
+            (int)$stock_row["quantity"];
+
+    }
+
+
+    $stock_stmt->close();
+
 }
+
 ?>
+
+
+/* =========================
+   GET URL PARAMETERS
+========================= */
+
 const urlParams =
     new URLSearchParams(
         window.location.search
     );
 
+
 const productId =
     urlParams.get("id");
+
+
+/* =========================
+   DATABASE PRODUCT
+========================= */
 
 const dbProduct =
     <?php echo json_encode($dbProduct); ?>;
 
+
+/* =========================
+   SIZE STOCK
+========================= */
+
+const sizeStock =
+    <?php echo json_encode($sizeStock); ?>;
+
+
+/* =========================
+   PRODUCT OBJECT
+========================= */
+
 let product = null;
+
 
 if (dbProduct) {
 
+    let mainImage =
+        dbProduct.image_url ||
+        "images/no-image.jpg";
+
+    let databaseImages = [];
+
+
+    /*
+     * MAIN IMAGE
+     */
+
+    databaseImages.push(mainImage);
+
+
+    /*
+     * AUTOMATICALLY FIND SECOND IMAGE
+     *
+     * Example:
+     *
+     * images/dress1.jpg
+     *
+     * becomes:
+     *
+     * images/dress1-2.jpg
+     */
+
+    if (mainImage !== "images/no-image.jpg") {
+
+        const lastDot =
+            mainImage.lastIndexOf(".");
+
+        if (lastDot !== -1) {
+
+            const imageName =
+                mainImage.substring(
+                    0,
+                    lastDot
+                );
+
+            const extension =
+                mainImage.substring(
+                    lastDot
+                );
+
+
+            const secondImage =
+                imageName +
+                "-2" +
+                extension;
+
+
+            databaseImages.push(
+                secondImage
+            );
+
+        }
+
+    }
+
+
     product = {
-        id: dbProduct.dress_id,
-        name: dbProduct.dress_name,
-        category: dbProduct.category_name || "Dress",
-        price: Number(dbProduct.rental_price),
-        image: dbProduct.image_url || "images/no-image.jpg",
-        images: [
-            dbProduct.image_url || "images/no-image.jpg"
-        ],
-        description: dbProduct.description || "",
-        size: dbProduct.size || ""
+
+        id:
+            dbProduct.dress_id,
+
+        name:
+            dbProduct.dress_name,
+
+        category:
+            dbProduct.category_name ||
+            "Dress",
+
+        price:
+            Number(
+                dbProduct.rental_price
+            ),
+
+        image:
+            databaseImages[0],
+
+        images:
+            databaseImages,
+
+        description:
+            dbProduct.description ||
+            "",
+
+        size:
+            dbProduct.size ||
+            "",
+
+        sizeStock:
+            sizeStock
+
     };
+
 
 } else if (productId) {
 
-    product = products[productId];
+    product =
+        products[productId];
 
 }
 
@@ -982,6 +1243,7 @@ if (dbProduct) {
 ========================= */
 
 if (product) {
+
 
     document.getElementById(
         "productName"
@@ -1008,36 +1270,96 @@ if (product) {
 
 
     const productImage =
-        document.getElementById("productImage");
+        document.getElementById(
+            "productImage"
+        );
+
 
     const thumbnailContainer =
-        document.getElementById("thumbnailContainer");
+        document.getElementById(
+            "thumbnailContainer"
+        );
 
-    productImage.src = product.images[0];
-    productImage.alt = product.name;
 
-    thumbnailContainer.innerHTML = "";
+    productImage.src =
+        product.images[0];
 
-    product.images.forEach(function(image, index) {
 
-        const thumbnail = document.createElement("img");
+    productImage.alt =
+        product.name;
 
-        thumbnail.src = image;
-        thumbnail.alt = product.name + " view " + (index + 1);
-        thumbnail.className = "thumbnail" + (index === 0 ? " active" : "");
 
-        thumbnail.addEventListener("click", function() {
-            productImage.src = image;
+    thumbnailContainer.innerHTML =
+        "";
 
-            document.querySelectorAll(".thumbnail").forEach(function(item) {
-                item.classList.remove("active");
-            });
 
-            thumbnail.classList.add("active");
-        });
+    product.images.forEach(
+        function(image, index) {
 
-        thumbnailContainer.appendChild(thumbnail);
-    });
+
+            const thumbnail =
+                document.createElement(
+                    "img"
+                );
+
+
+            thumbnail.src =
+                image;
+
+
+            thumbnail.alt =
+                product.name +
+                " view " +
+                (index + 1);
+
+
+            thumbnail.className =
+                "thumbnail" +
+                (
+                    index === 0
+                        ? " active"
+                        : ""
+                );
+
+
+            thumbnail.addEventListener(
+                "click",
+                function() {
+
+
+                    productImage.src =
+                        image;
+
+
+                    document
+                        .querySelectorAll(
+                            ".thumbnail"
+                        )
+                        .forEach(
+                            function(item) {
+
+                                item.classList.remove(
+                                    "active"
+                                );
+
+                            }
+                        );
+
+
+                    thumbnail.classList.add(
+                        "active"
+                    );
+
+                }
+            );
+
+
+            thumbnailContainer.appendChild(
+                thumbnail
+            );
+
+        }
+    );
 
 
     calculateTotal();
@@ -1050,26 +1372,122 @@ if (product) {
 ========================= */
 
 const startDateInput =
-    document.getElementById("startDate");
+    document.getElementById(
+        "startDate"
+    );
+
 
 const today =
     new Date();
 
+
 const todayYear =
     today.getFullYear();
 
+
 const todayMonth =
-    String(today.getMonth() + 1)
-        .padStart(2, "0");
+    String(
+        today.getMonth() + 1
+    ).padStart(2, "0");
+
 
 const todayDay =
-    String(today.getDate())
-        .padStart(2, "0");
+    String(
+        today.getDate()
+    ).padStart(2, "0");
+
 
 const todayString =
     `${todayYear}-${todayMonth}-${todayDay}`;
 
-startDateInput.min = todayString;
+
+startDateInput.min =
+    todayString;
+
+
+/* =========================
+   SIZE AVAILABILITY + QUANTITY
+========================= */
+
+const sizeAvailability =
+    document.getElementById("sizeAvailability");
+
+const quantityInput =
+    document.getElementById("quantity");
+
+
+document.querySelectorAll('input[name="size"]').forEach(
+    function(radio) {
+
+        radio.addEventListener("change", function() {
+
+            const selectedSize = this.value;
+
+            let available =
+                Number(product?.sizeStock?.[selectedSize] || 0);
+
+            if (product?.sizeStock &&
+                Object.keys(product.sizeStock).length > 0) {
+
+                if (available > 0) {
+                    sizeAvailability.textContent =
+                        "Available: " + available;
+                    sizeAvailability.style.color = "#5d405c";
+                } else {
+                    sizeAvailability.textContent =
+                        "Not available";
+                    sizeAvailability.style.color = "#b34d4d";
+                }
+
+                quantityInput.max = Math.max(available, 1);
+
+                if (Number(quantityInput.value) > available) {
+                    quantityInput.value = available > 0 ? available : 1;
+                }
+
+            } else {
+
+                sizeAvailability.textContent =
+                    "Availability will be checked when you add to cart.";
+
+                quantityInput.max = 1;
+                quantityInput.value = 1;
+            }
+
+        });
+
+    }
+);
+
+
+function changeQuantity(change) {
+
+    const selectedSize =
+        document.querySelector('input[name="size"]:checked');
+
+    if (!selectedSize) {
+        alert("Please select a size first.");
+        return;
+    }
+
+    const maxQuantity =
+        Number(quantityInput.max || 1);
+
+    let currentQuantity =
+        Number(quantityInput.value || 1);
+
+    currentQuantity += change;
+
+    if (currentQuantity < 1) {
+        currentQuantity = 1;
+    }
+
+    if (currentQuantity > maxQuantity) {
+        currentQuantity = maxQuantity;
+    }
+
+    quantityInput.value = currentQuantity;
+}
 
 
 /* =========================
@@ -1078,11 +1496,17 @@ startDateInput.min = todayString;
 
 function calculateExpectedReturnDate() {
 
+
     const startDate =
-        document.getElementById("startDate").value;
+        document.getElementById(
+            "startDate"
+        ).value;
+
 
     const expectedReturn =
-        document.getElementById("expectedReturnDate");
+        document.getElementById(
+            "expectedReturnDate"
+        );
 
 
     if (!startDate) {
@@ -1093,11 +1517,15 @@ function calculateExpectedReturnDate() {
         calculateTotal();
 
         return;
+
     }
 
 
     const date =
-        new Date(startDate + "T00:00:00");
+        new Date(
+            startDate +
+            "T00:00:00"
+        );
 
 
     /*
@@ -1113,13 +1541,17 @@ function calculateExpectedReturnDate() {
     const year =
         date.getFullYear();
 
+
     const month =
-        String(date.getMonth() + 1)
-            .padStart(2, "0");
+        String(
+            date.getMonth() + 1
+        ).padStart(2, "0");
+
 
     const day =
-        String(date.getDate())
-            .padStart(2, "0");
+        String(
+            date.getDate()
+        ).padStart(2, "0");
 
 
     const formattedDate =
@@ -1141,13 +1573,18 @@ function calculateExpectedReturnDate() {
 
 function calculateTotal() {
 
+
     if (!product) {
+
         return;
+
     }
 
 
     const totalPrice =
-        document.getElementById("totalPrice");
+        document.getElementById(
+            "totalPrice"
+        );
 
 
     /*
@@ -1155,12 +1592,17 @@ function calculateTotal() {
        rental price for the first 5 days.
     */
 
-    if (!document.getElementById("startDate").value) {
+    if (
+        !document.getElementById(
+            "startDate"
+        ).value
+    ) {
 
         totalPrice.textContent =
             "0";
 
         return;
+
     }
 
 
@@ -1176,11 +1618,15 @@ function calculateTotal() {
 
 function addToCart() {
 
+
     if (!product) {
 
-        alert("Product not found.");
+        alert(
+            "Product not found."
+        );
 
         return;
+
     }
 
 
@@ -1201,6 +1647,7 @@ function addToCart() {
         );
 
         return;
+
     }
 
 
@@ -1225,6 +1672,7 @@ function addToCart() {
         );
 
         return;
+
     }
 
 
@@ -1234,7 +1682,8 @@ function addToCart() {
 
     const date =
         new Date(
-            startDate + "T00:00:00"
+            startDate +
+            "T00:00:00"
         );
 
 
@@ -1246,13 +1695,17 @@ function addToCart() {
     const year =
         date.getFullYear();
 
+
     const month =
-        String(date.getMonth() + 1)
-            .padStart(2, "0");
+        String(
+            date.getMonth() + 1
+        ).padStart(2, "0");
+
 
     const day =
-        String(date.getDate())
-            .padStart(2, "0");
+        String(
+            date.getDate()
+        ).padStart(2, "0");
 
 
     const expectedReturnDate =
@@ -1263,13 +1716,38 @@ function addToCart() {
        RENTAL DETAILS
     ========================= */
 
-    const rentalDays = 5;
+    const rentalDays =
+        5;
+
 
     const baseRentalPrice =
         product.price;
 
-   
-    const quantity = 1;
+
+    const quantity =
+        Number(document.getElementById("quantity").value || 1);
+
+
+    /* =========================
+       CHECK SIZE STOCK
+    ========================= */
+
+    if (product.sizeStock &&
+        Object.keys(product.sizeStock).length > 0) {
+
+        const available =
+            Number(product.sizeStock[size] || 0);
+
+        if (available <= 0) {
+            alert("Selected size is not available.");
+            return;
+        }
+
+        if (quantity > available) {
+            alert("Only " + available + " item(s) are available in size " + size + ".");
+            return;
+        }
+    }
 
 
     /* =========================
@@ -1280,65 +1758,77 @@ function addToCart() {
         new FormData();
 
 
-   formData.append(
-    "product_id",
-    product.id
-);
+    formData.append(
+        "product_id",
+        product.id
+    );
+
 
     formData.append(
         "product_name",
         product.name
     );
 
+
     formData.append(
         "category",
         product.category
     );
+
 
     formData.append(
         "price",
         product.price
     );
 
+
     formData.append(
         "image",
         product.image
     );
+
 
     formData.append(
         "size",
         size
     );
 
+
     formData.append(
         "start_date",
         startDate
     );
+
 
     formData.append(
         "expected_return_date",
         expectedReturnDate
     );
 
+
     formData.append(
         "rental_days",
         rentalDays
     );
+
 
     formData.append(
         "allowed_rental_days",
         5
     );
 
+
     formData.append(
         "base_rental_price",
         baseRentalPrice
     );
 
+
     formData.append(
         "late_fee_per_day",
         500
     );
+
 
     formData.append(
         "quantity",
@@ -1350,75 +1840,73 @@ function addToCart() {
        SEND REQUEST
     ========================= */
 
-    fetch("add_to_cart.php", {
+    fetch(
+        "add_to_cart.php",
+        {
 
-        method: "POST",
+            method: "POST",
 
-        body: formData
+            body: formData
 
-    })
+        }
+    )
 
-    .then(function(response) {
+    .then(
+        function(response) {
 
-        return response.text();
+            return response.text();
 
-    })
+        }
+    )
 
-    .then(function(result) {
+    .then(
+        function(result) {
 
-        if (result.trim() === "success") {
 
-            updateCartCount();
+            if (
+                result.trim() ===
+                "success"
+            ) {
+
+
+                updateCartCount();
+
+
+                alert(
+                    product.name +
+                    " has been added to your cart."
+                );
+
+
+            } else {
+
+
+                alert(
+                    result
+                );
+
+            }
+
+        }
+    )
+
+    .catch(
+        function(error) {
+
+
+            console.error(
+                error
+            );
+
 
             alert(
-                product.name +
-                " has been added to your cart."
+                "Something went wrong while adding the item to the cart."
             );
 
         }
-
-        else {
-
-            alert(result);
-
-        }
-
-    })
-
-    .catch(function(error) {
-
-        console.error(error);
-
-        alert(
-            "Something went wrong while adding the item to the cart."
-        );
-
-    });
+    );
 
 }
-
-
-    
-
-    
-
-
-    
-
-
-
-   
-
-
-
- 
-
-
-
-
-
-
-    
 
 
 /* =========================
@@ -1427,29 +1915,41 @@ function addToCart() {
 
 function updateCartCount() {
 
+
     const cart =
         JSON.parse(
-            localStorage.getItem("cart")
+            localStorage.getItem(
+                "cart"
+            )
         ) || [];
 
 
     const totalQuantity =
-        cart.reduce(function(total, item) {
+        cart.reduce(
+            function(total, item) {
 
-            return total +
-                Number(item.quantity || 1);
+                return total +
+                    Number(
+                        item.quantity || 1
+                    );
 
-        }, 0);
+            },
+            0
+        );
 
 
-    document.querySelectorAll(
-        ".cart-count"
-    ).forEach(function(count) {
+    document
+        .querySelectorAll(
+            ".cart-count"
+        )
+        .forEach(
+            function(count) {
 
-        count.textContent =
-            totalQuantity;
+                count.textContent =
+                    totalQuantity;
 
-    });
+            }
+        );
 
 }
 

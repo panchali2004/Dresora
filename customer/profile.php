@@ -726,7 +726,7 @@ if (!$user) {
         </li>
 
         <li>
-            <a href="cart.html">
+            <a href="../cart.php">
                 🛒 My Cart
             </a>
         </li>
@@ -738,7 +738,7 @@ if (!$user) {
         </li>
 
         <li>
-            <a href="orders.php">
+            <a href="my-orders.php">
                 📦 My Orders
             </a>
         </li>
