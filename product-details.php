@@ -1006,19 +1006,18 @@ if (isset($_GET["db_id"])) {
     ========================= */
 
     $sql = "SELECT
-                d.dress_id,
-                d.dress_name,
-                d.description,
-                d.size,
-                d.colour,
-                d.rental_price,
-                d.stock_quantity,
-                d.image_url,
-                c.category_name
-            FROM dresses d
-            LEFT JOIN categories c
-                ON d.category_id = c.category_id
-            WHERE d.dress_id = ?";
+            d.dress_id,
+            d.dress_name,
+            d.description,
+            d.size,
+            d.colour,
+            d.rental_price,
+            d.image_url,
+            c.category_name
+        FROM dresses d
+        LEFT JOIN categories c
+            ON d.category_id = c.category_id
+        WHERE d.dress_id = ?";
 
 
     $stmt = $conn->prepare($sql);
@@ -1133,70 +1132,56 @@ let product = null;
 
 if (dbProduct) {
 
-    let mainImage =
-        dbProduct.image_url ||
-        "images/no-image.jpg";
+    /*
+     * image_url from database:
+     *
+     * images/dress_xxx_1.jpg,images/dress_xxx_2.jpg
+     *
+     * Split both images correctly.
+     */
 
     let databaseImages = [];
 
 
-    /*
-     * MAIN IMAGE
-     */
+    if (dbProduct.image_url) {
 
-    databaseImages.push(mainImage);
+        databaseImages = dbProduct.image_url
+            .split(",")
+            .map(function(image) {
 
+                return image.trim();
 
-    /*
-     * AUTOMATICALLY FIND SECOND IMAGE
-     *
-     * Example:
-     *
-     * images/dress1.jpg
-     *
-     * becomes:
-     *
-     * images/dress1-2.jpg
-     */
+            })
+            .filter(function(image) {
 
-    if (mainImage !== "images/no-image.jpg") {
+                return image !== "";
 
-        const lastDot =
-            mainImage.lastIndexOf(".");
-
-        if (lastDot !== -1) {
-
-            const imageName =
-                mainImage.substring(
-                    0,
-                    lastDot
-                );
-
-            const extension =
-                mainImage.substring(
-                    lastDot
-                );
-
-
-            const secondImage =
-                imageName +
-                "-2" +
-                extension;
-
-
-            databaseImages.push(
-                secondImage
-            );
-
-        }
+            });
 
     }
 
 
+    /*
+     * If database has no image
+     */
+
+    if (databaseImages.length === 0) {
+
+        databaseImages.push(
+            "images/no-image.jpg"
+        );
+
+    }
+
+
+    /*
+     * Create product object
+     */
+
     product = {
 
         id:
-            dbProduct.dress_id,
+            Number(dbProduct.dress_id),
 
         name:
             dbProduct.dress_name,
@@ -1232,18 +1217,20 @@ if (dbProduct) {
 
 } else if (productId) {
 
+    /*
+     * Static old products
+     */
+
     product =
         products[productId];
 
 }
-
 
 /* =========================
    DISPLAY PRODUCT
 ========================= */
 
 if (product) {
-
 
     document.getElementById(
         "productName"
@@ -1281,6 +1268,10 @@ if (product) {
         );
 
 
+    /* =========================
+       MAIN IMAGE
+    ========================= */
+
     productImage.src =
         product.images[0];
 
@@ -1289,13 +1280,31 @@ if (product) {
         product.name;
 
 
+    /*
+     * If main image fails
+     */
+
+    productImage.onerror =
+        function() {
+
+            this.onerror = null;
+
+            this.src =
+                "images/no-image.jpg";
+
+        };
+
+
+    /* =========================
+       THUMBNAILS
+    ========================= */
+
     thumbnailContainer.innerHTML =
         "";
 
 
     product.images.forEach(
         function(image, index) {
-
 
             const thumbnail =
                 document.createElement(
@@ -1322,10 +1331,20 @@ if (product) {
                 );
 
 
+            thumbnail.onerror =
+                function() {
+
+                    this.onerror = null;
+
+                    this.src =
+                        "images/no-image.jpg";
+
+                };
+
+
             thumbnail.addEventListener(
                 "click",
                 function() {
-
 
                     productImage.src =
                         image;
@@ -1365,6 +1384,7 @@ if (product) {
     calculateTotal();
 
 }
+            
 
 
 /* =========================

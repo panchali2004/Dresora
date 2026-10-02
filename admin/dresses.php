@@ -4,23 +4,32 @@ session_start();
 
 require_once "../config/database.php";
 
-// Admin only
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "admin") {
+
+// =========================================================
+// ADMIN ACCESS CHECK
+// =========================================================
+
+if (
+    !isset($_SESSION["user_id"]) ||
+    $_SESSION["role"] !== "admin"
+) {
     header("Location: ../account.php");
     exit;
 }
+
 
 $message = "";
 $messageType = "";
 
 
-/* =========================================================
-   DELETE DRESS
-========================================================= */
+// =========================================================
+// DELETE DRESS
+// =========================================================
 
 if (isset($_GET["delete"])) {
 
     $dress_id = intval($_GET["delete"]);
+
 
     // Delete size stock first
     $stockStmt = $conn->prepare(
@@ -54,171 +63,124 @@ if (isset($_GET["delete"])) {
 
         if ($stmt->execute()) {
 
-            $message =
-                "Dress deleted successfully.";
-
-            $messageType =
-                "success";
+            $message = "Dress deleted successfully.";
+            $messageType = "success";
 
         } else {
 
-            $message =
-                "Unable to delete the dress.";
-
-            $messageType =
-                "error";
+            $message = "Unable to delete the dress.";
+            $messageType = "error";
         }
 
         $stmt->close();
 
     } else {
 
-        $message =
-            "Database error: " . $conn->error;
-
-        $messageType =
-            "error";
+        $message = "Database error: " . $conn->error;
+        $messageType = "error";
     }
 }
 
 
-/* =========================================================
-   ADD DRESS
-========================================================= */
+// =========================================================
+// ADD DRESS
+// =========================================================
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
-    /* -----------------------------------------------------
-       BASIC DETAILS
-    ----------------------------------------------------- */
+    // -----------------------------------------------------
+    // BASIC DETAILS
+    // -----------------------------------------------------
 
-    $dress_name =
-        trim(
-            $_POST["dress_name"] ?? ""
-        );
+    $dress_name = trim(
+        $_POST["dress_name"] ?? ""
+    );
 
+    $description = trim(
+        $_POST["description"] ?? ""
+    );
 
-    $description =
-        trim(
-            $_POST["description"] ?? ""
-        );
+    $category_id = intval(
+        $_POST["category_id"] ?? 0
+    );
 
+    $colour = trim(
+        $_POST["colour"] ?? ""
+    );
 
-    $category_id =
-        intval(
-            $_POST["category_id"] ?? 0
-        );
-
-
-    $colour =
-        trim(
-            $_POST["colour"] ?? ""
-        );
+    $rental_price = floatval(
+        $_POST["rental_price"] ?? 0
+    );
 
 
-    $rental_price =
-        floatval(
-            $_POST["rental_price"] ?? 0
-        );
-
-
-    /* -----------------------------------------------------
-       SIZE QUANTITIES
-    ----------------------------------------------------- */
+    // -----------------------------------------------------
+    // SIZE QUANTITIES
+    // -----------------------------------------------------
 
     $sizeQuantities = [
 
-        "S" =>
-            max(
-                0,
-                intval(
-                    $_POST["size_S"] ?? 0
-                )
-            ),
+        "S" => max(
+            0,
+            intval($_POST["size_S"] ?? 0)
+        ),
 
-        "M" =>
-            max(
-                0,
-                intval(
-                    $_POST["size_M"] ?? 0
-                )
-            ),
+        "M" => max(
+            0,
+            intval($_POST["size_M"] ?? 0)
+        ),
 
-        "L" =>
-            max(
-                0,
-                intval(
-                    $_POST["size_L"] ?? 0
-                )
-            ),
+        "L" => max(
+            0,
+            intval($_POST["size_L"] ?? 0)
+        ),
 
-        "XL" =>
-            max(
-                0,
-                intval(
-                    $_POST["size_XL"] ?? 0
-                )
-            )
+        "XL" => max(
+            0,
+            intval($_POST["size_XL"] ?? 0)
+        )
 
     ];
 
 
-    /* -----------------------------------------------------
-       TOTAL STOCK
-    ----------------------------------------------------- */
-
-    $stock_quantity =
-        array_sum(
-            $sizeQuantities
-        );
-
-
-    /* -----------------------------------------------------
-       IMAGE UPLOAD
-    ----------------------------------------------------- */
+    // -----------------------------------------------------
+    // IMAGE UPLOAD
+    // -----------------------------------------------------
 
     $imagePaths = [];
+
+    $uploadError = false;
 
 
     if (
         isset($_FILES["dress_images"]) &&
-        is_array(
-            $_FILES["dress_images"]["name"]
-        )
+        is_array($_FILES["dress_images"]["name"])
     ) {
 
-        $uploadDir =
-            "../images/";
-
+        $uploadDir = "../images/";
 
         $allowedExtensions = [
-
             "jpg",
             "jpeg",
             "png",
             "webp"
-
         ];
 
 
-        $fileCount =
-            count(
-                $_FILES["dress_images"]["name"]
-            );
+        $fileCount = count(
+            $_FILES["dress_images"]["name"]
+        );
 
 
-        /*
-         * Maximum 2 images
-         */
-
+        // Maximum 2 images
         if ($fileCount > 2) {
 
             $message =
                 "Please upload a maximum of 2 images.";
 
-            $messageType =
-                "error";
+            $messageType = "error";
+
+            $uploadError = true;
 
         } else {
 
@@ -230,23 +192,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             ) {
 
 
-                /*
-                 * Skip empty file
-                 */
-
+                // Skip empty file
                 if (
                     $_FILES["dress_images"]["error"][$i]
                     === UPLOAD_ERR_NO_FILE
                 ) {
-
                     continue;
                 }
 
 
-                /*
-                 * Check upload error
-                 */
-
+                // Upload error
                 if (
                     $_FILES["dress_images"]["error"][$i]
                     !== UPLOAD_ERR_OK
@@ -255,8 +210,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $message =
                         "There was an error uploading an image.";
 
-                    $messageType =
-                        "error";
+                    $messageType = "error";
+
+                    $uploadError = true;
 
                     break;
                 }
@@ -270,19 +226,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $_FILES["dress_images"]["tmp_name"][$i];
 
 
-                $extension =
-                    strtolower(
-                        pathinfo(
-                            $originalFileName,
-                            PATHINFO_EXTENSION
-                        )
-                    );
+                $extension = strtolower(
+                    pathinfo(
+                        $originalFileName,
+                        PATHINFO_EXTENSION
+                    )
+                );
 
 
-                /*
-                 * Check file type
-                 */
-
+                // Check extension
                 if (
                     !in_array(
                         $extension,
@@ -293,17 +245,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $message =
                         "Only JPG, JPEG, PNG and WEBP images are allowed.";
 
-                    $messageType =
-                        "error";
+                    $messageType = "error";
+
+                    $uploadError = true;
 
                     break;
                 }
 
 
-                /*
-                 * Create unique filename
-                 */
-
+                // Create unique filename
                 $newFileName =
                     uniqid(
                         "dress_",
@@ -320,10 +270,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $newFileName;
 
 
-                /*
-                 * Move image to images folder
-                 */
-
+                // Move image
                 if (
                     move_uploaded_file(
                         $tmpName,
@@ -340,8 +287,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $message =
                         "Failed to save image.";
 
-                    $messageType =
-                        "error";
+                    $messageType = "error";
+
+                    $uploadError = true;
 
                     break;
                 }
@@ -353,41 +301,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $message =
             "Please upload at least one image.";
 
-        $messageType =
-            "error";
+        $messageType = "error";
+
+        $uploadError = true;
     }
 
 
-    /* -----------------------------------------------------
-       IMAGE DATABASE VALUE
-    ----------------------------------------------------- */
-
-    if (
-        count($imagePaths) > 0
-    ) {
-
-        /*
-         * Example:
-         *
-         * images/dress_123_1.jpg,
-         * images/dress_456_2.jpg
-         */
-
-        $image_url =
-            implode(
-                ",",
-                $imagePaths
-            );
-
-    } else {
-
-        $image_url = "";
-    }
-
-
-    /* =====================================================
-       VALIDATION
-    ===================================================== */
+    // =====================================================
+    // VALIDATION
+    // =====================================================
 
     if (
         $dress_name === "" ||
@@ -399,57 +321,74 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $message =
             "Please fill in all required fields.";
 
-        $messageType =
-            "error";
+        $messageType = "error";
 
     }
 
-    elseif (
-        count($imagePaths) === 0
-    ) {
+    elseif ($uploadError) {
+
+        // Upload error already has a message
+
+    }
+
+    elseif (count($imagePaths) === 0) {
 
         $message =
             "Please upload at least one dress image.";
 
-        $messageType =
-            "error";
+        $messageType = "error";
 
     }
 
     elseif (
-        $stock_quantity <= 0
+        array_sum($sizeQuantities) <= 0
     ) {
 
         $message =
             "Please enter quantity for at least one size.";
 
-        $messageType =
-            "error";
+        $messageType = "error";
 
     }
 
     else {
 
 
-        /* =================================================
-           INSERT DRESS
-        ================================================= */
+        // -------------------------------------------------
+        // IMAGE URL
+        // -------------------------------------------------
 
         /*
-         * The old dresses table has a size column.
+         * Example:
          *
-         * We keep it for compatibility.
-         *
-         * Actual stock is stored in
-         * dress_size_stock.
+         * images/dress_abc_1.jpg,
+         * images/dress_abc_2.jpg
          */
 
-        $size =
-            "S,M,L,XL";
+        $image_url = implode(
+            ",",
+            $imagePaths
+        );
 
 
-        $sql =
-            "INSERT INTO dresses
+        // -------------------------------------------------
+        // SIZE FIELD
+        // -------------------------------------------------
+
+        /*
+         * Keep this field for compatibility
+         * with the existing dresses table.
+         */
+
+        $size = "S,M,L,XL";
+
+
+        // -------------------------------------------------
+        // INSERT DRESS
+        // -------------------------------------------------
+
+        $sql = "
+            INSERT INTO dresses
             (
                 category_id,
                 dress_name,
@@ -457,7 +396,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 size,
                 colour,
                 rental_price,
-                stock_quantity,
                 image_url
             )
             VALUES
@@ -468,56 +406,42 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 ?,
                 ?,
                 ?,
-                ?,
                 ?
-            )";
+            )
+        ";
 
 
-        $stmt =
-            $conn->prepare(
-                $sql
-            );
+        $stmt = $conn->prepare($sql);
 
 
         if ($stmt) {
 
 
             $stmt->bind_param(
-                "issssdis",
+                "issssds",
                 $category_id,
                 $dress_name,
                 $description,
                 $size,
                 $colour,
                 $rental_price,
-                $stock_quantity,
                 $image_url
             );
 
 
-            /* ---------------------------------------------
-               EXECUTE DRESS INSERT
-            --------------------------------------------- */
-
-            if (
-                $stmt->execute()
-            ) {
+            if ($stmt->execute()) {
 
 
-                /*
-                 * Get newly created dress ID
-                 */
-
-                $dress_id =
-                    $conn->insert_id;
+                // Newly created dress ID
+                $dress_id = $conn->insert_id;
 
 
-                /* =========================================
-                   INSERT SIZE STOCK
-                ========================================= */
+                // -------------------------------------------------
+                // INSERT SIZE STOCK
+                // -------------------------------------------------
 
-                $stockSql =
-                    "INSERT INTO dress_size_stock
+                $stockSql = "
+                    INSERT INTO dress_size_stock
                     (
                         dress_id,
                         size,
@@ -528,7 +452,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         ?,
                         ?,
                         ?
-                    )";
+                    )
+                ";
 
 
                 $stockStmt =
@@ -542,19 +467,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     foreach (
                         $sizeQuantities
-                        as $sizeName =>
-                        $quantity
+                        as $sizeName => $quantity
                     ) {
 
 
-                        /*
-                         * Save only sizes
-                         * with stock > 0
-                         */
-
-                        if (
-                            $quantity > 0
-                        ) {
+                        // Save only sizes with quantity
+                        if ($quantity > 0) {
 
 
                             $stockStmt->bind_param(
@@ -578,6 +496,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     $messageType =
                         "success";
+
 
                 } else {
 
@@ -616,34 +535,36 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 
-/* =========================================================
-   GET CATEGORIES
-========================================================= */
+// =========================================================
+// GET CATEGORIES
+// =========================================================
 
-$categories =
-    $conn->query(
-        "SELECT
-            category_id,
-            category_name
-         FROM categories
-         ORDER BY category_name ASC"
-    );
+$categories = $conn->query(
+    "
+    SELECT
+        category_id,
+        category_name
+    FROM categories
+    ORDER BY category_name ASC
+    "
+);
 
 
-/* =========================================================
-   GET DRESSES
-========================================================= */
+// =========================================================
+// GET DRESSES
+// =========================================================
 
-$dresses =
-    $conn->query(
-        "SELECT
-            d.*,
-            c.category_name
-         FROM dresses d
-         LEFT JOIN categories c
-            ON d.category_id = c.category_id
-         ORDER BY d.dress_id DESC"
-    );
+$dresses = $conn->query(
+    "
+    SELECT
+        d.*,
+        c.category_name
+    FROM dresses d
+    LEFT JOIN categories c
+        ON d.category_id = c.category_id
+    ORDER BY d.dress_id DESC
+    "
+);
 
 ?>
 
@@ -739,7 +660,7 @@ $dresses =
 
             width: 92%;
 
-            max-width: 1200px;
+            max-width: 1250px;
 
             margin: 35px auto;
         }
@@ -923,10 +844,10 @@ $dresses =
 
 
         /* =================================================
-           IMAGE INPUT
+           HELP TEXT
         ================================================= */
 
-        .image-help {
+        .help-text {
 
             margin-top: 7px;
 
@@ -987,11 +908,21 @@ $dresses =
         }
 
 
+        .table-box h2 {
+
+            color: #5d405c;
+
+            margin-top: 0;
+        }
+
+
         table {
 
             width: 100%;
 
             border-collapse: collapse;
+
+            min-width: 900px;
         }
 
 
@@ -1003,6 +934,8 @@ $dresses =
             border-bottom: 1px solid #eee;
 
             text-align: left;
+
+            vertical-align: middle;
         }
 
 
@@ -1022,7 +955,7 @@ $dresses =
 
             display: flex;
 
-            gap: 6px;
+            gap: 7px;
 
             align-items: center;
         }
@@ -1039,6 +972,38 @@ $dresses =
             border-radius: 5px;
 
             border: 1px solid #ddd;
+        }
+
+
+        /* =================================================
+           SIZE STOCK DISPLAY
+        ================================================= */
+
+        .stock-list {
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 5px;
+        }
+
+
+        .stock-item {
+
+            background: #f8f0f6;
+
+            color: #5d405c;
+
+            padding: 5px 8px;
+
+            border-radius: 5px;
+
+            font-size: 12px;
+
+            font-weight: bold;
+
+            border: 1px solid #ead9e6;
         }
 
 
@@ -1074,7 +1039,6 @@ $dresses =
 
         @media (max-width: 700px) {
 
-
             .form-grid {
 
                 grid-template-columns: 1fr;
@@ -1104,7 +1068,6 @@ $dresses =
 
                 width: 95%;
             }
-
         }
 
     </style>
@@ -1138,7 +1101,7 @@ $dresses =
 
 
 <!-- =====================================================
-     MAIN CONTAINER
+     MAIN
 ===================================================== -->
 
 <div class="container">
@@ -1149,6 +1112,7 @@ $dresses =
     </h1>
 
 
+
     <!-- =================================================
          MESSAGE
     ================================================== -->
@@ -1156,8 +1120,11 @@ $dresses =
     <?php if ($message !== ""): ?>
 
         <div
-            class="message
-            <?php echo htmlspecialchars($messageType); ?>"
+            class="message <?php
+                echo htmlspecialchars(
+                    $messageType
+                );
+            ?>"
         >
 
             <?php
@@ -1173,7 +1140,7 @@ $dresses =
 
 
     <!-- =================================================
-         ADD DRESS
+         ADD DRESS FORM
     ================================================== -->
 
     <div class="form-box">
@@ -1230,17 +1197,21 @@ $dresses =
 
 
                         <?php
+
                         if (
                             $categories &&
                             $categories->num_rows > 0
                         ):
+
                         ?>
 
                             <?php
+
                             while (
                                 $category =
                                 $categories->fetch_assoc()
                             ):
+
                             ?>
 
                                 <option
@@ -1325,7 +1296,7 @@ $dresses =
 
 
                 <!-- =================================================
-                     SIZE QUANTITY
+                     SIZE QUANTITIES
                 ================================================== -->
 
                 <div class="form-group full">
@@ -1342,9 +1313,7 @@ $dresses =
 
                         <div class="size-box">
 
-                            <label
-                                for="size_S"
-                            >
+                            <label for="size_S">
                                 S
                             </label>
 
@@ -1364,9 +1333,7 @@ $dresses =
 
                         <div class="size-box">
 
-                            <label
-                                for="size_M"
-                            >
+                            <label for="size_M">
                                 M
                             </label>
 
@@ -1386,9 +1353,7 @@ $dresses =
 
                         <div class="size-box">
 
-                            <label
-                                for="size_L"
-                            >
+                            <label for="size_L">
                                 L
                             </label>
 
@@ -1408,9 +1373,7 @@ $dresses =
 
                         <div class="size-box">
 
-                            <label
-                                for="size_XL"
-                            >
+                            <label for="size_XL">
                                 XL
                             </label>
 
@@ -1427,9 +1390,11 @@ $dresses =
                     </div>
 
 
-                    <small class="image-help">
-                        Enter the available quantity for each size.
-                        Total stock will be calculated automatically.
+                    <small class="help-text">
+
+                        Enter the available quantity
+                        separately for each size.
+
                     </small>
 
                 </div>
@@ -1456,10 +1421,9 @@ $dresses =
                     >
 
 
-                    <small class="image-help">
+                    <small class="help-text">
 
-                        Select up to 2 images
-                        for this dress.
+                        Select up to 2 images for this dress.
 
                     </small>
 
@@ -1531,7 +1495,7 @@ $dresses =
                     </th>
 
                     <th>
-                        Stock
+                        Size Stock
                     </th>
 
                     <th>
@@ -1548,19 +1512,98 @@ $dresses =
 
 
                 <?php
+
                 if (
                     $dresses &&
                     $dresses->num_rows > 0
                 ):
+
                 ?>
 
 
                     <?php
+
                     while (
                         $dress =
                         $dresses->fetch_assoc()
                     ):
+
                     ?>
+
+
+                        <?php
+
+                        // =========================================
+                        // GET SIZE STOCK FOR THIS DRESS
+                        // =========================================
+
+                        $sizeStock = [
+
+                            "S" => 0,
+                            "M" => 0,
+                            "L" => 0,
+                            "XL" => 0
+
+                        ];
+
+
+                        $sizeStmt = $conn->prepare(
+                            "
+                            SELECT size, quantity
+                            FROM dress_size_stock
+                            WHERE dress_id = ?
+                            "
+                        );
+
+
+                        if ($sizeStmt) {
+
+                            $sizeStmt->bind_param(
+                                "i",
+                                $dress["dress_id"]
+                            );
+
+                            $sizeStmt->execute();
+
+                            $sizeResult =
+                                $sizeStmt->get_result();
+
+
+                            while (
+                                $stock =
+                                $sizeResult->fetch_assoc()
+                            ) {
+
+                                $stockSize =
+                                    $stock["size"];
+
+                                $stockQuantity =
+                                    intval(
+                                        $stock["quantity"]
+                                    );
+
+
+                                if (
+                                    isset(
+                                        $sizeStock[
+                                            $stockSize
+                                        ]
+                                    )
+                                ) {
+
+                                    $sizeStock[
+                                        $stockSize
+                                    ] =
+                                        $stockQuantity;
+                                }
+                            }
+
+
+                            $sizeStmt->close();
+                        }
+
+                        ?>
+
 
 
                         <tr>
@@ -1582,7 +1625,9 @@ $dresses =
 
                             <td>
 
-                                <div class="dress-images">
+                                <div
+                                    class="dress-images"
+                                >
 
                                     <?php
 
@@ -1605,34 +1650,42 @@ $dresses =
 
 
                                     <?php
+
                                     if (
                                         count(
                                             $dressImages
                                         ) > 0
                                     ):
+
                                     ?>
 
 
                                         <?php
+
                                         foreach (
                                             $dressImages
                                             as $dressImage
                                         ):
+
                                         ?>
 
 
                                             <?php
+
                                             $dressImage =
                                                 trim(
                                                     $dressImage
                                                 );
+
                                             ?>
 
 
                                             <?php
+
                                             if (
                                                 $dressImage !== ""
                                             ):
+
                                             ?>
 
                                                 <img
@@ -1652,9 +1705,11 @@ $dresses =
 
                                     <?php else: ?>
 
+
                                         <span>
                                             No image
                                         </span>
+
 
                                     <?php endif; ?>
 
@@ -1669,9 +1724,11 @@ $dresses =
                             <td>
 
                                 <?php
+
                                 echo htmlspecialchars(
                                     $dress["dress_name"]
                                 );
+
                                 ?>
 
                             </td>
@@ -1683,9 +1740,11 @@ $dresses =
                             <td>
 
                                 <?php
+
                                 echo htmlspecialchars(
                                     $dress["category_name"]
                                 );
+
                                 ?>
 
                             </td>
@@ -1697,9 +1756,11 @@ $dresses =
                             <td>
 
                                 <?php
+
                                 echo htmlspecialchars(
                                     $dress["colour"]
                                 );
+
                                 ?>
 
                             </td>
@@ -1713,24 +1774,77 @@ $dresses =
                                 Rs.
 
                                 <?php
+
                                 echo number_format(
                                     (float)
                                     $dress["rental_price"],
                                     2
                                 );
+
                                 ?>
 
                             </td>
 
 
 
-                            <!-- TOTAL STOCK -->
+                            <!-- SIZE STOCK -->
 
                             <td>
 
-                                <?php
-                                echo $dress["stock_quantity"];
-                                ?>
+                                <div
+                                    class="stock-list"
+                                >
+
+
+                                    <span
+                                        class="stock-item"
+                                    >
+
+                                        S:
+                                        <?php
+                                        echo $sizeStock["S"];
+                                        ?>
+
+                                    </span>
+
+
+                                    <span
+                                        class="stock-item"
+                                    >
+
+                                        M:
+                                        <?php
+                                        echo $sizeStock["M"];
+                                        ?>
+
+                                    </span>
+
+
+                                    <span
+                                        class="stock-item"
+                                    >
+
+                                        L:
+                                        <?php
+                                        echo $sizeStock["L"];
+                                        ?>
+
+                                    </span>
+
+
+                                    <span
+                                        class="stock-item"
+                                    >
+
+                                        XL:
+                                        <?php
+                                        echo $sizeStock["XL"];
+                                        ?>
+
+                                    </span>
+
+
+                                </div>
 
                             </td>
 
