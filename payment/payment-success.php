@@ -161,11 +161,13 @@ if ($order_status !== "confirmed") {
 
 if ($payment_status === "unpaid") {
 
-    $update_sql = "UPDATE orders
-                   SET payment_status = 'paid'
-                   WHERE order_id = ?
-                   AND user_id = ?
-                   AND payment_status = 'unpaid'";
+    $update_sql = "
+        UPDATE orders
+        SET payment_status = 'paid'
+        WHERE order_id = ?
+        AND user_id = ?
+        AND payment_status = 'unpaid'
+    ";
 
     $update_stmt = $conn->prepare($update_sql);
 
@@ -187,7 +189,10 @@ if ($payment_status === "unpaid") {
 
     $update_stmt->close();
 
+    /* Update local value as well */
+    $payment_status = "paid";
 }
+
 
 /*
 |--------------------------------------------------------------------------
@@ -204,29 +209,36 @@ $customer_message =
     "Amount: Rs. " .
     number_format($total_amount, 2);
 
+$customer_type = "payment_success";
+
 
 /*
 |--------------------------------------------------------------------------
 | Insert Customer Notification
 |--------------------------------------------------------------------------
+|
+| IMPORTANT:
+| The actual column is notification_type,
+| NOT type.
+|
 */
 
-$customer_sql = "INSERT INTO notifications
-                 (
-                     user_id,
-                     title,
-                     message,
-                     type,
-                     is_read,
-                     created_at
-                 )
-                 VALUES (?, ?, ?, ?, 0, NOW())";
+$customer_sql = "
+    INSERT INTO notifications
+    (
+        user_id,
+        title,
+        message,
+        notification_type,
+        is_read,
+        created_at
+    )
+    VALUES (?, ?, ?, ?, 0, NOW())
+";
 
 $customer_stmt = $conn->prepare($customer_sql);
 
 if ($customer_stmt) {
-
-    $customer_type = "payment_success";
 
     $customer_stmt->bind_param(
         "isss",
@@ -248,21 +260,11 @@ if ($customer_stmt) {
 |--------------------------------------------------------------------------
 */
 
-$admin_sql = "SELECT user_id
-              FROM users
-              WHERE role = 'admin'";
-
-$admin_result = $conn->query($admin_sql);
-
-/*
-|--------------------------------------------------------------------------
-| Get Admin Users
-|--------------------------------------------------------------------------
-*/
-
-$admin_sql = "SELECT user_id
-              FROM users
-              WHERE role = 'admin'";
+$admin_sql = "
+    SELECT user_id
+    FROM users
+    WHERE role = 'admin'
+";
 
 $admin_result = $conn->query($admin_sql);
 
@@ -293,17 +295,18 @@ $admin_type = "payment_received";
 
 if ($admin_result) {
 
-    $admin_notification_sql =
-        "INSERT INTO notifications
-         (
-             user_id,
-             title,
-             message,
-             type,
-             is_read,
-             created_at
-         )
-         VALUES (?, ?, ?, ?, 0, NOW())";
+    $admin_notification_sql = "
+        INSERT INTO notifications
+        (
+            user_id,
+            title,
+            message,
+            notification_type,
+            is_read,
+            created_at
+        )
+        VALUES (?, ?, ?, ?, 0, NOW())
+    ";
 
     $admin_notification_stmt =
         $conn->prepare(
@@ -332,6 +335,8 @@ if ($admin_result) {
         $admin_notification_stmt->close();
     }
 }
+
+
 /*
 |--------------------------------------------------------------------------
 | Display Amount
@@ -344,6 +349,7 @@ $display_amount = number_format(
 );
 
 ?>
+
 
 <!DOCTYPE html>
 
@@ -632,6 +638,7 @@ $display_amount = number_format(
 
                 margin-top: 10px;
             }
+
         }
 
     </style>
