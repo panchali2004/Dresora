@@ -10,7 +10,7 @@ echo '<script>
     localStorage.removeItem("dresoraRole");
     localStorage.removeItem("dresoraDashboard");
 
-    window.location.href = "../account.php";
+    window.location.href = "/Dresora/login.php";
 </script>';
 
 exit;

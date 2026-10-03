@@ -61,12 +61,48 @@ $sql = "SELECT
             order_id,
             total_amount,
             payment_method,
+            payment_status,
             status,
             order_date
         FROM orders
         WHERE user_id = ?
         ORDER BY order_date DESC";
 
+        
+
+$paymentMethod = strtolower(
+    trim($order["payment_method"] ?? "")
+);
+
+$paymentStatus = strtolower(
+    trim($order["payment_status"] ?? "unpaid")
+);
+?>
+
+<?php if (
+    $status === "confirmed" &&
+    $paymentStatus === "unpaid" &&
+    (
+        $paymentMethod === "online payment" ||
+        $paymentMethod === "online" ||
+        $paymentMethod === "payhere"
+    )
+): ?>
+
+    <a
+        href="../payment/payhere-checkout.php?order_id=<?php echo (int)$order["order_id"]; ?>"
+        class="pay-btn"
+    >
+        💳 Pay Now
+    </a>
+
+<?php elseif ($paymentStatus === "paid"): ?>
+
+    <span class="paid-btn">
+        ✓ Paid
+    </span>
+
+<?php endif; ?>
 $stmt = $conn->prepare($sql);
 
 $stmt->bind_param("i", $user_id);
@@ -900,13 +936,22 @@ $stmt->close();
                                                 <!-- Confirmed Order -->
 
                                                <?php
+
+
+
+
 $paymentMethod = strtolower(
     trim($order["payment_method"] ?? "")
+);
+
+$paymentStatus = strtolower(
+    trim($order["payment_status"] ?? "unpaid")
 );
 ?>
 
 <?php if (
     $status === "confirmed" &&
+    $paymentStatus === "unpaid" &&
     (
         $paymentMethod === "online payment" ||
         $paymentMethod === "online" ||
@@ -920,6 +965,12 @@ $paymentMethod = strtolower(
     >
         💳 Pay Now
     </a>
+
+<?php elseif ($paymentStatus === "paid"): ?>
+
+    <span class="paid-btn">
+        ✓ Paid
+    </span>
 
 <?php endif; ?>
                                             </div>

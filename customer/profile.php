@@ -7,7 +7,7 @@ require_once "../config/database.php";
    LOGIN CHECK
 ========================================================= */
 if (!isset($_SESSION["user_id"])) {
-    header("Location: ../login.php");
+    header("Location: ../account.php");
     exit();
 }
 
@@ -1029,7 +1029,7 @@ $notificationStmt->close();
 
     function confirmLogout() {
 
-        window.location.href = "../logout.php";
+        window.location.href = "logout.php";
 
     }
 
