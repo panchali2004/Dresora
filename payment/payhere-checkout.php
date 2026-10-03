@@ -27,6 +27,7 @@ $merchant_secret = "Mzk2NzEzNDI4MTY3NTgxMjg1MjQwMTI0Mzc1MzMzNjAwMjA0Mzk=";
 */
 
 if (!isset($_SESSION["user_id"])) {
+
     header("Location: ../account.php");
     exit;
 }
@@ -41,6 +42,7 @@ $user_id = (int) $_SESSION["user_id"];
 */
 
 if (!isset($_GET["order_id"]) || !is_numeric($_GET["order_id"])) {
+
     die("Invalid order ID.");
 }
 
@@ -51,13 +53,6 @@ $order_id = (int) $_GET["order_id"];
 |--------------------------------------------------------------------------
 | Get Order
 |--------------------------------------------------------------------------
-|
-| Only allow:
-| - Current logged-in user's order
-| - Confirmed order
-| - Online Payment
-| - Unpaid order
-|
 */
 
 $sql = "SELECT
@@ -96,6 +91,7 @@ $stmt->close();
 */
 
 if (!$order) {
+
     die("Order not found.");
 }
 
@@ -106,7 +102,9 @@ if (!$order) {
 |--------------------------------------------------------------------------
 */
 
-$status = strtolower(trim($order["status"] ?? ""));
+$status = strtolower(
+    trim($order["status"] ?? "")
+);
 
 $payment_method = strtolower(
     trim($order["payment_method"] ?? "")
@@ -124,6 +122,7 @@ $payment_status = strtolower(
 */
 
 if ($status !== "confirmed") {
+
     die("This order has not been confirmed by the admin yet.");
 }
 
@@ -139,6 +138,7 @@ if (
     $payment_method !== "online" &&
     $payment_method !== "payhere"
 ) {
+
     die("This order is not an online payment order.");
 }
 
@@ -150,6 +150,7 @@ if (
 */
 
 if ($payment_status === "paid") {
+
     die("This order has already been paid.");
 }
 
@@ -172,6 +173,7 @@ $user_sql = "SELECT
 $user_stmt = $conn->prepare($user_sql);
 
 if (!$user_stmt) {
+
     die("Customer query failed: " . $conn->error);
 }
 
@@ -187,6 +189,7 @@ $user_stmt->close();
 
 
 if (!$user) {
+
     die("Customer details not found.");
 }
 
@@ -197,9 +200,14 @@ if (!$user) {
 |--------------------------------------------------------------------------
 */
 
-$full_name = trim($user["name"] ?? "");
+$full_name = trim(
+    $user["name"] ?? ""
+);
 
-$name_parts = preg_split('/\s+/', $full_name);
+$name_parts = preg_split(
+    '/\s+/',
+    $full_name
+);
 
 $first_name = $name_parts[0] ?? "Customer";
 
@@ -207,7 +215,10 @@ if (count($name_parts) > 1) {
 
     array_shift($name_parts);
 
-    $last_name = implode(" ", $name_parts);
+    $last_name = implode(
+        " ",
+        $name_parts
+    );
 
 } else {
 
@@ -221,11 +232,17 @@ if (count($name_parts) > 1) {
 |--------------------------------------------------------------------------
 */
 
-$email = trim($user["email"] ?? "");
+$email = trim(
+    $user["email"] ?? ""
+);
 
-$phone = trim($user["phone"] ?? "");
+$phone = trim(
+    $user["phone"] ?? ""
+);
 
-$address = trim($user["shipping_address"] ?? "");
+$address = trim(
+    $user["shipping_address"] ?? ""
+);
 
 
 /*
@@ -235,14 +252,17 @@ $address = trim($user["shipping_address"] ?? "");
 */
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+
     die("Invalid customer email address.");
 }
 
 if ($phone === "") {
+
     die("Customer phone number is required.");
 }
 
 if ($address === "") {
+
     $address = "Dresora Customer";
 }
 
@@ -256,6 +276,7 @@ if ($address === "") {
 $amount = (float) $order["total_amount"];
 
 if ($amount <= 0) {
+
     die("Invalid payment amount.");
 }
 
@@ -301,6 +322,7 @@ $amount_formatted = number_format(
 |     )
 | )
 |
+|--------------------------------------------------------------------------
 */
 
 $hashed_secret = strtoupper(
@@ -322,12 +344,10 @@ $hash = strtoupper(
 |--------------------------------------------------------------------------
 | PayHere URLs
 |--------------------------------------------------------------------------
-|
-| Sandbox payment gateway
-|
 */
 
-$payhere_url = "https://sandbox.payhere.lk/pay/checkout";
+$payhere_url =
+    "https://sandbox.payhere.lk/pay/checkout";
 
 
 /*
@@ -335,12 +355,13 @@ $payhere_url = "https://sandbox.payhere.lk/pay/checkout";
 | Return URL
 |--------------------------------------------------------------------------
 |
-| Customer will be redirected here after payment.
+| After successful payment, PayHere redirects
+| the customer to payment-success.php.
 |
 */
 
 $return_url =
-    "http://localhost/Dresora/customer/my-orders.php";
+    "http://localhost/Dresora/payment/payment-success.php?order_id=" . $order_id;
 
 
 /*
@@ -348,7 +369,8 @@ $return_url =
 | Cancel URL
 |--------------------------------------------------------------------------
 |
-| Customer will be redirected here if payment is cancelled.
+| If customer cancels the payment,
+| return to My Orders.
 |
 */
 
@@ -361,12 +383,13 @@ $cancel_url =
 | Notify URL
 |--------------------------------------------------------------------------
 |
+| PayHere server notification URL.
+|
 | IMPORTANT:
-| PayHere server must be able to access this URL publicly.
+| localhost will NOT work for PayHere server
+| notifications.
 |
-| localhost will NOT work for PayHere server notifications.
-|
-| We will configure a public URL later.
+| We can configure a public URL later.
 |
 */
 
@@ -380,7 +403,8 @@ $notify_url =
 |--------------------------------------------------------------------------
 */
 
-$items = "Dresora Dress Rental - Order #" . $order_id;
+$items =
+    "Dresora Dress Rental - Order #" . $order_id;
 
 ?>
 
@@ -392,29 +416,41 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Redirecting to PayHere</title>
 
     <style>
 
         body {
+
             margin: 0;
+
             padding: 0;
+
             font-family: Arial, sans-serif;
+
             background: #fffafc;
+
             color: #5d405c;
 
             display: flex;
+
             justify-content: center;
+
             align-items: center;
 
             min-height: 100vh;
         }
 
+
         .payment-box {
+
             width: 90%;
+
             max-width: 500px;
 
             background: white;
@@ -425,30 +461,46 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
             text-align: center;
 
-            box-shadow: 0 5px 25px rgba(139, 90, 131, 0.15);
+            box-shadow:
+                0 5px 25px
+                rgba(139, 90, 131, 0.15);
         }
 
+
         .payment-box h2 {
+
             color: #8b5a83;
+
             margin-bottom: 15px;
         }
 
+
         .payment-box p {
+
             color: #666;
+
             line-height: 1.6;
         }
 
+
         .amount {
+
             font-size: 24px;
+
             font-weight: bold;
+
             color: #8b5a83;
+
             margin: 20px 0;
         }
 
+
         .pay-button {
+
             border: none;
 
             background: #8b5a83;
+
             color: white;
 
             padding: 12px 30px;
@@ -460,11 +512,15 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
             cursor: pointer;
         }
 
+
         .pay-button:hover {
+
             background: #5d405c;
         }
 
+
         .cancel-link {
+
             display: inline-block;
 
             margin-top: 15px;
@@ -478,24 +534,40 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 </head>
 
+
 <body>
 
 <div class="payment-box">
 
-    <h2>💳 Dresora Online Payment</h2>
+    <h2>
+        💳 Dresora Online Payment
+    </h2>
+
 
     <p>
+
         You are about to make an online payment for
-        <strong>Order #<?php echo $order_id; ?></strong>.
+
+        <strong>
+            Order #<?php echo $order_id; ?>
+        </strong>.
+
     </p>
 
+
     <div class="amount">
-        LKR <?php echo htmlspecialchars($amount_formatted); ?>
+
+        LKR
+        <?php echo htmlspecialchars($amount_formatted); ?>
+
     </div>
 
+
     <p>
+
         You will be redirected to the PayHere Sandbox
         payment gateway.
+
     </p>
 
 
@@ -505,10 +577,14 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
     |--------------------------------------------------------------------------
     -->
 
-    <form method="post"
-          action="<?php echo htmlspecialchars($payhere_url); ?>">
+    <form
+        method="post"
+        action="<?php echo htmlspecialchars($payhere_url); ?>"
+    >
+
 
         <!-- Merchant ID -->
+
         <input
             type="hidden"
             name="merchant_id"
@@ -517,6 +593,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 
         <!-- Return URL -->
+
         <input
             type="hidden"
             name="return_url"
@@ -525,6 +602,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 
         <!-- Cancel URL -->
+
         <input
             type="hidden"
             name="cancel_url"
@@ -533,6 +611,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 
         <!-- Notify URL -->
+
         <input
             type="hidden"
             name="notify_url"
@@ -541,6 +620,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 
         <!-- Order ID -->
+
         <input
             type="hidden"
             name="order_id"
@@ -549,6 +629,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 
         <!-- Item -->
+
         <input
             type="hidden"
             name="items"
@@ -557,6 +638,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 
         <!-- Currency -->
+
         <input
             type="hidden"
             name="currency"
@@ -565,6 +647,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 
         <!-- Amount -->
+
         <input
             type="hidden"
             name="amount"
@@ -573,6 +656,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 
         <!-- Hash -->
+
         <input
             type="hidden"
             name="hash"
@@ -581,6 +665,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 
         <!-- First Name -->
+
         <input
             type="hidden"
             name="first_name"
@@ -589,6 +674,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 
         <!-- Last Name -->
+
         <input
             type="hidden"
             name="last_name"
@@ -597,6 +683,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 
         <!-- Email -->
+
         <input
             type="hidden"
             name="email"
@@ -605,6 +692,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 
         <!-- Phone -->
+
         <input
             type="hidden"
             name="phone"
@@ -613,6 +701,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 
         <!-- Address -->
+
         <input
             type="hidden"
             name="address"
@@ -621,6 +710,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 
         <!-- City -->
+
         <input
             type="hidden"
             name="city"
@@ -629,6 +719,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
 
         <!-- Country -->
+
         <input
             type="hidden"
             name="country"
@@ -640,7 +731,9 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
             type="submit"
             class="pay-button"
         >
+
             Continue to PayHere
+
         </button>
 
     </form>
@@ -650,7 +743,9 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
         href="../customer/my-orders.php"
         class="cancel-link"
     >
+
         ← Back to My Orders
+
     </a>
 
 </div>
@@ -661,7 +756,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 | Auto Submit
 |--------------------------------------------------------------------------
 |
-| This automatically redirects the customer to PayHere.
+| Automatically redirects the customer to PayHere.
 |
 -->
 
@@ -669,9 +764,7 @@ $items = "Dresora Dress Rental - Order #" . $order_id;
 
     window.onload = function () {
 
-        document.querySelector(
-            'form'
-        ).submit();
+        document.querySelector("form").submit();
 
     };
 
