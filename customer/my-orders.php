@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 require_once "../config/database.php";
@@ -39,15 +40,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["cancel_order_id"])) {
 
     $cancel_stmt = $conn->prepare($cancel_sql);
 
-    $cancel_stmt->bind_param(
-        "ii",
-        $cancel_order_id,
-        $user_id
-    );
+    if ($cancel_stmt) {
 
-    $cancel_stmt->execute();
+        $cancel_stmt->bind_param(
+            "ii",
+            $cancel_order_id,
+            $user_id
+        );
 
-    $cancel_stmt->close();
+        $cancel_stmt->execute();
+        $cancel_stmt->close();
+    }
 
     header("Location: my-orders.php");
     exit;
@@ -68,49 +71,18 @@ $sql = "SELECT
         WHERE user_id = ?
         ORDER BY order_date DESC";
 
-        
+$orders = [];
 
-$paymentMethod = strtolower(
-    trim($order["payment_method"] ?? "")
-);
-
-$paymentStatus = strtolower(
-    trim($order["payment_status"] ?? "unpaid")
-);
-?>
-
-<?php if (
-    $status === "confirmed" &&
-    $paymentStatus === "unpaid" &&
-    (
-        $paymentMethod === "online payment" ||
-        $paymentMethod === "online" ||
-        $paymentMethod === "payhere"
-    )
-): ?>
-
-    <a
-        href="../payment/payhere-checkout.php?order_id=<?php echo (int)$order["order_id"]; ?>"
-        class="pay-btn"
-    >
-        💳 Pay Now
-    </a>
-
-<?php elseif ($paymentStatus === "paid"): ?>
-
-    <span class="paid-btn">
-        ✓ Paid
-    </span>
-
-<?php endif; ?>
 $stmt = $conn->prepare($sql);
+
+if (!$stmt) {
+    die("Order query failed: " . $conn->error);
+}
 
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 
 $result = $stmt->get_result();
-
-$orders = [];
 
 while ($row = $result->fetch_assoc()) {
     $orders[] = $row;
@@ -119,6 +91,7 @@ while ($row = $result->fetch_assoc()) {
 $stmt->close();
 
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -389,6 +362,11 @@ $stmt->close();
         }
 
         .status.cancelled {
+            background: #fdecec;
+            color: #b33a3a;
+        }
+
+        .status.rejected {
             background: #fdecec;
             color: #b33a3a;
         }
@@ -752,7 +730,7 @@ $stmt->close();
                 </div>
 
 
-                <?php if (count($orders) > 0): ?>
+                <?php if (!empty($orders)): ?>
 
                     <div class="table-container">
 
@@ -783,9 +761,19 @@ $stmt->close();
                                 <?php foreach ($orders as $order): ?>
 
                                     <?php
+
                                     $status = strtolower(
-                                        trim($order["status"])
+                                        trim($order["status"] ?? "")
                                     );
+
+                                    $paymentMethod = strtolower(
+                                        trim($order["payment_method"] ?? "")
+                                    );
+
+                                    $paymentStatus = strtolower(
+                                        trim($order["payment_status"] ?? "unpaid")
+                                    );
+
                                     ?>
 
                                     <tr>
@@ -933,46 +921,33 @@ $stmt->close();
                                                 <?php endif; ?>
 
 
-                                                <!-- Confirmed Order -->
+                                                <!-- Online Payment -->
 
-                                               <?php
+                                                <?php if (
+                                                    $status === "confirmed" &&
+                                                    $paymentStatus === "unpaid" &&
+                                                    (
+                                                        $paymentMethod === "online payment" ||
+                                                        $paymentMethod === "online" ||
+                                                        $paymentMethod === "payhere"
+                                                    )
+                                                ): ?>
 
+                                                    <a
+                                                        href="../payment/payhere-checkout.php?order_id=<?php echo (int)$order["order_id"]; ?>"
+                                                        class="pay-btn"
+                                                    >
+                                                        💳 Pay Now
+                                                    </a>
 
+                                                <?php elseif ($paymentStatus === "paid"): ?>
 
+                                                    <span class="paid-btn">
+                                                        ✓ Paid
+                                                    </span>
 
-$paymentMethod = strtolower(
-    trim($order["payment_method"] ?? "")
-);
+                                                <?php endif; ?>
 
-$paymentStatus = strtolower(
-    trim($order["payment_status"] ?? "unpaid")
-);
-?>
-
-<?php if (
-    $status === "confirmed" &&
-    $paymentStatus === "unpaid" &&
-    (
-        $paymentMethod === "online payment" ||
-        $paymentMethod === "online" ||
-        $paymentMethod === "payhere"
-    )
-): ?>
-
-    <a
-        href="../payment/payhere-checkout.php?order_id=<?php echo (int)$order["order_id"]; ?>"
-        class="pay-btn"
-    >
-        💳 Pay Now
-    </a>
-
-<?php elseif ($paymentStatus === "paid"): ?>
-
-    <span class="paid-btn">
-        ✓ Paid
-    </span>
-
-<?php endif; ?>
                                             </div>
 
                                         </td>
