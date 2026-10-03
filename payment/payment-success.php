@@ -189,17 +189,20 @@ if ($payment_status === "unpaid") {
 
 }
 
-
 /*
 |--------------------------------------------------------------------------
 | Customer Notification
 |--------------------------------------------------------------------------
 */
 
+$customer_title = "Payment Successful";
+
 $customer_message =
-    "Payment completed successfully for Order #" .
+    "Your payment for Order #" .
     $order_id .
-    ". Thank you for your payment.";
+    " has been completed successfully. " .
+    "Amount: Rs. " .
+    number_format($total_amount, 2);
 
 
 /*
@@ -211,20 +214,26 @@ $customer_message =
 $customer_sql = "INSERT INTO notifications
                  (
                      user_id,
+                     title,
                      message,
+                     type,
                      is_read,
                      created_at
                  )
-                 VALUES (?, ?, 0, NOW())";
+                 VALUES (?, ?, ?, ?, 0, NOW())";
 
 $customer_stmt = $conn->prepare($customer_sql);
 
 if ($customer_stmt) {
 
+    $customer_type = "payment_success";
+
     $customer_stmt->bind_param(
-        "is",
+        "isss",
         $user_id,
-        $customer_message
+        $customer_title,
+        $customer_message,
+        $customer_type
     );
 
     $customer_stmt->execute();
@@ -245,6 +254,18 @@ $admin_sql = "SELECT user_id
 
 $admin_result = $conn->query($admin_sql);
 
+/*
+|--------------------------------------------------------------------------
+| Get Admin Users
+|--------------------------------------------------------------------------
+*/
+
+$admin_sql = "SELECT user_id
+              FROM users
+              WHERE role = 'admin'";
+
+$admin_result = $conn->query($admin_sql);
+
 
 /*
 |--------------------------------------------------------------------------
@@ -252,13 +273,16 @@ $admin_result = $conn->query($admin_sql);
 |--------------------------------------------------------------------------
 */
 
+$admin_title = "Payment Received";
+
 $admin_message =
-    "💳 Payment Received! Customer has successfully paid " .
-    "Rs. " .
+    "Customer has successfully paid Rs. " .
     number_format($total_amount, 2) .
     " for Order #" .
     $order_id .
     ".";
+
+$admin_type = "payment_received";
 
 
 /*
@@ -273,11 +297,13 @@ if ($admin_result) {
         "INSERT INTO notifications
          (
              user_id,
+             title,
              message,
+             type,
              is_read,
              created_at
          )
-         VALUES (?, ?, 0, NOW())";
+         VALUES (?, ?, ?, ?, 0, NOW())";
 
     $admin_notification_stmt =
         $conn->prepare(
@@ -293,9 +319,11 @@ if ($admin_result) {
             $admin_id = (int) $admin["user_id"];
 
             $admin_notification_stmt->bind_param(
-                "is",
+                "isss",
                 $admin_id,
-                $admin_message
+                $admin_title,
+                $admin_message,
+                $admin_type
             );
 
             $admin_notification_stmt->execute();
@@ -304,8 +332,6 @@ if ($admin_result) {
         $admin_notification_stmt->close();
     }
 }
-
-
 /*
 |--------------------------------------------------------------------------
 | Display Amount
