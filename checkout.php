@@ -320,17 +320,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 }
             }
 
-
 /* =========================
    UPDATE DRESS SIZE STOCK
 ========================= */
 
 $stock_sql = "
     UPDATE dress_size_stock
-    SET stock_quantity = stock_quantity - ?
+    SET quantity = quantity - ?
     WHERE dress_id = ?
     AND size = ?
-    AND stock_quantity >= ?
+    AND quantity >= ?
 ";
 
 $stock_stmt = $conn->prepare($stock_sql);
@@ -341,15 +340,11 @@ if (!$stock_stmt) {
     );
 }
 
-
-/* Update stock for each selected cart item */
-
 foreach ($cart_items as $item) {
 
     $dress_id = (int)$item["product_id"];
     $quantity = (int)$item["quantity"];
     $size = trim($item["size"]);
-
 
     $stock_stmt->bind_param(
         "iisi",
@@ -359,19 +354,13 @@ foreach ($cart_items as $item) {
         $quantity
     );
 
-
     if (!$stock_stmt->execute()) {
-
         throw new Exception(
             "Stock update failed: " . $stock_stmt->error
         );
     }
 
-
-    /* Check whether correct size stock was available */
-
     if ($stock_stmt->affected_rows === 0) {
-
         throw new Exception(
             "Not enough stock available for Dress ID: "
             . $dress_id
@@ -382,6 +371,27 @@ foreach ($cart_items as $item) {
 }
 
 $stock_stmt->close();
+
+$delete_sql = "
+    DELETE FROM cart_items
+    WHERE cart_item_id = ?
+";
+
+$delete_stmt = $conn->prepare($delete_sql);
+
+foreach ($cart_items as $item) {
+    $cart_item_id = (int)$item["cart_item_id"];
+
+    $delete_stmt->bind_param("i", $cart_item_id);
+
+    if (!$delete_stmt->execute()) {
+        throw new Exception(
+            "Cart item delete failed: " . $delete_stmt->error
+        );
+    }
+}
+
+$delete_stmt->close();
 
 
             /* =========================
