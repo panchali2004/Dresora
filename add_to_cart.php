@@ -62,10 +62,10 @@ if ($result->num_rows > 0) {
 
     $new_quantity = $row["quantity"] + $quantity;
 
-    $update_sql = "UPDATE cart_items
-                   SET quantity = ?
-                   WHERE cart_item_id = ?";
-
+   $update_sql = "UPDATE cart_items
+               SET quantity = ?
+               WHERE cart_item_id = ?
+               AND user_id = ?";
     $update_stmt = $conn->prepare($update_sql);
 
     if (!$update_stmt) {
@@ -73,11 +73,12 @@ if ($result->num_rows > 0) {
         exit;
     }
 
-    $update_stmt->bind_param(
-        "ii",
-        $new_quantity,
-        $row["cart_item_id"]
-    );
+   $update_stmt->bind_param(
+    "iii",
+    $new_quantity,
+    $row["cart_item_id"],
+    $user_id
+);
 
     if (!$update_stmt->execute()) {
         echo "Update execute error: " . $update_stmt->error;
