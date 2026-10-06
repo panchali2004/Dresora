@@ -338,7 +338,7 @@ unset($_SESSION["login_success"]);
     <div class="hero-image">
 
         <img
-            src="images/dress1.jpg"
+            src="images/dress2.jpg"
             alt="Elegant dress from Dresora"
         >
 

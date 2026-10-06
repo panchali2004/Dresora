@@ -321,46 +321,67 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
 
 
-            $item_stmt->close();
+/* =========================
+   UPDATE DRESS SIZE STOCK
+========================= */
+
+$stock_sql = "
+    UPDATE dress_size_stock
+    SET stock_quantity = stock_quantity - ?
+    WHERE dress_id = ?
+    AND size = ?
+    AND stock_quantity >= ?
+";
+
+$stock_stmt = $conn->prepare($stock_sql);
+
+if (!$stock_stmt) {
+    throw new Exception(
+        "Stock update prepare failed: " . $conn->error
+    );
+}
 
 
-            /* =========================
-               REMOVE SELECTED CART ITEMS
-            ========================= */
+/* Update stock for each selected cart item */
 
-            $delete_sql = "DELETE FROM cart_items
-                           WHERE user_id = ?
-                           AND selected = 1";
+foreach ($cart_items as $item) {
 
-
-            $delete_stmt = $conn->prepare($delete_sql);
+    $dress_id = (int)$item["product_id"];
+    $quantity = (int)$item["quantity"];
+    $size = trim($item["size"]);
 
 
-            if (!$delete_stmt) {
-
-                throw new Exception(
-                    "Cart delete prepare failed: " .
-                    $conn->error
-                );
-            }
-
-
-            $delete_stmt->bind_param(
-                "i",
-                $user_id
-            );
+    $stock_stmt->bind_param(
+        "iisi",
+        $quantity,
+        $dress_id,
+        $size,
+        $quantity
+    );
 
 
-            if (!$delete_stmt->execute()) {
+    if (!$stock_stmt->execute()) {
 
-                throw new Exception(
-                    "Cart delete failed: " .
-                    $delete_stmt->error
-                );
-            }
+        throw new Exception(
+            "Stock update failed: " . $stock_stmt->error
+        );
+    }
 
 
-            $delete_stmt->close();
+    /* Check whether correct size stock was available */
+
+    if ($stock_stmt->affected_rows === 0) {
+
+        throw new Exception(
+            "Not enough stock available for Dress ID: "
+            . $dress_id
+            . " - Size: "
+            . $size
+        );
+    }
+}
+
+$stock_stmt->close();
 
 
             /* =========================
