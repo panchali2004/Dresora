@@ -1,3 +1,4 @@
+```php
 <?php
 
 session_start();
@@ -21,7 +22,7 @@ $user_id = (int)$_SESSION["user_id"];
    GET SELECTED CART ITEMS
 ========================= */
 
-$sql = "SELECT 
+$sql = "SELECT
             cart_item_id,
             product_id,
             product_name,
@@ -53,6 +54,10 @@ $cart_items = [];
 $total_amount = 0;
 
 
+/* =========================
+   CALCULATE SUBTOTAL
+========================= */
+
 while ($row = $result->fetch_assoc()) {
 
     $quantity = (int)$row["quantity"];
@@ -66,6 +71,20 @@ while ($row = $result->fetch_assoc()) {
 }
 
 $stmt->close();
+
+
+/* =========================
+   SHIPPING FEE
+========================= */
+
+$shipping_fee = 350;
+
+
+/* =========================
+   GRAND TOTAL
+========================= */
+
+$grand_total = $total_amount + $shipping_fee;
 
 
 /* =========================
@@ -83,7 +102,7 @@ if (count($cart_items) === 0) {
    GET USER DETAILS
 ========================= */
 
-$user_sql = "SELECT 
+$user_sql = "SELECT
                 name,
                 email,
                 phone,
@@ -176,6 +195,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
              * its own rental date.
              *
              * Rental dates are stored in order_items.
+             *
+             * IMPORTANT:
+             * grand_total includes shipping fee.
              */
 
             $order_sql = "INSERT INTO orders
@@ -200,6 +222,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
             if (!$order_stmt) {
+
                 throw new Exception(
                     "Order prepare failed: " . $conn->error
                 );
@@ -211,7 +234,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $user_id,
                 $status,
                 $payment_method,
-                $total_amount
+                $grand_total
             );
 
 
@@ -274,7 +297,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             /*
              * IMPORTANT:
-             * We must loop through every selected cart item.
+             * Loop through every selected cart item.
              */
 
             foreach ($cart_items as $item) {
@@ -320,78 +343,125 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 }
             }
 
-/* =========================
-   UPDATE DRESS SIZE STOCK
-========================= */
 
-$stock_sql = "
-    UPDATE dress_size_stock
-    SET quantity = quantity - ?
-    WHERE dress_id = ?
-    AND size = ?
-    AND quantity >= ?
-";
+            $item_stmt->close();
 
-$stock_stmt = $conn->prepare($stock_sql);
 
-if (!$stock_stmt) {
-    throw new Exception(
-        "Stock update prepare failed: " . $conn->error
-    );
-}
+            /* =========================
+               UPDATE DRESS SIZE STOCK
+            ========================= */
 
-foreach ($cart_items as $item) {
+            $stock_sql = "
+                UPDATE dress_size_stock
+                SET quantity = quantity - ?
+                WHERE dress_id = ?
+                AND size = ?
+                AND quantity >= ?
+            ";
 
-    $dress_id = (int)$item["product_id"];
-    $quantity = (int)$item["quantity"];
-    $size = trim($item["size"]);
 
-    $stock_stmt->bind_param(
-        "iisi",
-        $quantity,
-        $dress_id,
-        $size,
-        $quantity
-    );
+            $stock_stmt = $conn->prepare($stock_sql);
 
-    if (!$stock_stmt->execute()) {
-        throw new Exception(
-            "Stock update failed: " . $stock_stmt->error
-        );
-    }
 
-    if ($stock_stmt->affected_rows === 0) {
-        throw new Exception(
-            "Not enough stock available for Dress ID: "
-            . $dress_id
-            . " - Size: "
-            . $size
-        );
-    }
-}
+            if (!$stock_stmt) {
 
-$stock_stmt->close();
+                throw new Exception(
+                    "Stock update prepare failed: " .
+                    $conn->error
+                );
+            }
 
-$delete_sql = "
-    DELETE FROM cart_items
-    WHERE cart_item_id = ?
-";
 
-$delete_stmt = $conn->prepare($delete_sql);
+            foreach ($cart_items as $item) {
 
-foreach ($cart_items as $item) {
-    $cart_item_id = (int)$item["cart_item_id"];
+                $dress_id =
+                    (int)$item["product_id"];
 
-    $delete_stmt->bind_param("i", $cart_item_id);
+                $quantity =
+                    (int)$item["quantity"];
 
-    if (!$delete_stmt->execute()) {
-        throw new Exception(
-            "Cart item delete failed: " . $delete_stmt->error
-        );
-    }
-}
+                $size =
+                    trim($item["size"]);
 
-$delete_stmt->close();
+
+                $stock_stmt->bind_param(
+                    "iisi",
+                    $quantity,
+                    $dress_id,
+                    $size,
+                    $quantity
+                );
+
+
+                if (!$stock_stmt->execute()) {
+
+                    throw new Exception(
+                        "Stock update failed: " .
+                        $stock_stmt->error
+                    );
+                }
+
+
+                if ($stock_stmt->affected_rows === 0) {
+
+                    throw new Exception(
+                        "Not enough stock available for Dress ID: "
+                        . $dress_id
+                        . " - Size: "
+                        . $size
+                    );
+                }
+            }
+
+
+            $stock_stmt->close();
+
+
+            /* =========================
+               DELETE SELECTED CART ITEMS
+            ========================= */
+
+            $delete_sql = "
+                DELETE FROM cart_items
+                WHERE cart_item_id = ?
+            ";
+
+
+            $delete_stmt = $conn->prepare($delete_sql);
+
+
+            if (!$delete_stmt) {
+
+                throw new Exception(
+                    "Cart delete prepare failed: " .
+                    $conn->error
+                );
+            }
+
+
+            foreach ($cart_items as $item) {
+
+                $cart_item_id =
+                    (int)$item["cart_item_id"];
+
+
+                $delete_stmt->bind_param(
+                    "i",
+                    $cart_item_id
+                );
+
+
+                if (!$delete_stmt->execute()) {
+
+                    throw new Exception(
+                        "Cart item delete failed: " .
+                        $delete_stmt->error
+                    );
+                }
+            }
+
+
+            $delete_stmt->close();
 
 
             /* =========================
@@ -420,6 +490,7 @@ $delete_stmt->close();
 }
 
 ?>
+
 
 <!DOCTYPE html>
 
@@ -877,8 +948,31 @@ $delete_stmt->close();
 
 
         /* =========================
-           SUMMARY
+           PRICE SUMMARY
         ========================== */
+
+        .summary-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            margin-top: 14px;
+
+            font-size: 15px;
+
+            color: #666;
+        }
+
+
+        .summary-row.shipping {
+
+            padding-bottom: 15px;
+
+            border-bottom:
+                1px solid #eee;
+        }
+
 
         .total-row {
 
@@ -886,7 +980,7 @@ $delete_stmt->close();
 
             justify-content: space-between;
 
-            margin-top: 22px;
+            margin-top: 17px;
 
             padding-top: 17px;
 
@@ -894,6 +988,14 @@ $delete_stmt->close();
                 2px solid #eee;
 
             font-size: 21px;
+
+            font-weight: bold;
+
+            color: #5d405c;
+        }
+
+
+        .summary-row span:last-child {
 
             font-weight: bold;
 
@@ -1223,6 +1325,34 @@ $delete_stmt->close();
                     $payment_method
                 );
                 ?>
+            </strong>
+
+        </p>
+
+
+        <p>
+
+            Total Amount:
+
+            <strong>
+                Rs.
+                <?php
+                echo number_format(
+                    $grand_total,
+                    2
+                );
+                ?>
+            </strong>
+
+        </p>
+
+
+        <p>
+
+            Shipping Fee:
+
+            <strong>
+                Rs. 350.00
             </strong>
 
         </p>
@@ -1608,7 +1738,63 @@ $delete_stmt->close();
 
 
                 <!-- =========================
-                     TOTAL
+                     SUBTOTAL
+                ========================== -->
+
+                <div class="summary-row">
+
+                    <span>
+                        Subtotal
+                    </span>
+
+                    <span>
+
+                        Rs.
+
+                        <?php
+
+                        echo number_format(
+                            $total_amount,
+                            2
+                        );
+
+                        ?>
+
+                    </span>
+
+                </div>
+
+
+                <!-- =========================
+                     SHIPPING FEE
+                ========================== -->
+
+                <div class="summary-row shipping">
+
+                    <span>
+                        Shipping Fee
+                    </span>
+
+                    <span>
+
+                        Rs.
+
+                        <?php
+
+                        echo number_format(
+                            $shipping_fee,
+                            2
+                        );
+
+                        ?>
+
+                    </span>
+
+                </div>
+
+
+                <!-- =========================
+                     GRAND TOTAL
                 ========================== -->
 
                 <div class="total-row">
@@ -1625,7 +1811,7 @@ $delete_stmt->close();
                         <?php
 
                         echo number_format(
-                            $total_amount,
+                            $grand_total,
                             2
                         );
 
@@ -1666,3 +1852,4 @@ $delete_stmt->close();
 </body>
 
 </html>
+

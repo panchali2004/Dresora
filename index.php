@@ -2,6 +2,35 @@
 
 session_start();
 
+require_once "config/database.php";
+
+$cartCount = 0;
+
+if (isset($_SESSION["user_id"])) {
+
+    $user_id = $_SESSION["user_id"];
+
+    $cart_sql = "SELECT COALESCE(SUM(quantity), 0) AS cart_count
+                 FROM cart_items
+                 WHERE user_id = ?";
+
+    $cart_stmt = $conn->prepare($cart_sql);
+
+    if ($cart_stmt) {
+
+        $cart_stmt->bind_param("i", $user_id);
+        $cart_stmt->execute();
+
+        $cart_result = $cart_stmt->get_result();
+
+        if ($cart_row = $cart_result->fetch_assoc()) {
+            $cartCount = (int)$cart_row["cart_count"];
+        }
+
+        $cart_stmt->close();
+    }
+}
+
 /* ==========================================
    CHECK LOGIN STATUS
 ========================================== */
@@ -259,11 +288,9 @@ unset($_SESSION["login_success"]);
                 <a href="cart.php">
 
                     Cart
-
-                    <span class="cart-count">
-                        0
-                    </span>
-
+<span class="cart-count">
+    <?php echo $cartCount; ?>
+</span>
                 </a>
 
             </li>
@@ -1255,56 +1282,6 @@ document
 
 
 
-/* ==========================================
-   UPDATE CART COUNT
-========================================== */
-
-function updateCartCount() {
-
-    const cart =
-        JSON.parse(
-            localStorage.getItem("cart")
-        ) || [];
-
-
-    const totalQuantity =
-        cart.reduce(
-            function(total, item) {
-
-                return total +
-                    Number(
-                        item.quantity || 1
-                    );
-
-            },
-            0
-        );
-
-
-    const cartCounts =
-        document.querySelectorAll(
-            ".cart-count"
-        );
-
-
-    cartCounts.forEach(
-        function(count) {
-
-            count.textContent =
-                totalQuantity;
-
-        }
-    );
-
-}
-
-
-
-/* ==========================================
-   INITIAL LOAD
-========================================== */
-
-updateCartCount();
 
 </script>
 
