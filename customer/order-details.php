@@ -54,8 +54,6 @@ $user_id = (int)$_SESSION["user_id"];
 
 /* =========================
    Get Order Details
-   Make sure order belongs
-   to logged-in customer
 ========================= */
 
 $order_sql = "SELECT
@@ -120,14 +118,19 @@ $items_sql = "SELECT
                 oi.expected_return_date,
                 oi.rental_days,
                 oi.rental_price,
+
                 d.dress_name,
                 d.description,
                 d.colour,
                 d.image_url
+
               FROM order_items oi
+
               INNER JOIN dresses d
                   ON oi.dress_id = d.dress_id
+
               WHERE oi.order_id = ?
+
               ORDER BY oi.order_item_id ASC";
 
 
@@ -1076,10 +1079,13 @@ $status = strtolower(
                         <h1>
 
                             Order #
+
                             <?php
+
                             echo htmlspecialchars(
                                 $order["order_id"]
                             );
+
                             ?>
 
                         </h1>
@@ -1091,12 +1097,21 @@ $status = strtolower(
 
                             <?php
 
-                            echo date(
-                                "M d, Y h:i A",
-                                strtotime(
-                                    $order["order_date"]
-                                )
+                            $order_timestamp = strtotime(
+                                $order["order_date"]
                             );
+
+                            if ($order_timestamp !== false) {
+
+                                echo date(
+                                    "M d, Y h:i A",
+                                    $order_timestamp
+                                );
+
+                            } else {
+
+                                echo "Not available";
+                            }
 
                             ?>
 
@@ -1138,6 +1153,7 @@ $status = strtolower(
                         <strong>
 
                             #
+
                             <?php
 
                             echo htmlspecialchars(
@@ -1229,38 +1245,50 @@ $status = strtolower(
                                  Image
                             ========================== -->
 
-                           
-<div class="item-image">
+                            <div class="item-image">
 
-    <?php
+                                <?php
 
-    $firstImage = "";
+                                $firstImage = "";
 
-    if (!empty($item["image_url"])) {
+                                if (
+                                    !empty(
+                                        $item["image_url"]
+                                    )
+                                ) {
 
-        $imageList = explode(",", $item["image_url"]);
+                                    $imageList = explode(
+                                        ",",
+                                        $item["image_url"]
+                                    );
 
-        $firstImage = trim($imageList[0]);
-    }
+                                    $firstImage = trim(
+                                        $imageList[0]
+                                    );
+                                }
 
-    ?>
+                                ?>
 
-    <?php if ($firstImage !== ""): ?>
 
-        <img
-            src="../<?php echo htmlspecialchars($firstImage); ?>"
-            alt="<?php echo htmlspecialchars($item["dress_name"]); ?>"
-        >
+                                <?php if ($firstImage !== ""): ?>
 
-    <?php else: ?>
+                                    <img
+                                        src="../<?php echo htmlspecialchars($firstImage); ?>"
+                                        alt="<?php echo htmlspecialchars($item["dress_name"]); ?>"
+                                    >
 
-        <div class="no-image">
-            No Image
-        </div>
+                                <?php else: ?>
 
-    <?php endif; ?>
+                                    <div class="no-image">
 
-</div>
+                                        No Image
+
+                                    </div>
+
+                                <?php endif; ?>
+
+                            </div>
+
 
                             <!-- =========================
                                  Details
@@ -1366,6 +1394,10 @@ $status = strtolower(
                                     </div>
 
 
+                                    <!-- =========================
+                                         START DATE
+                                    ========================== -->
+
                                     <p>
 
                                         <strong>
@@ -1374,31 +1406,52 @@ $status = strtolower(
 
                                         <?php
 
+                                        $start_date_display =
+                                            "Not available";
+
+
                                         if (
                                             !empty(
                                                 $item["start_date"]
-                                            )
+                                            ) &&
+                                            $item["start_date"] !==
+                                                "0000-00-00"
                                         ) {
 
-                                            echo htmlspecialchars(
-                                                date(
-                                                    "M d, Y",
-                                                    strtotime(
-                                                        $item["start_date"]
+                                            $start_obj =
+                                                DateTime::createFromFormat(
+                                                    "Y-m-d",
+                                                    $item["start_date"],
+                                                    new DateTimeZone(
+                                                        "Asia/Colombo"
                                                     )
-                                                )
-                                            );
+                                                );
 
-                                        } else {
 
-                                            echo "Not available";
+                                            if (
+                                                $start_obj !== false
+                                            ) {
 
+                                                $start_date_display =
+                                                    $start_obj->format(
+                                                        "M d, Y"
+                                                    );
+                                            }
                                         }
+
+
+                                        echo htmlspecialchars(
+                                            $start_date_display
+                                        );
 
                                         ?>
 
                                     </p>
 
+
+                                    <!-- =========================
+                                         EXPECTED RETURN DATE
+                                    ========================== -->
 
                                     <p>
 
@@ -1408,35 +1461,122 @@ $status = strtolower(
 
                                         <?php
 
+                                        /*
+                                        =================================
+                                        EXPECTED RETURN DATE FIX
+
+                                        If database has a valid date:
+                                            use that date.
+
+                                        If database has:
+                                            0000-00-00
+                                        or invalid/missing date:
+
+                                            Start Date + 5 days
+
+                                        This prevents:
+                                            Nov 30, -0001
+                                        =================================
+                                        */
+
+                                        $return_date_display =
+                                            "Not available";
+
+
+                                        /* =========================
+                                           USE SAVED RETURN DATE
+                                        ========================= */
+
                                         if (
                                             !empty(
                                                 $item[
                                                     "expected_return_date"
                                                 ]
-                                            )
+                                            ) &&
+                                            $item[
+                                                "expected_return_date"
+                                            ] !== "0000-00-00"
                                         ) {
 
-                                            echo htmlspecialchars(
-                                                date(
-                                                    "M d, Y",
-                                                    strtotime(
-                                                        $item[
-                                                            "expected_return_date"
-                                                        ]
+                                            $return_obj =
+                                                DateTime::createFromFormat(
+                                                    "Y-m-d",
+                                                    $item[
+                                                        "expected_return_date"
+                                                    ],
+                                                    new DateTimeZone(
+                                                        "Asia/Colombo"
                                                     )
-                                                )
-                                            );
+                                                );
 
-                                        } else {
 
-                                            echo "Not available";
+                                            if (
+                                                $return_obj !== false
+                                            ) {
 
+                                                $return_date_display =
+                                                    $return_obj->format(
+                                                        "M d, Y"
+                                                    );
+                                            }
                                         }
+
+
+                                        /* =========================
+                                           FALLBACK
+
+                                           START DATE + 5 DAYS
+                                        ========================= */
+
+                                        if (
+                                            $return_date_display ===
+                                                "Not available" &&
+                                            !empty(
+                                                $item["start_date"]
+                                            ) &&
+                                            $item["start_date"] !==
+                                                "0000-00-00"
+                                        ) {
+
+                                            $start_obj =
+                                                DateTime::createFromFormat(
+                                                    "Y-m-d",
+                                                    $item["start_date"],
+                                                    new DateTimeZone(
+                                                        "Asia/Colombo"
+                                                    )
+                                                );
+
+
+                                            if (
+                                                $start_obj !== false
+                                            ) {
+
+                                                $start_obj->modify(
+                                                    "+5 days"
+                                                );
+
+
+                                                $return_date_display =
+                                                    $start_obj->format(
+                                                        "M d, Y"
+                                                    );
+                                            }
+                                        }
+
+
+                                        echo htmlspecialchars(
+                                            $return_date_display
+                                        );
 
                                         ?>
 
                                     </p>
 
+
+                                    <!-- =========================
+                                         RENTAL PERIOD
+                                    ========================== -->
 
                                     <p>
 
@@ -1446,10 +1586,23 @@ $status = strtolower(
 
                                         <?php
 
-                                        echo (int)
-                                            $item[
-                                                "rental_days"
-                                            ];
+                                        if (
+                                            !empty(
+                                                $item[
+                                                    "rental_days"
+                                                ]
+                                            )
+                                        ) {
+
+                                            echo (int)
+                                                $item[
+                                                    "rental_days"
+                                                ];
+
+                                        } else {
+
+                                            echo "5";
+                                        }
 
                                         ?>
 
@@ -1457,6 +1610,10 @@ $status = strtolower(
 
                                     </p>
 
+
+                                    <!-- =========================
+                                         LATE RETURN FEE
+                                    ========================== -->
 
                                     <p>
 
@@ -1483,7 +1640,7 @@ $status = strtolower(
                                     <?php
 
                                     echo number_format(
-                                        $item[
+                                        (float)$item[
                                             "rental_price"
                                         ],
                                         2
@@ -1535,7 +1692,7 @@ $status = strtolower(
                             <?php
 
                             echo number_format(
-                                $order[
+                                (float)$order[
                                     "total_amount"
                                 ],
                                 2

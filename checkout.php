@@ -1,4 +1,3 @@
-
 <?php
 
 session_start();
@@ -92,7 +91,6 @@ $grand_total = $total_amount + $shipping_fee;
 ========================= */
 
 if (count($cart_items) === 0) {
-
     header("Location: cart.php");
     exit;
 }
@@ -127,7 +125,7 @@ $user_stmt->close();
 
 
 /* =========================
-   PLACE ORDER
+   PLACE ORDER VARIABLES
 ========================= */
 
 $order_success = false;
@@ -138,6 +136,10 @@ $error_message = "";
 
 $payment_method = "";
 
+
+/* =========================
+   PLACE ORDER
+========================= */
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -284,17 +286,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
 
 
-            /*
-             * IMPORTANT
-             *
-             * Rental period = 5 days.
-             *
-             * Expected return date is ALWAYS
-             * calculated from start_date.
-             *
-             * Example:
-             * 2026-10-08 + 5 days = 2026-10-13
-             */
+            /* =========================
+               INSERT EACH ORDER ITEM
+            ========================= */
 
             foreach ($cart_items as $item) {
 
@@ -305,34 +299,50 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 $size = trim($item["size"]);
 
-                $start_date = $item["start_date"];
+                $start_date = trim($item["start_date"]);
+
+
+                /* =========================
+                   VALIDATE START DATE
+                ========================= */
+
+                if (empty($start_date)) {
+
+                    throw new Exception(
+                        "Rental start date is missing for Dress ID: "
+                        . $dress_id
+                    );
+                }
 
 
                 /* =========================
                    CALCULATE RETURN DATE
+                   
+                   Example:
+                   2026-10-08 + 5 days
+                   = 2026-10-13
                 ========================= */
 
-                $expected_return_date = null;
+                $start = DateTime::createFromFormat(
+                    "Y-m-d",
+                    $start_date,
+                    new DateTimeZone("Asia/Colombo")
+                );
 
-                if (!empty($start_date)) {
 
-                    try {
+                if ($start === false) {
 
-                        $start = new DateTime(
-                            $start_date,
-                            new DateTimeZone("Asia/Colombo")
-                        );
-
-                        $start->modify("+5 days");
-
-                        $expected_return_date =
-                            $start->format("Y-m-d");
-
-                    } catch (Exception $e) {
-
-                        $expected_return_date = null;
-                    }
+                    throw new Exception(
+                        "Invalid rental start date: " .
+                        $start_date
+                    );
                 }
+
+
+                $start->modify("+5 days");
+
+                $expected_return_date =
+                    $start->format("Y-m-d");
 
 
                 /* =========================
@@ -1697,7 +1707,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                                 <?php
                                 echo htmlspecialchars(
-                                    $item["start_date"] ?? "Not specified"
+                                    $item["start_date"] ??
+                                    "Not specified"
                                 );
                                 ?>
 
@@ -1716,24 +1727,34 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                                 $display_return_date = "";
 
-                                $start_date = $item["start_date"] ?? "";
+                                $display_start_date =
+                                    $item["start_date"] ?? "";
 
 
-                                if (!empty($start_date)) {
+                                if (!empty($display_start_date)) {
 
-                                    try {
-
-                                        $start = new DateTime(
-                                            $start_date,
-                                            new DateTimeZone("Asia/Colombo")
+                                    $display_start =
+                                        DateTime::createFromFormat(
+                                            "Y-m-d",
+                                            $display_start_date,
+                                            new DateTimeZone(
+                                                "Asia/Colombo"
+                                            )
                                         );
 
-                                        $start->modify("+5 days");
+
+                                    if ($display_start !== false) {
+
+                                        $display_start->modify(
+                                            "+5 days"
+                                        );
 
                                         $display_return_date =
-                                            $start->format("Y-m-d");
+                                            $display_start->format(
+                                                "Y-m-d"
+                                            );
 
-                                    } catch (Exception $e) {
+                                    } else {
 
                                         $display_return_date =
                                             "Not specified";
@@ -1765,7 +1786,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                                 <?php
 
-                                echo !empty($item["rental_days"])
+                                echo !empty(
+                                    $item["rental_days"]
+                                )
                                     ? (int)$item["rental_days"]
                                     : 5;
 
@@ -1932,4 +1955,3 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 </body>
 
 </html>
-

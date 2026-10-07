@@ -4,6 +4,7 @@ session_start();
 
 require_once "../config/database.php";
 
+
 /* =========================
    ADMIN ONLY
 ========================= */
@@ -37,6 +38,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $action = $_POST["action"] ?? "";
 
+
+    /* =========================
+       CONFIRM ORDER
+    ========================= */
+
     if ($action === "confirm") {
 
         $new_status = "confirmed";
@@ -69,20 +75,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
 
-    elseif ($action === "reject") {
+    /* =========================
+       REJECT ORDER
+    ========================= */
 
-        /*
-        =========================================
-           REJECT ORDER + RESTORE STOCK
-        =========================================
-        */
+    elseif ($action === "reject") {
 
         $conn->begin_transaction();
 
         try {
 
             /* =========================
-               CHECK ORDER IS STILL PENDING
+               CHECK ORDER STATUS
             ========================= */
 
             $check_sql = "
@@ -115,15 +119,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
             if (!$check_order) {
-
-                throw new Exception(
-                    "Order not found."
-                );
+                throw new Exception("Order not found.");
             }
 
 
             if (strtolower($check_order["status"]) !== "pending") {
-
                 throw new Exception(
                     "Only pending orders can be rejected."
                 );
@@ -183,8 +183,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             while ($item = $items_result->fetch_assoc()) {
 
-                $quantity = (int)$item["quantity"];
-                $dress_id = (int)$item["dress_id"];
+                $quantity = (int) $item["quantity"];
+                $dress_id = (int) $item["dress_id"];
                 $size = $item["size"];
 
 
@@ -254,15 +254,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $conn->commit();
 
-            $message = "Order rejected and stock restored successfully.";
+            $message =
+                "Order rejected and stock restored successfully.";
+
             $messageType = "success";
 
 
         } catch (Exception $e) {
-
-            /* =========================
-               ROLLBACK
-            ========================= */
 
             $conn->rollback();
 
@@ -277,19 +275,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
    GET ORDER DETAILS
 ========================= */
 
-$order_sql = "SELECT
-                o.order_id,
-                o.order_date,
-                o.status,
-                o.payment_method,
-                o.total_amount,
-                u.name,
-                u.email,
-                u.phone
-              FROM orders o
-              INNER JOIN users u
-                  ON o.user_id = u.user_id
-              WHERE o.order_id = ?";
+$order_sql = "
+    SELECT
+        o.order_id,
+        o.order_date,
+        o.status,
+        o.payment_method,
+        o.total_amount,
+        u.name,
+        u.email,
+        u.phone
+    FROM orders o
+    INNER JOIN users u
+        ON o.user_id = u.user_id
+    WHERE o.order_id = ?
+";
 
 $order_stmt = $conn->prepare($order_sql);
 
@@ -321,28 +321,30 @@ if (!$order) {
    GET ORDER ITEMS
 ========================= */
 
-$items_sql = "SELECT
-                oi.order_item_id,
-                oi.quantity,
-                oi.size,
-                oi.start_date,
-                oi.expected_return_date,
-                oi.rental_days,
-                oi.rental_price,
+$items_sql = "
+    SELECT
+        oi.order_item_id,
+        oi.quantity,
+        oi.size,
+        oi.start_date,
+        oi.expected_return_date,
+        oi.rental_days,
+        oi.rental_price,
 
-                d.dress_name,
-                d.description,
-                d.colour,
-                d.image_url
+        d.dress_name,
+        d.description,
+        d.colour,
+        d.image_url
 
-              FROM order_items oi
+    FROM order_items oi
 
-              INNER JOIN dresses d
-                  ON oi.dress_id = d.dress_id
+    INNER JOIN dresses d
+        ON oi.dress_id = d.dress_id
 
-              WHERE oi.order_id = ?
+    WHERE oi.order_id = ?
 
-              ORDER BY oi.order_item_id ASC";
+    ORDER BY oi.order_item_id ASC
+";
 
 $items_stmt = $conn->prepare($items_sql);
 
@@ -380,36 +382,48 @@ $items_stmt->close();
         Order #<?php echo $order_id; ?> - DRESORA Admin
     </title>
 
+
     <style>
 
         * {
             box-sizing: border-box;
         }
 
+
         body {
             margin: 0;
+
             font-family: Arial, sans-serif;
+
             background: #fffafc;
+
             color: #333;
         }
 
+
         .header {
             background: #5d405c;
+
             color: white;
 
             padding: 18px 35px;
 
             display: flex;
+
             justify-content: space-between;
+
             align-items: center;
         }
+
 
         .header h2 {
             margin: 0;
         }
 
+
         .back-btn {
             color: white;
+
             text-decoration: none;
 
             background: #8b5a83;
@@ -419,41 +433,56 @@ $items_stmt->close();
             border-radius: 6px;
         }
 
+
         .back-btn:hover {
             background: #a66b9b;
         }
 
+
         .container {
             width: 92%;
+
             max-width: 1100px;
 
             margin: 35px auto;
         }
 
+
         .page-title {
             color: #5d405c;
+
             margin-bottom: 25px;
         }
 
+
         .message {
             padding: 13px 16px;
+
             margin-bottom: 20px;
 
             border-radius: 7px;
+
             font-weight: bold;
         }
 
+
         .message.success {
             background: #e8f7e8;
+
             color: #2e7d32;
+
             border: 1px solid #b7dfb9;
         }
 
+
         .message.error {
             background: #fdeaea;
+
             color: #c62828;
+
             border: 1px solid #efb6b6;
         }
+
 
         .card {
             background: white;
@@ -468,10 +497,13 @@ $items_stmt->close();
             margin-bottom: 25px;
         }
 
+
         .card h2 {
             color: #5d405c;
+
             margin-top: 0;
         }
+
 
         .order-info {
             display: grid;
@@ -481,6 +513,7 @@ $items_stmt->close();
 
             gap: 15px;
         }
+
 
         .info-box {
             background: #fffafc;
@@ -492,6 +525,7 @@ $items_stmt->close();
             border: 1px solid #eee;
         }
 
+
         .info-box strong {
             display: block;
 
@@ -499,6 +533,7 @@ $items_stmt->close();
 
             margin-bottom: 5px;
         }
+
 
         .status {
             display: inline-block;
@@ -512,30 +547,41 @@ $items_stmt->close();
             font-weight: bold;
         }
 
+
         .status.pending {
             background: #fff4d6;
+
             color: #9a7200;
         }
 
+
         .status.confirmed {
             background: #e7f4ff;
+
             color: #2876a8;
         }
 
+
         .status.rejected {
             background: #f5e5e5;
+
             color: #8b3030;
         }
 
+
         .status.completed {
             background: #e9f8ef;
+
             color: #267342;
         }
 
+
         .status.cancelled {
             background: #fdecec;
+
             color: #b33a3a;
         }
+
 
         /* =========================
            ITEM
@@ -551,12 +597,15 @@ $items_stmt->close();
             border-bottom: 1px solid #eee;
         }
 
+
         .item:last-child {
             border-bottom: none;
         }
 
+
         .item-image {
             width: 130px;
+
             height: 160px;
 
             object-fit: cover;
@@ -566,9 +615,11 @@ $items_stmt->close();
             background: #f5edf4;
         }
 
+
         .item-details {
             flex: 1;
         }
+
 
         .item-details h3 {
             color: #5d405c;
@@ -578,6 +629,7 @@ $items_stmt->close();
             margin-bottom: 8px;
         }
 
+
         .item-details p {
             margin: 6px 0;
 
@@ -585,6 +637,7 @@ $items_stmt->close();
 
             font-size: 14px;
         }
+
 
         .rental-info {
             margin-top: 15px;
@@ -596,6 +649,7 @@ $items_stmt->close();
             border-radius: 8px;
         }
 
+
         .rental-info-title {
             color: #5d405c;
 
@@ -604,9 +658,11 @@ $items_stmt->close();
             margin-bottom: 10px;
         }
 
+
         .rental-info p {
             margin: 6px 0;
         }
+
 
         .item-price {
             color: #5d405c;
@@ -615,6 +671,7 @@ $items_stmt->close();
 
             font-size: 16px;
         }
+
 
         /* =========================
            TOTAL
@@ -628,6 +685,7 @@ $items_stmt->close();
             border-top: 2px solid #eadfea;
         }
 
+
         .total-box span {
             font-size: 22px;
 
@@ -635,6 +693,7 @@ $items_stmt->close();
 
             color: #5d405c;
         }
+
 
         /* =========================
            ACTION BUTTONS
@@ -647,6 +706,7 @@ $items_stmt->close();
 
             margin-top: 25px;
         }
+
 
         .confirm-btn,
         .reject-btn {
@@ -665,21 +725,26 @@ $items_stmt->close();
             cursor: pointer;
         }
 
+
         .confirm-btn {
             background: #267342;
         }
+
 
         .confirm-btn:hover {
             background: #1e5c34;
         }
 
+
         .reject-btn {
             background: #b33a3a;
         }
 
+
         .reject-btn:hover {
             background: #922e2e;
         }
+
 
         @media (max-width: 700px) {
 
@@ -687,14 +752,18 @@ $items_stmt->close();
                 grid-template-columns: 1fr;
             }
 
+
             .item {
                 flex-direction: column;
             }
 
+
             .item-image {
                 width: 100%;
+
                 height: 250px;
             }
+
 
             .actions {
                 flex-direction: column;
@@ -705,6 +774,7 @@ $items_stmt->close();
     </style>
 
 </head>
+
 
 <body>
 
@@ -721,6 +791,7 @@ $items_stmt->close();
 
 
 <div class="container">
+
 
     <h1 class="page-title">
 
@@ -748,7 +819,9 @@ $items_stmt->close();
 
         <h2>Order Information</h2>
 
+
         <div class="order-info">
+
 
             <div class="info-box">
 
@@ -790,10 +863,23 @@ $items_stmt->close();
                 <strong>Order Date</strong>
 
                 <?php
-                echo date(
-                    "M d, Y h:i A",
-                    strtotime($order["order_date"])
+
+                $order_timestamp = strtotime(
+                    $order["order_date"]
                 );
+
+                if ($order_timestamp !== false) {
+
+                    echo date(
+                        "M d, Y h:i A",
+                        $order_timestamp
+                    );
+
+                } else {
+
+                    echo "Not specified";
+                }
+
                 ?>
 
             </div>
@@ -817,20 +903,29 @@ $items_stmt->close();
                 <strong>Status</strong>
 
                 <?php
-                $status = strtolower($order["status"]);
+
+                $status = strtolower(
+                    $order["status"]
+                );
+
                 ?>
 
                 <span class="status <?php echo htmlspecialchars($status); ?>">
 
                     <?php
+
                     echo ucfirst(
-                        htmlspecialchars($order["status"])
+                        htmlspecialchars(
+                            $order["status"]
+                        )
                     );
+
                     ?>
 
                 </span>
 
             </div>
+
 
         </div>
 
@@ -838,6 +933,7 @@ $items_stmt->close();
         <?php if (strtolower($order["status"]) === "pending"): ?>
 
             <div class="actions">
+
 
                 <form method="POST">
 
@@ -852,7 +948,9 @@ $items_stmt->close();
                         class="confirm-btn"
                         onclick="return confirm('Are you sure you want to confirm this order?');"
                     >
+
                         ✓ Confirm Order
+
                     </button>
 
                 </form>
@@ -871,14 +969,18 @@ $items_stmt->close();
                         class="reject-btn"
                         onclick="return confirm('Are you sure you want to reject this order?');"
                     >
+
                         ✕ Reject Order
+
                     </button>
 
                 </form>
 
+
             </div>
 
         <?php endif; ?>
+
 
     </div>
 
@@ -894,9 +996,12 @@ $items_stmt->close();
 
         <?php if (count($items) > 0): ?>
 
+
             <?php foreach ($items as $item): ?>
 
+
                 <div class="item">
+
 
                     <?php
 
@@ -936,12 +1041,15 @@ $items_stmt->close();
 
                     <div class="item-details">
 
+
                         <h3>
 
                             <?php
+
                             echo htmlspecialchars(
                                 $item["dress_name"]
                             );
+
                             ?>
 
                         </h3>
@@ -954,9 +1062,11 @@ $items_stmt->close();
                             </strong>
 
                             <?php
+
                             echo htmlspecialchars(
                                 $item["colour"]
                             );
+
                             ?>
 
                         </p>
@@ -969,9 +1079,11 @@ $items_stmt->close();
                             </strong>
 
                             <?php
+
                             echo htmlspecialchars(
                                 $item["size"]
                             );
+
                             ?>
 
                         </p>
@@ -984,13 +1096,16 @@ $items_stmt->close();
                             </strong>
 
                             <?php
+
                             echo (int)$item["quantity"];
+
                             ?>
 
                         </p>
 
 
                         <div class="rental-info">
+
 
                             <div class="rental-info-title">
 
@@ -1009,30 +1124,37 @@ $items_stmt->close();
                                     Rental Start Date:
                                 </strong>
 
+
                                 <?php
 
-                                if (!empty($item["start_date"])) {
+                                $start_date_display = "Not specified";
 
-                                    $start_timestamp = strtotime(
-                                        $item["start_date"]
+
+                                if (
+                                    !empty($item["start_date"]) &&
+                                    $item["start_date"] !== "0000-00-00"
+                                ) {
+
+                                    $start_obj = DateTime::createFromFormat(
+                                        "Y-m-d",
+                                        $item["start_date"],
+                                        new DateTimeZone("Asia/Colombo")
                                     );
 
-                                    if ($start_timestamp !== false) {
 
-                                        echo date(
-                                            "M d, Y",
-                                            $start_timestamp
-                                        );
+                                    if ($start_obj !== false) {
 
-                                    } else {
-
-                                        echo "Not specified";
+                                        $start_date_display =
+                                            $start_obj->format(
+                                                "M d, Y"
+                                            );
                                     }
-
-                                } else {
-
-                                    echo "Not specified";
                                 }
+
+
+                                echo htmlspecialchars(
+                                    $start_date_display
+                                );
 
                                 ?>
 
@@ -1049,69 +1171,88 @@ $items_stmt->close();
                                     Expected Return Date:
                                 </strong>
 
+
                                 <?php
 
-                                $return_date = "";
-
-
                                 /*
-                                 * First try the saved
-                                 * expected return date.
-                                 */
+                                =========================================
+                                EXPECTED RETURN DATE
 
-                                if (!empty($item["expected_return_date"])) {
+                                1. If database has a valid date,
+                                   use it.
 
-                                    $return_timestamp = strtotime(
-                                        $item["expected_return_date"]
-                                    );
+                                2. If database has 0000-00-00,
+                                   calculate from start_date + 5 days.
+
+                                This prevents:
+                                Nov 30, -0001
+                                =========================================
+                                */
+
+                                $return_date_display = "Not specified";
 
 
-                                    if ($return_timestamp !== false) {
+                                /* =========================
+                                   CHECK SAVED DATE
+                                ========================= */
 
-                                        $return_date = date(
-                                            "M d, Y",
-                                            $return_timestamp
+                                if (
+                                    !empty($item["expected_return_date"]) &&
+                                    $item["expected_return_date"] !== "0000-00-00"
+                                ) {
+
+                                    $return_obj =
+                                        DateTime::createFromFormat(
+                                            "Y-m-d",
+                                            $item["expected_return_date"],
+                                            new DateTimeZone("Asia/Colombo")
                                         );
+
+
+                                    if ($return_obj !== false) {
+
+                                        $return_date_display =
+                                            $return_obj->format(
+                                                "M d, Y"
+                                            );
                                     }
                                 }
 
 
-                                /*
-                                 * If saved date is missing
-                                 * or invalid, calculate:
-                                 *
-                                 * Start Date + 5 days
-                                 */
+                                /* =========================
+                                   FALLBACK
+
+                                   START DATE + 5 DAYS
+                                ========================= */
 
                                 if (
-                                    $return_date === "" &&
-                                    !empty($item["start_date"])
+                                    $return_date_display === "Not specified" &&
+                                    !empty($item["start_date"]) &&
+                                    $item["start_date"] !== "0000-00-00"
                                 ) {
 
-                                    try {
-
-                                        $start = new DateTime(
+                                    $start_obj =
+                                        DateTime::createFromFormat(
+                                            "Y-m-d",
                                             $item["start_date"],
                                             new DateTimeZone("Asia/Colombo")
                                         );
 
-                                        $start->modify("+5 days");
 
-                                        $return_date =
-                                            $start->format("M d, Y");
+                                    if ($start_obj !== false) {
 
-                                    } catch (Exception $e) {
+                                        $start_obj->modify("+5 days");
 
-                                        $return_date =
-                                            "Not specified";
+                                        $return_date_display =
+                                            $start_obj->format(
+                                                "M d, Y"
+                                            );
                                     }
                                 }
 
 
                                 echo htmlspecialchars(
-                                    $return_date !== ""
-                                        ? $return_date
-                                        : "Not specified"
+                                    $return_date_display
                                 );
 
                                 ?>
@@ -1129,11 +1270,17 @@ $items_stmt->close();
                                     Rental Period:
                                 </strong>
 
+
                                 <?php
 
-                                if (!empty($item["rental_days"])) {
+                                if (
+                                    !empty(
+                                        $item["rental_days"]
+                                    )
+                                ) {
 
-                                    echo (int)$item["rental_days"]
+                                    echo
+                                        (int)$item["rental_days"]
                                         . " days";
 
                                 } else {
@@ -1159,6 +1306,7 @@ $items_stmt->close();
                                 Rs. 500 per day
 
                             </p>
+
 
                         </div>
 
@@ -1190,9 +1338,12 @@ $items_stmt->close();
 
                         </p>
 
+
                     </div>
 
+
                 </div>
+
 
             <?php endforeach; ?>
 
@@ -1222,6 +1373,7 @@ $items_stmt->close();
 
             </div>
 
+
         <?php else: ?>
 
             <p>
@@ -1230,9 +1382,12 @@ $items_stmt->close();
 
         <?php endif; ?>
 
+
     </div>
 
+
 </div>
+
 
 </body>
 
