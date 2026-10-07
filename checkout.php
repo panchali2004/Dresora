@@ -1,4 +1,4 @@
-```php
+
 <?php
 
 session_start();
@@ -189,17 +189,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $status = "Pending";
 
 
-            /*
-             * We do NOT store expected_return_date
-             * in orders because each dress can have
-             * its own rental date.
-             *
-             * Rental dates are stored in order_items.
-             *
-             * IMPORTANT:
-             * grand_total includes shipping fee.
-             */
-
             $order_sql = "INSERT INTO orders
                             (
                                 user_id,
@@ -296,8 +285,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
             /*
-             * IMPORTANT:
-             * Loop through every selected cart item.
+             * IMPORTANT
+             *
+             * Rental period = 5 days.
+             *
+             * Expected return date is ALWAYS
+             * calculated from start_date.
+             *
+             * Example:
+             * 2026-10-08 + 5 days = 2026-10-13
              */
 
             foreach ($cart_items as $item) {
@@ -307,19 +303,50 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 $quantity = (int)$item["quantity"];
 
-                $size = $item["size"];
+                $size = trim($item["size"]);
 
                 $start_date = $item["start_date"];
 
-                $expected_return_date =
-                    $item["expected_return_date"];
 
-                $rental_days =
-                    (int)$item["rental_days"];
+                /* =========================
+                   CALCULATE RETURN DATE
+                ========================= */
 
-                $rental_price =
-                    (float)$item["price"];
+                $expected_return_date = null;
 
+                if (!empty($start_date)) {
+
+                    try {
+
+                        $start = new DateTime(
+                            $start_date,
+                            new DateTimeZone("Asia/Colombo")
+                        );
+
+                        $start->modify("+5 days");
+
+                        $expected_return_date =
+                            $start->format("Y-m-d");
+
+                    } catch (Exception $e) {
+
+                        $expected_return_date = null;
+                    }
+                }
+
+
+                /* =========================
+                   RENTAL DETAILS
+                ========================= */
+
+                $rental_days = 5;
+
+                $rental_price = (float)$item["price"];
+
+
+                /* =========================
+                   INSERT ORDER ITEM
+                ========================= */
 
                 $item_stmt->bind_param(
                     "iiissiid",
@@ -374,14 +401,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             foreach ($cart_items as $item) {
 
-                $dress_id =
-                    (int)$item["product_id"];
+                $dress_id = (int)$item["product_id"];
 
-                $quantity =
-                    (int)$item["quantity"];
+                $quantity = (int)$item["quantity"];
 
-                $size =
-                    trim($item["size"]);
+                $size = trim($item["size"]);
 
 
                 $stock_stmt->bind_param(
@@ -424,6 +448,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $delete_sql = "
                 DELETE FROM cart_items
                 WHERE cart_item_id = ?
+                AND user_id = ?
             ";
 
 
@@ -446,8 +471,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
                 $delete_stmt->bind_param(
-                    "i",
-                    $cart_item_id
+                    "ii",
+                    $cart_item_id,
+                    $user_id
                 );
 
 
@@ -1671,36 +1697,86 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                                 <?php
                                 echo htmlspecialchars(
-                                    $item["start_date"]
+                                    $item["start_date"] ?? "Not specified"
                                 );
                                 ?>
 
                             </p>
 
+
+                            <!-- =========================
+                                 EXPECTED RETURN DATE
+                            ========================== -->
 
                             <p>
 
                                 Expected Return Date:
 
                                 <?php
+
+                                $display_return_date = "";
+
+                                $start_date = $item["start_date"] ?? "";
+
+
+                                if (!empty($start_date)) {
+
+                                    try {
+
+                                        $start = new DateTime(
+                                            $start_date,
+                                            new DateTimeZone("Asia/Colombo")
+                                        );
+
+                                        $start->modify("+5 days");
+
+                                        $display_return_date =
+                                            $start->format("Y-m-d");
+
+                                    } catch (Exception $e) {
+
+                                        $display_return_date =
+                                            "Not specified";
+                                    }
+
+                                } else {
+
+                                    $display_return_date =
+                                        "Not specified";
+                                }
+
+
                                 echo htmlspecialchars(
-                                    $item["expected_return_date"]
+                                    $display_return_date
                                 );
+
                                 ?>
 
                             </p>
 
+
+                            <!-- =========================
+                                 RENTAL DAYS
+                            ========================== -->
 
                             <p>
 
                                 Rental Days:
 
                                 <?php
-                                echo (int)$item["rental_days"];
+
+                                echo !empty($item["rental_days"])
+                                    ? (int)$item["rental_days"]
+                                    : 5;
+
                                 ?>
 
                             </p>
 
+
+                            <!-- =========================
+                                 QUANTITY
+                            ========================== -->
 
                             <p>
 
@@ -1712,6 +1788,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                             </p>
 
+
+                            <!-- =========================
+                                 ITEM TOTAL
+                            ========================== -->
 
                             <p class="item-price">
 

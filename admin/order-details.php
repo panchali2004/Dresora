@@ -71,33 +71,204 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     elseif ($action === "reject") {
 
-        $new_status = "rejected";
+        /*
+        =========================================
+           REJECT ORDER + RESTORE STOCK
+        =========================================
+        */
 
-        $stmt = $conn->prepare(
-            "UPDATE orders
-             SET status = ?
-             WHERE order_id = ?
-             AND status = 'pending'"
-        );
+        $conn->begin_transaction();
 
-        $stmt->bind_param(
-            "si",
-            $new_status,
-            $order_id
-        );
+        try {
 
-        if ($stmt->execute() && $stmt->affected_rows > 0) {
+            /* =========================
+               CHECK ORDER IS STILL PENDING
+            ========================= */
 
-            $message = "Order rejected successfully.";
+            $check_sql = "
+                SELECT status
+                FROM orders
+                WHERE order_id = ?
+                FOR UPDATE
+            ";
+
+            $check_stmt = $conn->prepare($check_sql);
+
+            if (!$check_stmt) {
+                throw new Exception(
+                    "Order check failed: " . $conn->error
+                );
+            }
+
+            $check_stmt->bind_param(
+                "i",
+                $order_id
+            );
+
+            $check_stmt->execute();
+
+            $check_result = $check_stmt->get_result();
+
+            $check_order = $check_result->fetch_assoc();
+
+            $check_stmt->close();
+
+
+            if (!$check_order) {
+
+                throw new Exception(
+                    "Order not found."
+                );
+            }
+
+
+            if (strtolower($check_order["status"]) !== "pending") {
+
+                throw new Exception(
+                    "Only pending orders can be rejected."
+                );
+            }
+
+
+            /* =========================
+               GET ORDER ITEMS
+            ========================= */
+
+            $items_sql = "
+                SELECT
+                    dress_id,
+                    size,
+                    quantity
+                FROM order_items
+                WHERE order_id = ?
+            ";
+
+            $items_stmt = $conn->prepare($items_sql);
+
+            if (!$items_stmt) {
+                throw new Exception(
+                    "Order items query failed: " . $conn->error
+                );
+            }
+
+            $items_stmt->bind_param(
+                "i",
+                $order_id
+            );
+
+            $items_stmt->execute();
+
+            $items_result = $items_stmt->get_result();
+
+
+            /* =========================
+               RESTORE STOCK
+            ========================= */
+
+            $stock_sql = "
+                UPDATE dress_size_stock
+                SET quantity = quantity + ?
+                WHERE dress_id = ?
+                AND size = ?
+            ";
+
+            $stock_stmt = $conn->prepare($stock_sql);
+
+            if (!$stock_stmt) {
+                throw new Exception(
+                    "Stock update prepare failed: " . $conn->error
+                );
+            }
+
+
+            while ($item = $items_result->fetch_assoc()) {
+
+                $quantity = (int)$item["quantity"];
+                $dress_id = (int)$item["dress_id"];
+                $size = $item["size"];
+
+
+                $stock_stmt->bind_param(
+                    "iis",
+                    $quantity,
+                    $dress_id,
+                    $size
+                );
+
+
+                if (!$stock_stmt->execute()) {
+
+                    throw new Exception(
+                        "Stock restore failed: " .
+                        $stock_stmt->error
+                    );
+                }
+            }
+
+
+            $stock_stmt->close();
+            $items_stmt->close();
+
+
+            /* =========================
+               UPDATE ORDER STATUS
+            ========================= */
+
+            $new_status = "rejected";
+
+            $status_sql = "
+                UPDATE orders
+                SET status = ?
+                WHERE order_id = ?
+                AND status = 'pending'
+            ";
+
+            $status_stmt = $conn->prepare($status_sql);
+
+            if (!$status_stmt) {
+                throw new Exception(
+                    "Status update failed: " . $conn->error
+                );
+            }
+
+            $status_stmt->bind_param(
+                "si",
+                $new_status,
+                $order_id
+            );
+
+            if (!$status_stmt->execute()) {
+
+                throw new Exception(
+                    "Unable to reject order: " .
+                    $status_stmt->error
+                );
+            }
+
+            $status_stmt->close();
+
+
+            /* =========================
+               COMMIT
+            ========================= */
+
+            $conn->commit();
+
+            $message = "Order rejected and stock restored successfully.";
             $messageType = "success";
 
-        } else {
 
-            $message = "Unable to reject this order.";
+        } catch (Exception $e) {
+
+            /* =========================
+               ROLLBACK
+            ========================= */
+
+            $conn->rollback();
+
+            $message = $e->getMessage();
             $messageType = "error";
         }
-
-        $stmt->close();
     }
 }
 
@@ -727,18 +898,38 @@ $items_stmt->close();
 
                 <div class="item">
 
+                    <?php
 
-                    <?php if (!empty($item["image_url"])): ?>
+                    $firstImage = "";
+
+                    if (!empty($item["image_url"])) {
+
+                        $imageList = explode(
+                            ",",
+                            $item["image_url"]
+                        );
+
+                        $firstImage = trim(
+                            $imageList[0]
+                        );
+                    }
+
+                    ?>
+
+
+                    <?php if ($firstImage !== ""): ?>
 
                         <img
-                            src="../<?php echo htmlspecialchars($item["image_url"]); ?>"
+                            src="../<?php echo htmlspecialchars($firstImage); ?>"
                             alt="<?php echo htmlspecialchars($item["dress_name"]); ?>"
                             class="item-image"
                         >
 
                     <?php else: ?>
 
-                        <div class="item-image"></div>
+                        <div class="item-image">
+                            No Image
+                        </div>
 
                     <?php endif; ?>
 
@@ -746,48 +937,71 @@ $items_stmt->close();
                     <div class="item-details">
 
                         <h3>
+
                             <?php
                             echo htmlspecialchars(
                                 $item["dress_name"]
                             );
                             ?>
+
                         </h3>
 
 
                         <p>
-                            <strong>Colour:</strong>
+
+                            <strong>
+                                Colour:
+                            </strong>
+
                             <?php
                             echo htmlspecialchars(
                                 $item["colour"]
                             );
                             ?>
+
                         </p>
 
 
                         <p>
-                            <strong>Size:</strong>
+
+                            <strong>
+                                Size:
+                            </strong>
+
                             <?php
                             echo htmlspecialchars(
                                 $item["size"]
                             );
                             ?>
+
                         </p>
 
 
                         <p>
-                            <strong>Quantity:</strong>
+
+                            <strong>
+                                Quantity:
+                            </strong>
+
                             <?php
                             echo (int)$item["quantity"];
                             ?>
+
                         </p>
 
 
                         <div class="rental-info">
 
                             <div class="rental-info-title">
+
                                 📅 Rental Information
+
                             </div>
 
+
+                            <!-- =========================
+                                 START DATE
+                            ========================== -->
 
                             <p>
 
@@ -799,23 +1013,35 @@ $items_stmt->close();
 
                                 if (!empty($item["start_date"])) {
 
-                                    echo date(
-                                        "M d, Y",
-                                        strtotime(
-                                            $item["start_date"]
-                                        )
+                                    $start_timestamp = strtotime(
+                                        $item["start_date"]
                                     );
+
+                                    if ($start_timestamp !== false) {
+
+                                        echo date(
+                                            "M d, Y",
+                                            $start_timestamp
+                                        );
+
+                                    } else {
+
+                                        echo "Not specified";
+                                    }
 
                                 } else {
 
                                     echo "Not specified";
-
                                 }
 
                                 ?>
 
                             </p>
 
+
+                            <!-- =========================
+                                 EXPECTED RETURN DATE
+                            ========================== -->
 
                             <p>
 
@@ -825,25 +1051,77 @@ $items_stmt->close();
 
                                 <?php
 
+                                $return_date = "";
+
+
+                                /*
+                                 * First try the saved
+                                 * expected return date.
+                                 */
+
                                 if (!empty($item["expected_return_date"])) {
 
-                                    echo date(
-                                        "M d, Y",
-                                        strtotime(
-                                            $item["expected_return_date"]
-                                        )
+                                    $return_timestamp = strtotime(
+                                        $item["expected_return_date"]
                                     );
 
-                                } else {
 
-                                    echo "Not specified";
+                                    if ($return_timestamp !== false) {
 
+                                        $return_date = date(
+                                            "M d, Y",
+                                            $return_timestamp
+                                        );
+                                    }
                                 }
+
+
+                                /*
+                                 * If saved date is missing
+                                 * or invalid, calculate:
+                                 *
+                                 * Start Date + 5 days
+                                 */
+
+                                if (
+                                    $return_date === "" &&
+                                    !empty($item["start_date"])
+                                ) {
+
+                                    try {
+
+                                        $start = new DateTime(
+                                            $item["start_date"],
+                                            new DateTimeZone("Asia/Colombo")
+                                        );
+
+                                        $start->modify("+5 days");
+
+                                        $return_date =
+                                            $start->format("M d, Y");
+
+                                    } catch (Exception $e) {
+
+                                        $return_date =
+                                            "Not specified";
+                                    }
+                                }
+
+
+                                echo htmlspecialchars(
+                                    $return_date !== ""
+                                        ? $return_date
+                                        : "Not specified"
+                                );
 
                                 ?>
 
                             </p>
 
+
+                            <!-- =========================
+                                 RENTAL PERIOD
+                            ========================== -->
 
                             <p>
 
@@ -853,14 +1131,24 @@ $items_stmt->close();
 
                                 <?php
 
-                                echo !empty($item["rental_days"])
-                                    ? (int)$item["rental_days"] . " days"
-                                    : "Not specified";
+                                if (!empty($item["rental_days"])) {
+
+                                    echo (int)$item["rental_days"]
+                                        . " days";
+
+                                } else {
+
+                                    echo "5 days";
+                                }
 
                                 ?>
 
                             </p>
 
+
+                            <!-- =========================
+                                 LATE RETURN FEE
+                            ========================== -->
 
                             <p>
 
@@ -875,19 +1163,29 @@ $items_stmt->close();
                         </div>
 
 
+                        <!-- =========================
+                             ITEM PRICE
+                        ========================== -->
+
                         <p class="item-price">
 
                             Rs.
+
                             <?php
+
                             echo number_format(
                                 (float)$item["rental_price"],
                                 2
                             );
+
                             ?>
 
                             ×
+
                             <?php
+
                             echo (int)$item["quantity"];
+
                             ?>
 
                         </p>
@@ -899,6 +1197,10 @@ $items_stmt->close();
             <?php endforeach; ?>
 
 
+            <!-- =========================
+                 TOTAL
+            ========================== -->
+
             <div class="total-box">
 
                 Total Amount:
@@ -906,11 +1208,14 @@ $items_stmt->close();
                 <span>
 
                     Rs.
+
                     <?php
+
                     echo number_format(
                         (float)$order["total_amount"],
                         2
                     );
+
                     ?>
 
                 </span>

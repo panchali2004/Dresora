@@ -1229,45 +1229,38 @@ $status = strtolower(
                                  Image
                             ========================== -->
 
-                            <div class="item-image">
+                           
+<div class="item-image">
 
+    <?php
 
-                                <?php if (
-                                    !empty(
-                                        $item["image_url"]
-                                    )
-                                ): ?>
+    $firstImage = "";
 
+    if (!empty($item["image_url"])) {
 
-                                    <img
-                                        src="../<?php
-                                        echo htmlspecialchars(
-                                            $item["image_url"]
-                                        );
-                                        ?>"
-                                        alt="<?php
-                                        echo htmlspecialchars(
-                                            $item["dress_name"]
-                                        );
-                                        ?>"
-                                    >
+        $imageList = explode(",", $item["image_url"]);
 
+        $firstImage = trim($imageList[0]);
+    }
 
-                                <?php else: ?>
+    ?>
 
+    <?php if ($firstImage !== ""): ?>
 
-                                    <div class="no-image">
+        <img
+            src="../<?php echo htmlspecialchars($firstImage); ?>"
+            alt="<?php echo htmlspecialchars($item["dress_name"]); ?>"
+        >
 
-                                        No Image
+    <?php else: ?>
 
-                                    </div>
+        <div class="no-image">
+            No Image
+        </div>
 
+    <?php endif; ?>
 
-                                <?php endif; ?>
-
-
-                            </div>
-
+</div>
 
                             <!-- =========================
                                  Details

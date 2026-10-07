@@ -18,11 +18,18 @@ $price = $_POST["price"];
 $image = $_POST["image"];
 $size = $_POST["size"];
 $start_date = $_POST["start_date"];
-$expected_return_date = $_POST["expected_return_date"];
-$rental_days = $_POST["rental_days"];
-$allowed_rental_days = $_POST["allowed_rental_days"];
+
+$rental_days = 5;
+$allowed_rental_days = 5;
+$late_fee_per_day = 500;
+
+// Calculate expected return date from start date
+$start = new DateTime($start_date, new DateTimeZone("Asia/Colombo"));
+$start->modify("+5 days");
+
+$expected_return_date = $start->format("Y-m-d");
+
 $base_rental_price = $_POST["base_rental_price"];
-$late_fee_per_day = $_POST["late_fee_per_day"];
 $quantity = $_POST["quantity"];
 
 
