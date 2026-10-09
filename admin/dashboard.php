@@ -1110,32 +1110,32 @@ if ($notification_stmt) {
             </a>
 
 
-            <!-- USERS -->
+        
+<!-- USERS -->
 
-            <a
-                href="#"
-                class="card"
-            >
+<a
+    href="users.php"
+    class="card"
+>
 
-                <div class="card-icon">
-                    👥
-                </div>
+    <div class="card-icon">
+        👥
+    </div>
 
-                <h3>
-                    Users
-                </h3>
+    <h3>
+        Users
+    </h3>
 
-                <p>
-                    View registered customers
-                    and user information.
-                </p>
+    <p>
+        View registered customers
+        and user information.
+    </p>
 
-                <span class="card-button">
-                    Coming Soon
-                </span>
+    <span class="card-button">
+        Manage Users
+    </span>
 
-            </a>
-
+</a>
 
         </div>
 
