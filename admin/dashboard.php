@@ -12,6 +12,48 @@ $admin_id = (int)$_SESSION["user_id"];
 
 
 /* =========================
+   DASHBOARD SUMMARY
+========================= */
+
+$total_users = 0;
+$total_dresses = 0;
+$total_orders = 0;
+$pending_orders = 0;
+
+// Total registered users
+$result = $conn->query("SELECT COUNT(*) AS total FROM users");
+
+if ($result) {
+    $total_users = (int)$result->fetch_assoc()["total"];
+}
+
+// Total dresses
+$result = $conn->query("SELECT COUNT(*) AS total FROM dresses");
+
+if ($result) {
+    $total_dresses = (int)$result->fetch_assoc()["total"];
+}
+
+// Total orders
+$result = $conn->query("SELECT COUNT(*) AS total FROM orders");
+
+if ($result) {
+    $total_orders = (int)$result->fetch_assoc()["total"];
+}
+
+// Pending orders
+$result = $conn->query("
+    SELECT COUNT(*) AS total
+    FROM orders
+    WHERE LOWER(status) = 'pending'
+");
+
+if ($result) {
+    $pending_orders = (int)$result->fetch_assoc()["total"];
+}
+
+
+/* =========================
    UNREAD NOTIFICATION COUNT
 ========================= */
 
@@ -100,6 +142,71 @@ if ($notification_stmt) {
 
 
     <style>
+        
+/* =========================
+   STORE SUMMARY
+========================= */
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+    margin-bottom: 35px;
+}
+
+.summary-card {
+    background: white;
+    padding: 23px;
+    border-radius: 13px;
+    border: 1px solid #f1eaf0;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    transition: 0.2s;
+}
+
+.summary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(93,64,92,0.10);
+}
+
+.summary-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #f3eaf2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    margin-bottom: 16px;
+}
+
+.summary-number {
+    color: #5d405c;
+    font-size: 29px;
+    font-weight: bold;
+    margin-bottom: 7px;
+}
+
+.summary-label {
+    color: #777;
+    font-size: 13px;
+}
+
+.summary-card.pending {
+    border-left: 4px solid #d99a55;
+}
+
+@media (max-width: 900px) {
+    .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 450px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+}
 
         * {
             box-sizing: border-box;
@@ -1040,6 +1147,80 @@ if ($notification_stmt) {
         </p>
 
     </div>
+
+    
+<!-- =========================
+     STORE SUMMARY
+========================== -->
+
+<div class="section">
+
+    <h2 class="section-title">
+        Store Summary
+    </h2>
+
+    <div class="summary-grid">
+
+        <!-- TOTAL USERS -->
+        <div class="summary-card">
+            <div class="summary-icon">👥</div>
+
+            <div class="summary-number">
+                <?php echo number_format($total_users); ?>
+            </div>
+
+            <div class="summary-label">
+                Total Users
+            </div>
+        </div>
+
+        <!-- TOTAL DRESSES -->
+        <div class="summary-card">
+            <div class="summary-icon">👗</div>
+
+            <div class="summary-number">
+                <?php echo number_format($total_dresses); ?>
+            </div>
+
+            <div class="summary-label">
+                Total Dresses
+            </div>
+        </div>
+
+        <!-- TOTAL ORDERS -->
+        <div class="summary-card">
+            <div class="summary-icon">📦</div>
+
+            <div class="summary-number">
+                <?php echo number_format($total_orders); ?>
+            </div>
+
+            <div class="summary-label">
+                Total Orders
+            </div>
+        </div>
+
+        <!-- PENDING ORDERS -->
+      
+<a href="orders.php?status=pending"
+   class="summary-card pending"
+   style="text-decoration:none; display:block;">
+
+    <div class="summary-icon">⏳</div>
+
+    <div class="summary-number">
+        <?php echo number_format($pending_orders); ?>
+    </div>
+
+    <div class="summary-label">
+        Pending Orders
+    </div>
+
+</a>
+
+    </div>
+
+</div>
 
 
     <!-- =========================
