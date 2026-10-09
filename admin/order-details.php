@@ -29,7 +29,6 @@ $order_id = (int) $_GET["order_id"];
 $message = "";
 $messageType = "";
 
-
 /* =========================
    CONFIRM / REJECT ORDER
 ========================= */
@@ -38,90 +37,62 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $action = $_POST["action"] ?? "";
 
-
-    /* =========================
-       CONFIRM ORDER
-    ========================= */
-
     if ($action === "confirm") {
 
         $new_status = "confirmed";
 
-        $stmt = $conn->prepare(
-            "UPDATE orders
-             SET status = ?
-             WHERE order_id = ?
-             AND status = 'pending'"
-        );
+        $stmt = $conn->prepare("
+            UPDATE orders
+            SET status = ?
+            WHERE order_id = ?
+            AND status = 'pending'
+        ");
 
-        $stmt->bind_param(
-            "si",
-            $new_status,
-            $order_id
-        );
-
-        if ($stmt->execute() && $stmt->affected_rows > 0) {
-
-            $message = "Order confirmed successfully.";
-            $messageType = "success";
-
-        } else {
-
-            $message = "Unable to confirm this order.";
+        if (!$stmt) {
+            $message = "Database error: " . $conn->error;
             $messageType = "error";
+        } else {
+            $stmt->bind_param("si", $new_status, $order_id);
+
+            if ($stmt->execute() && $stmt->affected_rows === 1) {
+                $message = "Order confirmed successfully.";
+                $messageType = "success";
+            } else {
+                $message = "Unable to confirm this order.";
+                $messageType = "error";
+            }
+
+            $stmt->close();
         }
 
-        $stmt->close();
-    }
-
-
-    /* =========================
-       REJECT ORDER
-    ========================= */
-
-    elseif ($action === "reject") {
+    } elseif ($action === "reject") {
 
         $conn->begin_transaction();
 
         try {
 
-            /* =========================
-               CHECK ORDER STATUS
-            ========================= */
-
-            $check_sql = "
+            // 1. Lock and check order status
+            $check_stmt = $conn->prepare("
                 SELECT status
                 FROM orders
                 WHERE order_id = ?
                 FOR UPDATE
-            ";
-
-            $check_stmt = $conn->prepare($check_sql);
+            ");
 
             if (!$check_stmt) {
-                throw new Exception(
-                    "Order check failed: " . $conn->error
-                );
+                throw new Exception($conn->error);
             }
 
-            $check_stmt->bind_param(
-                "i",
-                $order_id
-            );
-
+            $check_stmt->bind_param("i", $order_id);
             $check_stmt->execute();
 
             $check_result = $check_stmt->get_result();
-
             $check_order = $check_result->fetch_assoc();
-
             $check_stmt->close();
-
 
             if (!$check_order) {
                 throw new Exception("Order not found.");
             }
-
 
             if (strtolower($check_order["status"]) !== "pending") {
                 throw new Exception(
@@ -129,64 +100,57 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 );
             }
 
-
-            /* =========================
-               GET ORDER ITEMS
-            ========================= */
-
-            $items_sql = "
-                SELECT
-                    dress_id,
-                    size,
-                    quantity
+            // 2. Get order items
+            $items_stmt = $conn->prepare("
+                SELECT dress_id, size, quantity
                 FROM order_items
                 WHERE order_id = ?
-            ";
-
-            $items_stmt = $conn->prepare($items_sql);
+            ");
 
             if (!$items_stmt) {
-                throw new Exception(
-                    "Order items query failed: " . $conn->error
-                );
+                throw new Exception($conn->error);
             }
 
-            $items_stmt->bind_param(
-                "i",
-                $order_id
-            );
-
+            $items_stmt->bind_param("i", $order_id);
             $items_stmt->execute();
 
             $items_result = $items_stmt->get_result();
 
+            $order_items = [];
 
-            /* =========================
-               RESTORE STOCK
-            ========================= */
+            while ($item = $items_result->fetch_assoc()) {
+                $order_items[] = $item;
+            }
 
-            $stock_sql = "
+            $items_stmt->close();
+
+            if (count($order_items) === 0) {
+                throw new Exception("No order items found.");
+            }
+
+            // 3. Restore stock for each dress and size
+            $stock_stmt = $conn->prepare("
                 UPDATE dress_size_stock
                 SET quantity = quantity + ?
                 WHERE dress_id = ?
                 AND size = ?
-            ";
-
-            $stock_stmt = $conn->prepare($stock_sql);
+            ");
 
             if (!$stock_stmt) {
-                throw new Exception(
-                    "Stock update prepare failed: " . $conn->error
-                );
+                throw new Exception($conn->error);
             }
 
-
-            while ($item = $items_result->fetch_assoc()) {
+            foreach ($order_items as $item) {
 
                 $quantity = (int) $item["quantity"];
                 $dress_id = (int) $item["dress_id"];
-                $size = $item["size"];
+                $size = trim($item["size"]);
 
+                if ($quantity <= 0) {
+                    throw new Exception(
+                        "Invalid quantity for Dress ID: " . $dress_id
+                    );
+                }
 
                 $stock_stmt->bind_param(
                     "iis",
@@ -195,40 +159,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $size
                 );
 
-
                 if (!$stock_stmt->execute()) {
+                    throw new Exception($stock_stmt->error);
+                }
 
+                if ($stock_stmt->affected_rows !== 1) {
                     throw new Exception(
-                        "Stock restore failed: " .
-                        $stock_stmt->error
+                        "Matching stock row not found for Dress ID: " .
+                        $dress_id . ", Size: " . $size
                     );
                 }
             }
 
-
             $stock_stmt->close();
-            $items_stmt->close();
 
-
-            /* =========================
-               UPDATE ORDER STATUS
-            ========================= */
-
+            // 4. Update order status only after stock restoration
             $new_status = "rejected";
 
-            $status_sql = "
+            $status_stmt = $conn->prepare("
                 UPDATE orders
                 SET status = ?
                 WHERE order_id = ?
                 AND status = 'pending'
-            ";
-
-            $status_stmt = $conn->prepare($status_sql);
+            ");
 
             if (!$status_stmt) {
-                throw new Exception(
-                    "Status update failed: " . $conn->error
-                );
+                throw new Exception($conn->error);
             }
 
             $status_stmt->bind_param(
@@ -237,40 +193,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $order_id
             );
 
-            if (!$status_stmt->execute()) {
-
+            if (!$status_stmt->execute() ||
+                $status_stmt->affected_rows !== 1) {
                 throw new Exception(
-                    "Unable to reject order: " .
-                    $status_stmt->error
+                    "Unable to update order status."
                 );
             }
 
             $status_stmt->close();
 
-
-            /* =========================
-               COMMIT
-            ========================= */
-
+            // 5. Commit all changes together
             $conn->commit();
 
-            $message =
-                "Order rejected and stock restored successfully.";
-
+            $message = "Order rejected and stock restored successfully.";
             $messageType = "success";
 
-
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
 
             $conn->rollback();
 
-            $message = $e->getMessage();
+            $message = "Reject failed: " . $e->getMessage();
             $messageType = "error";
         }
     }
 }
-
-
 /* =========================
    GET ORDER DETAILS
 ========================= */

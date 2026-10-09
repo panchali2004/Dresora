@@ -195,6 +195,44 @@ if (
         $items_result = $items_stmt->get_result();
 
 
+       
+        /* =========================
+           GET ORDER ITEMS
+        ========================= */
+
+        $items_sql = "
+            SELECT dress_id, size, quantity
+            FROM order_items
+            WHERE order_id = ?
+        ";
+
+        $items_stmt = $conn->prepare($items_sql);
+
+        if (!$items_stmt) {
+            throw new Exception(
+                "Order items query failed: " . $conn->error
+            );
+        }
+
+        $items_stmt->bind_param("i", $cancel_order_id);
+
+        if (!$items_stmt->execute()) {
+            throw new Exception($items_stmt->error);
+        }
+
+        $items_result = $items_stmt->get_result();
+        $items = [];
+
+        while ($item = $items_result->fetch_assoc()) {
+            $items[] = $item;
+        }
+
+        $items_stmt->close();
+
+        if (count($items) === 0) {
+            throw new Exception("No order items found.");
+        }
+
         /* =========================
            RESTORE STOCK
         ========================= */
@@ -203,33 +241,26 @@ if (
             UPDATE dress_size_stock
             SET quantity = quantity + ?
             WHERE dress_id = ?
-            AND size = ?
+              AND size = ?
         ";
-
 
         $stock_stmt = $conn->prepare($stock_sql);
 
-
         if (!$stock_stmt) {
-
             throw new Exception(
-                "Stock update failed: " .
-                $conn->error
+                "Stock update preparation failed: " . $conn->error
             );
         }
 
+        foreach ($items as $item) {
 
-        while ($item = $items_result->fetch_assoc()) {
+            $quantity = (int)$item["quantity"];
+            $dress_id = (int)$item["dress_id"];
+            $size = trim($item["size"]);
 
-
-            $quantity = (int) $item["quantity"];
-
-
-            $dress_id = (int) $item["dress_id"];
-
-
-            $size = $item["size"];
-
+            if ($quantity <= 0 || $dress_id <= 0 || $size === "") {
+                throw new Exception("Invalid order item data.");
+            }
 
             $stock_stmt->bind_param(
                 "iis",
@@ -238,54 +269,43 @@ if (
                 $size
             );
 
-
             if (!$stock_stmt->execute()) {
-
                 throw new Exception(
-                    "Stock restore failed: " .
-                    $stock_stmt->error
+                    "Stock restore failed: " . $stock_stmt->error
                 );
             }
 
+            if ($stock_stmt->affected_rows !== 1) {
+                throw new Exception(
+                    "Stock row not found for Dress ID " .
+                    $dress_id . ", Size " . $size .
+                    ". Please check dress_size_stock."
+                );
+            }
         }
 
-
         $stock_stmt->close();
-
-
-        $items_stmt->close();
-
 
         /* =========================
            UPDATE ORDER STATUS
         ========================= */
 
-        /*
-         * IMPORTANT:
-         * Allow both pending and confirmed.
-         */
-
         $cancel_sql = "
             UPDATE orders
             SET status = 'cancelled'
             WHERE order_id = ?
-            AND user_id = ?
-            AND LOWER(status) IN ('pending', 'confirmed')
-            AND LOWER(COALESCE(payment_status, 'unpaid')) <> 'paid'
+              AND user_id = ?
+              AND LOWER(status) IN ('pending', 'confirmed')
+              AND LOWER(COALESCE(payment_status, 'unpaid')) <> 'paid'
         ";
-
 
         $cancel_stmt = $conn->prepare($cancel_sql);
 
-
         if (!$cancel_stmt) {
-
             throw new Exception(
-                "Cancel update failed: " .
-                $conn->error
+                "Cancel update preparation failed: " . $conn->error
             );
         }
-
 
         $cancel_stmt->bind_param(
             "ii",
@@ -293,36 +313,26 @@ if (
             $user_id
         );
 
-
         if (!$cancel_stmt->execute()) {
-
             throw new Exception(
-                "Unable to cancel order: " .
-                $cancel_stmt->error
+                "Unable to cancel order: " . $cancel_stmt->error
             );
         }
-
-
-        /*
-         * Check whether order was actually updated.
-         */
 
         if ($cancel_stmt->affected_rows !== 1) {
-
             throw new Exception(
-                "Order could not be cancelled."
+                "Order could not be cancelled. Stock restoration rolled back."
             );
         }
 
-
         $cancel_stmt->close();
-
 
         /* =========================
            COMMIT TRANSACTION
         ========================= */
 
         $conn->commit();
+     
 
 
     } catch (Exception $e) {
