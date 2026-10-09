@@ -36,6 +36,39 @@ if ($result) {
 
 } 
 
+/* =========================
+   CUSTOMER WISHLIST ITEMS
+========================= */
+
+$wishlistDressIds = [];
+
+if (
+    isset($_SESSION["user_id"]) &&
+    isset($_SESSION["role"]) &&
+    strtolower($_SESSION["role"]) !== "admin"
+) {
+    $user_id = (int) $_SESSION["user_id"];
+
+    $stmt = $conn->prepare("
+        SELECT wi.dress_id
+        FROM wishlist w
+        INNER JOIN wishlist_items wi
+            ON w.wishlist_id = wi.wishlist_id
+        WHERE w.user_id = ?
+    ");
+
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+
+    $wishlistResult = $stmt->get_result();
+
+    while ($row = $wishlistResult->fetch_assoc()) {
+        $wishlistDressIds[] = (int) $row["dress_id"];
+    }
+
+    $stmt->close();
+}
+
 
 /* ========================================================= 
    CART COUNT 
@@ -461,6 +494,46 @@ if (
             } 
 
         } 
+        
+/* =========================
+   ADD TO WISHLIST BUTTON
+========================= */
+
+.wishlist-form {
+    margin-bottom: 10px;
+}
+
+.wishlist-btn {
+    width: 100%;
+    padding: 11px 20px;
+
+    background: #fffafc;
+    color: #8b5a83;
+
+    border: 1px solid #a66b9b;
+    border-radius: 22px;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.wishlist-btn:hover {
+    background: #f8f0f6;
+    color: #5d405c;
+    transform: translateY(-2px);
+}
+
+.wishlist-btn:disabled {
+    background: #f8f0f6;
+    color: #5d405c;
+    border-color: #ead9e6;
+    cursor: not-allowed;
+    opacity: 1;
+    transform: none;
+}
 
     </style> 
 
@@ -871,7 +944,41 @@ if (
                             </span> 
 
                         </p> 
+                        
 
+<!-- ADD TO WISHLIST -->
+
+<?php
+$isInWishlist = in_array(
+    (int) $dress["dress_id"],
+    $wishlistDressIds,
+    true
+);
+?>
+
+<form
+    action="add-to-wishlist.php"
+    method="POST"
+    class="wishlist-form"
+>
+    <input
+        type="hidden"
+        name="dress_id"
+        value="<?php echo (int) $dress["dress_id"]; ?>"
+    >
+
+    <button
+        type="submit"
+        class="wishlist-btn"
+        <?php echo $isInWishlist ? "disabled" : ""; ?>
+    >
+        <?php
+        echo $isInWishlist
+            ? "❤️ Added to Wishlist"
+            : "♡ Add to Wishlist";
+        ?>
+    </button>
+</form>
 
                         <a 
                             href="product-details.php?db_id=<?php 

@@ -725,11 +725,6 @@ $notificationStmt->close();
             </li>
 
 
-            <li>
-                <a href="rental-requests.php">
-                    📋 Rental Requests
-                </a>
-            </li>
 
 
             <li>
@@ -738,14 +733,11 @@ $notificationStmt->close();
                 </a>
             </li>
 
-
-            <li>
-                <a href="wishlist.php">
-                    ❤️ Wishlist
-                </a>
-            </li>
-
-
+<li>
+    <a href="../wishlist.php">
+        ❤️ Wishlist
+    </a>
+</li>
             <li>
 
                 <a
