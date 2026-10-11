@@ -974,7 +974,7 @@ $isInWishlist = in_array(
     >
         <?php
         echo $isInWishlist
-            ? "❤️ Added to Wishlist"
+            ? "❤️"
             : "♡ Add to Wishlist";
         ?>
     </button>
