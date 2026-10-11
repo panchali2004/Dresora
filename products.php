@@ -549,86 +549,169 @@ if ($isLoggedIn && !$isAdmin) {
             font-weight: 500;
         }
 
-        /* ===============================
-           FOOTER
-        =============================== */
+    
 
-        .shop-footer {
-            margin-top: 20px;
-            background: #f6eef4;
-            color: var(--plum);
-        }
 
-        .footer-container {
-            display: grid;
-            grid-template-columns: 1.5fr 1fr 1fr 1fr;
-            gap: 35px;
-            max-width: 1380px;
-            margin: auto;
-            padding: 55px 32px 40px;
-        }
 
-        .footer-brand h2 {
-            margin: 0;
-            font-family: Georgia, "Times New Roman", serif;
-            font-size: 28px;
-            font-weight: 500;
-            letter-spacing: 3px;
-        }
+       
 
-        .footer-tagline {
-            margin: 6px 0 17px;
-            font-size: 9px;
-            letter-spacing: 3px;
-        }
+       
 
-        .footer-description {
-            max-width: 280px;
-            color: var(--muted);
-            font-size: 13px;
-            line-height: 1.9;
-        }
+      
+/* ===============================
+   PROFESSIONAL FOOTER
+=============================== */
 
-        .footer-column h3 {
-            margin: 5px 0 18px;
-            color: var(--plum);
-            font-size: 13px;
-        }
+.shop-footer {
+    margin-top: 30px;
+    background: #f5edf3;
+    color: #5d405c;
+    border-top: 1px solid #ead9e6;
+}
 
-        .footer-column ul {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
+.shop-footer .footer-container {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 40px;
+    max-width: 1380px;
+    margin: 0 auto;
+    padding: 60px 35px 45px;
+}
 
-        .footer-column li {
-            margin-bottom: 12px;
-        }
+.shop-footer .footer-column {
+    min-width: 0;
+}
 
-        .footer-column a,
-        .footer-column p {
-            color: var(--muted);
-            font-size: 12px;
-            line-height: 1.8;
-        }
+.shop-footer .footer-brand h2 {
+    margin: 0;
+    color: #5d405c;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 30px;
+    font-weight: 500;
+    letter-spacing: 3px;
+}
 
-        .footer-column a:hover {
-            color: var(--mauve);
-        }
+.shop-footer .footer-tagline {
+    margin: 7px 0 20px;
+    color: #8b5a83;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+}
 
-        .footer-bottom {
-            display: flex;
-            justify-content: space-between;
-            gap: 15px;
-            padding: 18px 32px;
-            border-top: 1px solid #e9dce7;
-            color: var(--muted);
-            font-size: 11px;
-        }
+.shop-footer .footer-description {
+    max-width: 290px;
+    margin: 0;
+    color: #625663;
+    font-size: 14px;
+    line-height: 1.9;
+}
 
-        .footer-bottom p {
-            margin: 0;
-        }
+.shop-footer .footer-column h3 {
+    margin: 5px 0 22px;
+    color: #5d405c;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.shop-footer .footer-column ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.shop-footer .footer-column li {
+    margin: 0 0 14px;
+}
+
+.shop-footer .footer-column a {
+    display: inline-block;
+    color: #625663;
+    font-size: 13px;
+    line-height: 1.7;
+    text-decoration: none;
+    transition: color .2s, padding-left .2s;
+}
+
+.shop-footer .footer-column a:hover {
+    color: #8b5a83;
+    padding-left: 4px;
+}
+
+.shop-footer .footer-column p {
+    margin: 0 0 13px;
+    color: #625663;
+    font-size: 13px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+.shop-footer .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 20px 35px;
+    border-top: 1px solid #e4d5e1;
+    color: #625663;
+    font-size: 12px;
+}
+
+.shop-footer .footer-bottom p {
+    margin: 0;
+}
+
+/* TABLET */
+
+@media (max-width: 900px) {
+    .shop-footer .footer-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 35px;
+        padding: 45px 25px 35px;
+    }
+}
+
+/* MOBILE */
+
+@media (max-width: 480px) {
+    .shop-footer .footer-container {
+        grid-template-columns: 1fr 1fr;
+        gap: 30px 18px;
+        padding: 35px 18px;
+    }
+
+    .shop-footer .footer-brand {
+        grid-column: 1 / -1;
+    }
+
+    .shop-footer .footer-brand h2 {
+        font-size: 27px;
+    }
+
+    .shop-footer .footer-description {
+        max-width: 100%;
+    }
+
+    .shop-footer .footer-column h3 {
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+
+    .shop-footer .footer-column a,
+    .shop-footer .footer-column p {
+        font-size: 12px;
+    }
+
+    .shop-footer .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+        padding: 18px;
+        line-height: 1.7;
+    }
+}
+
+
+       
 
         /* ===============================
            RESPONSIVE
@@ -889,8 +972,7 @@ if ($isLoggedIn && !$isAdmin) {
                     <option value="default">Featured</option>
                     <option value="low-high">Price: Low to High</option>
                     <option value="high-low">Price: High to Low</option>
-                    <option value="a-z">Name: A to Z</option>
-                    <option value="z-a">Name: Z to A</option>
+                 
                 </select>
             </div>
 
@@ -1110,14 +1192,7 @@ function applyFilters() {
         visibleProducts.sort(function(a, b) {
             return Number(b.dataset.price) - Number(a.dataset.price);
         });
-    } else if (sort === "a-z") {
-        visibleProducts.sort(function(a, b) {
-            return a.dataset.name.localeCompare(b.dataset.name);
-        });
-    } else if (sort === "z-a") {
-        visibleProducts.sort(function(a, b) {
-            return b.dataset.name.localeCompare(a.dataset.name);
-        });
+    
     }
 
     // Reorder only the visible cards. Hidden cards remain available for filtering.
