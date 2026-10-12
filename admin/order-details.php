@@ -38,21 +38,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $action = $_POST["action"] ?? "";
 
     if ($action === "confirm") {
-
-        $new_status = "confirmed";
-
-        $stmt = $conn->prepare("
-            UPDATE orders
-            SET status = ?
-            WHERE order_id = ?
-            AND status = 'pending'
-        ");
+$stmt = $conn->prepare("
+    UPDATE orders
+    SET status = 'confirmed'
+    WHERE order_id = ?
+      AND (
+          LOWER(TRIM(COALESCE(status, ''))) = 'pending'
+          OR TRIM(COALESCE(status, '')) = ''
+      )
+");
 
         if (!$stmt) {
             $message = "Database error: " . $conn->error;
             $messageType = "error";
         } else {
-            $stmt->bind_param("si", $new_status, $order_id);
+            $stmt->bind_param("i", $order_id);
 
             if ($stmt->execute() && $stmt->affected_rows === 1) {
                 $message = "Order confirmed successfully.";
@@ -63,6 +63,112 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
 
             $stmt->close();
+        }
+
+      } elseif ($action === "delivered") {
+
+        $conn->begin_transaction();
+
+        try {
+
+            // 1. Lock the order and get customer ID
+            $check_stmt = $conn->prepare("
+                SELECT user_id, status
+                FROM orders
+                WHERE order_id = ?
+                FOR UPDATE
+            ");
+
+            if (!$check_stmt) {
+                throw new Exception($conn->error);
+            }
+
+            $check_stmt->bind_param("i", $order_id);
+            $check_stmt->execute();
+
+            $result = $check_stmt->get_result();
+            $delivery_order = $result->fetch_assoc();
+            $check_stmt->close();
+
+            if (!$delivery_order) {
+                throw new Exception("Order not found.");
+            }
+
+            // Prevent duplicate delivery notifications
+            if (strtolower($delivery_order["status"]) !== "confirmed") {
+                throw new Exception(
+                    "Only confirmed orders can be marked as delivered."
+                );
+            }
+
+            $customer_id = (int)$delivery_order["user_id"];
+
+            // 2. Update order status
+            $update_stmt = $conn->prepare("
+                UPDATE orders
+                SET status = 'delivered'
+                WHERE order_id = ?
+                AND status = 'confirmed'
+            ");
+
+            if (!$update_stmt) {
+                throw new Exception($conn->error);
+            }
+
+            $update_stmt->bind_param("i", $order_id);
+
+            if (!$update_stmt->execute() ||
+                $update_stmt->affected_rows !== 1) {
+                throw new Exception("Unable to update delivery status.");
+            }
+
+            $update_stmt->close();
+
+            // 3. Create customer notification
+            $title = "Your DRESORA Order Has Been Delivered!";
+            $notification_message =
+                "Your order #" . $order_id .
+                " has been delivered successfully. " .
+                "Thank you for choosing DRESORA!";
+
+            $notification_type = "delivery";
+
+            $notification_stmt = $conn->prepare("
+                INSERT INTO notifications
+                    (user_id, title, message, notification_type, is_read)
+                VALUES (?, ?, ?, ?, 0)
+            ");
+
+            if (!$notification_stmt) {
+                throw new Exception($conn->error);
+            }
+
+            $notification_stmt->bind_param(
+                "isss",
+                $customer_id,
+                $title,
+                $notification_message,
+                $notification_type
+            );
+
+            if (!$notification_stmt->execute()) {
+                throw new Exception($notification_stmt->error);
+            }
+
+            $notification_stmt->close();
+
+            // 4. Save both changes together
+            $conn->commit();
+
+            $message = "Order delivered.";
+            $messageType = "success";
+
+        } catch (Throwable $e) {
+
+            $conn->rollback();
+
+            $message = "Delivery failed: " . $e->getMessage();
+            $messageType = "error";
         }
 
     } elseif ($action === "reject") {
@@ -520,6 +626,10 @@ $items_stmt->close();
 
             color: #267342;
         }
+        .status.delivered {
+    background: #e9f8ef;
+    color: #267342;
+}
 
 
         .status.cancelled {
@@ -926,7 +1036,40 @@ $items_stmt->close();
             </div>
 
         <?php endif; ?>
+<?php if (strtolower($order["status"]) === "confirmed"): ?>
 
+    <div class="actions">
+
+        <form method="POST"
+              onsubmit="return confirm(
+                  'Confirm that this order has been delivered to the customer?'
+              );">
+
+            <input
+                type="hidden"
+                name="action"
+                value="delivered"
+            >
+
+            <button
+                type="submit"
+                class="confirm-btn"
+            >
+                ✓  Delivered
+            </button>
+
+        </form>
+
+    </div>
+
+<?php elseif (strtolower($order["status"]) === "delivered"): ?>
+
+    <div class="message success">
+        ✓ This order has been delivered.
+       
+    </div>
+
+<?php endif; ?>
 
     </div>
 
