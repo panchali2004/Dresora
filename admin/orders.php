@@ -29,8 +29,7 @@ function e($value)
 $allowedStatuses = [
     "pending",
     "confirmed",
-    "rejected",
-    "completed",
+    "delivered",
     "cancelled"
 ];
 
@@ -524,11 +523,10 @@ if ($filterPayment === "paid") {
             background: #ffe3e3;
             color: #a32626;
         }
-
-        .status.completed {
-            background: #dff5e5;
-            color: #26733b;
-        }
+.status.delivered {
+    background: #dff5e5;
+    color: #26733b;
+}
 
         .payment-status.paid {
             background: #dff5e5;
@@ -644,10 +642,6 @@ if ($filterPayment === "paid") {
             class="filter-btn <?= $filterStatus === "confirmed" ? "active" : "" ?>"
         >Confirmed</a>
 
-        <a
-            href="orders.php?status=rejected"
-            class="filter-btn <?= $filterStatus === "rejected" ? "active" : "" ?>"
-        >Rejected</a>
 
         <a
             href="orders.php?payment=paid"
@@ -655,9 +649,9 @@ if ($filterPayment === "paid") {
         >Paid Orders</a>
 
         <a
-            href="orders.php?status=completed"
-            class="filter-btn <?= $filterStatus === "completed" ? "active" : "" ?>"
-        >Completed</a>
+    href="orders.php?status=delivered"
+    class="filter-btn <?= $filterStatus === "delivered" ? "active" : "" ?>"
+>Delivered</a>
 
         <a
             href="orders.php?status=cancelled"
