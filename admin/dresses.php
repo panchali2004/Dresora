@@ -22,6 +22,7 @@ $message = "";
 $messageType = "";
 
 
+
 // =========================================================
 // DELETE DRESS
 // =========================================================
@@ -1849,31 +1850,29 @@ $dresses = $conn->query(
                             </td>
 
 
-
                             <!-- DELETE -->
 
-                            <td>
+                        <td>
+    <div style="display:flex; gap:10px; align-items:center;">
 
-                                <a
-                                    href="dresses.php?delete=<?php
-                                    echo $dress["dress_id"];
-                                    ?>"
-                                    class="delete-btn"
+        <a href="edit-dress.php?id=<?php echo (int)$dress['dress_id']; ?>"
+           style="background:#8b5a83;
+                  color:white;
+                  padding:8px 15px;
+                  border-radius:5px;
+                  text-decoration:none;
+                  font-size:13px;">
+            Edit
+        </a>
 
-                                    onclick="
-                                        return confirm(
-                                            'Are you sure you want to delete this dress?'
-                                        );
-                                    "
-                                >
+        <a href="dresses.php?delete=<?php echo (int)$dress['dress_id']; ?>"
+           class="delete-btn"
+           onclick="return confirm('Are you sure you want to delete this dress?');">
+            Delete
+        </a>
 
-                                    Delete
-
-                                </a>
-
-                            </td>
-
-
+    </div>
+</td>
                         </tr>
 
 
