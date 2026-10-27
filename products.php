@@ -20,6 +20,23 @@ $isAdmin = isset($_SESSION["role"]) &&
 
 $userId = $isLoggedIn ? (int)$_SESSION["user_id"] : 0;
 
+// LOAD ALL CATEGORIES FROM DATABASE
+$shopCategories = [];
+
+$categorySql = "
+    SELECT category_id, category_name
+    FROM categories
+    ORDER BY category_name ASC
+";
+
+$categoryResult = $conn->query($categorySql);
+
+if ($categoryResult) {
+    while ($categoryRow = $categoryResult->fetch_assoc()) {
+        $shopCategories[] = $categoryRow;
+    }
+}
+
 /* =========================================
    LOAD DRESSES
 ========================================= */
@@ -904,6 +921,7 @@ if ($isLoggedIn && !$isAdmin) {
             <li><a class="active" href="products.php">Shop</a></li>
             <li><a href="about.html">About</a></li>
             <li><a href="contact.html">Contact</a></li>
+             
         </ul>
 
         <div class="shop-nav-actions">
@@ -954,15 +972,33 @@ if ($isLoggedIn && !$isAdmin) {
             <div class="filter-group">
                 <label for="categoryFilter">Category</label>
 
-                <select id="categoryFilter">
-                    <option value="all">All Dresses</option>
-                    <option value="party">Party</option>
-                    <option value="wedding">Wedding</option>
-                    <option value="evening">Evening</option>
-                    <option value="casual">Casual</option>
-                    <option value="cocktail">Cocktail</option>
-                    <option value="formal">Formal</option>
-                </select>
+              <select id="categoryFilter">
+
+    <option value="all">All Dresses</option>
+
+    <?php foreach ($shopCategories as $category): ?>
+
+        <?php
+            $categoryName = trim($category["category_name"]);
+
+            $categoryValue = strtolower($categoryName);
+
+            $categoryValue = preg_replace(
+                '/\s+dresses?$/i',
+                '',
+                $categoryValue
+            );
+
+            $categoryValue = trim($categoryValue);
+        ?>
+
+        <option value="<?php echo e($categoryValue); ?>">
+            <?php echo e($categoryName); ?>
+        </option>
+
+    <?php endforeach; ?>
+
+</select>
             </div>
 
             <div class="filter-group">
@@ -1112,6 +1148,7 @@ if ($isLoggedIn && !$isAdmin) {
                 <li><a href="products.php">Shop Dresses</a></li>
                 <li><a href="about.html">About Us</a></li>
                 <li><a href="contact.html">Contact</a></li>
+              
             </ul>
         </div>
 

@@ -54,6 +54,59 @@ if ($result) {
 
 
 /* =========================
+   ORDERS BY SELECTED DATE
+========================= */
+$selected_order_date = $_GET["order_date"] ?? date("Y-m-d");
+$date_is_valid = is_string($selected_order_date)
+    && preg_match('/^\d{4}-\d{2}-\d{2}$/', $selected_order_date)
+    && DateTime::createFromFormat('!Y-m-d', $selected_order_date)
+    && DateTime::createFromFormat('!Y-m-d', $selected_order_date)->format('Y-m-d') === $selected_order_date;
+
+if (!$date_is_valid) {
+    $selected_order_date = date("Y-m-d");
+}
+
+$selected_date_orders = 0;
+$order_date_error = "";
+
+// Find the existing date column without changing the orders table.
+$order_date_column = null;
+$column_result = $conn->query("SHOW COLUMNS FROM orders");
+if ($column_result) {
+    $available_columns = [];
+    while ($column = $column_result->fetch_assoc()) {
+        $available_columns[] = $column["Field"];
+    }
+    foreach (["order_date", "created_at", "ordered_at", "placed_at", "date_created"] as $candidate) {
+        if (in_array($candidate, $available_columns, true)) {
+            $order_date_column = $candidate;
+            break;
+        }
+    }
+}
+
+if ($order_date_column !== null) {
+    $query = "SELECT COUNT(*) AS total FROM orders WHERE `$order_date_column` >= ? AND `$order_date_column` < ?";
+    $start_date = $selected_order_date . " 00:00:00";
+    $end_date = date("Y-m-d", strtotime($selected_order_date . " +1 day")) . " 00:00:00";
+    $date_stmt = $conn->prepare($query);
+    if ($date_stmt) {
+        $date_stmt->bind_param("ss", $start_date, $end_date);
+        $date_stmt->execute();
+        $date_result = $date_stmt->get_result();
+        if ($date_result && $row = $date_result->fetch_assoc()) {
+            $selected_date_orders = (int)$row["total"];
+        }
+        $date_stmt->close();
+    } else {
+        $order_date_error = "Could not load the order count.";
+    }
+} else {
+    $order_date_error = "No order date column was found in the orders table.";
+}
+
+
+/* =========================
    UNREAD NOTIFICATION COUNT
 ========================= */
 
@@ -878,6 +931,55 @@ if ($notification_stmt) {
 
         }
 
+
+        /* DATE-WISE ORDER REPORT */
+        .date-report {
+            background: white;
+            border: 1px solid #f1eaf0;
+            border-radius: 13px;
+            padding: 24px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+        }
+        .date-report-form {
+            display: flex;
+            align-items: end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .date-report-form label {
+            display: block;
+            color: #5d405c;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .date-report-form input {
+            padding: 11px 12px;
+            border: 1px solid #ead9e6;
+            border-radius: 7px;
+            color: #5d405c;
+            font-size: 14px;
+        }
+        .date-report-form button {
+            background: #8b5a83;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            padding: 12px 20px;
+            cursor: pointer;
+        }
+        .date-report-result {
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px solid #f1eaf0;
+        }
+        .date-report-result strong {
+            color: #5d405c;
+            font-size: 29px;
+        }
+        .card { display: flex; flex-direction: column; }
+        .card-button { margin-top: auto; align-self: flex-start; }
+
     </style>
 
 </head>
@@ -1224,6 +1326,34 @@ if ($notification_stmt) {
 
 
     <!-- =========================
+         ORDERS BY DATE
+    ========================== -->
+    <div class="section">
+        <h2 class="section-title">Orders by Date</h2>
+        <div class="date-report">
+            <form method="GET" action="dashboard.php" class="date-report-form">
+                <div>
+                    <label for="order_date">Select Order Date</label>
+                    <input type="date" id="order_date" name="order_date"
+                           value="<?php echo htmlspecialchars($selected_order_date, ENT_QUOTES, 'UTF-8'); ?>" required>
+                </div>
+                <button type="submit">View Orders</button>
+            </form>
+            <div class="date-report-result">
+                <?php if ($order_date_error !== ""): ?>
+                    <p><?php echo htmlspecialchars($order_date_error, ENT_QUOTES, 'UTF-8'); ?></p>
+                <?php else: ?>
+                    <div style="color:#777;font-size:13px;margin-bottom:8px;">
+                        Orders placed on <?php echo htmlspecialchars($selected_order_date, ENT_QUOTES, 'UTF-8'); ?>
+                    </div>
+                    <strong><?php echo number_format($selected_date_orders); ?></strong>
+                    <span style="color:#777;font-size:13px;"> orders</span>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================
          ADMIN MANAGEMENT
     ========================== -->
 
@@ -1263,6 +1393,14 @@ if ($notification_stmt) {
 
             </a>
 
+
+            <!-- CATEGORIES -->
+            <a href="categories.php" class="card">
+                <div class="card-icon">🏷️</div>
+                <h3>Categories</h3>
+                <p>Add, edit and delete dress categories.</p>
+                <span class="card-button">Manage Categories</span>
+            </a>
 
             <!-- RENTALS -->
 
