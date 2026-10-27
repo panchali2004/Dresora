@@ -643,7 +643,7 @@ function normaliseStatus($value, $default = "pending") {
     <ul>
         <li><a href="profile.php">👤 My Profile</a></li>
         <li><a href="../cart.php">🛒 My Cart</a></li>
-        <li><a href="rental-requests.php">📋 Rental Requests</a></li>
+      
         <li><a href="my-orders.php" class="active">📦 My Orders</a></li>
         <li><a href="wishlist.php">❤️ Wishlist</a></li>
         <li><a href="notifications.php">🔔 Notifications</a></li>

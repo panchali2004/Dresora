@@ -112,12 +112,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if (!$order) {
             throw new Exception("Order not found.");
         }
+$currentStatus = strtolower(trim($order["status"]));
 
-        if (strtolower($order["status"]) !== "pending") {
-            throw new Exception(
-                "Only pending orders can be confirmed or cancelled."
-            );
-        }
+if (
+    ($action === "confirm" && $currentStatus !== "pending") ||
+    ($action === "cancel" &&
+        !in_array($currentStatus, ["pending", "confirmed"], true))
+) {
+    throw new Exception(
+        "This action is not allowed for the current order status."
+    );
+}
 
         $customerId = (int)$order["user_id"];
 
@@ -241,13 +246,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
 
             $stockStmt->close();
-
-            $stmt = $conn->prepare("
-                UPDATE orders
-                SET status = 'cancelled'
-                WHERE order_id = ?
-                  AND LOWER(status) = 'pending'
-            ");
+$stmt = $conn->prepare("
+    UPDATE orders
+    SET status = 'cancelled'
+    WHERE order_id = ?
+      AND LOWER(status) IN ('pending', 'confirmed')
+");
 
             $stmt->bind_param("i", $orderId);
             $stmt->execute();
@@ -726,85 +730,101 @@ if ($filterPayment === "paid") {
                                         class="action-btn view-btn"
                                     >View</a>
 
-                                    <?php if ($status === "pending"): ?>
+                                        
 
-                                        <form
-                                            method="POST"
-                                            action=""
-                                            onsubmit="return confirm('Confirm this order?');"
-                                        >
-                                            <input
-                                                type="hidden"
-                                                name="order_id"
-                                                value="<?= (int)$row["order_id"] ?>"
-                                            >
+<?php if ($status === "pending"): ?>
 
-                                            <input
-                                                type="hidden"
-                                                name="action"
-                                                value="confirm"
-                                            >
+    <form
+        method="POST"
+        action=""
+        onsubmit="return confirm('Confirm this order?');"
+    >
+        <input
+            type="hidden"
+            name="order_id"
+            value="<?= (int)$row["order_id"] ?>"
+        >
 
-                                            <input
-                                                type="hidden"
-                                                name="return_status"
-                                                value="<?= e($filterStatus) ?>"
-                                            >
+        <input
+            type="hidden"
+            name="action"
+            value="confirm"
+        >
 
-                                            <input
-                                                type="hidden"
-                                                name="return_payment"
-                                                value="<?= e($filterPayment) ?>"
-                                            >
+        <input
+            type="hidden"
+            name="return_status"
+            value="<?= e($filterStatus) ?>"
+        >
 
-                                            <button
-                                                type="submit"
-                                                class="action-btn confirm-btn"
-                                            >Confirm</button>
-                                        </form>
+        <input
+            type="hidden"
+            name="return_payment"
+            value="<?= e($filterPayment) ?>"
+        >
 
-                                        <form
-                                            method="POST"
-                                            action=""
-                                            onsubmit="return confirm('Cancel this order and restore its stock?');"
-                                        >
-                                            <input
-                                                type="hidden"
-                                                name="order_id"
-                                                value="<?= (int)$row["order_id"] ?>"
-                                            >
+        <button
+            type="submit"
+            class="action-btn confirm-btn"
+        >
+            Confirm
+        </button>
+    </form>
 
-                                            <input
-                                                type="hidden"
-                                                name="action"
-                                                value="cancel"
-                                            >
+<?php endif; ?>
 
-                                            <input
-                                                type="hidden"
-                                                name="return_status"
-                                                value="<?= e($filterStatus) ?>"
-                                            >
 
-                                            <input
-                                                type="hidden"
-                                                name="return_payment"
-                                                value="<?= e($filterPayment) ?>"
-                                            >
+<?php if (in_array($status, ["pending", "confirmed"], true)): ?>
 
-                                            <button
-                                                type="submit"
-                                                class="action-btn cancel-btn"
-                                            >Cancel</button>
-                                        </form>
+    <form
+        method="POST"
+        action=""
+        onsubmit="return confirm('Cancel this order and restore its stock?');"
+    >
+        <input
+            type="hidden"
+            name="order_id"
+            value="<?= (int)$row["order_id"] ?>"
+        >
 
-                                    <?php else: ?>
+        <input
+            type="hidden"
+            name="action"
+            value="cancel"
+        >
 
-                                        <span class="no-action">
-                                            No action
-                                        </span>
+        <input
+            type="hidden"
+            name="return_status"
+            value="<?= e($filterStatus) ?>"
+        >
 
-                                    <?php endif; ?>
+        <input
+            type="hidden"
+            name="return_payment"
+            value="<?= e($filterPayment) ?>"
+        >
+
+        <button
+            type="submit"
+            class="action-btn cancel-btn"
+        >
+            Cancel
+        </button>
+    </form>
+
+<?php endif; ?>
+
+
+<?php if (!in_array($status, ["pending", "confirmed"], true)): ?>
+
+    <span class="no-action">
+        No action
+    </span>
+
+<?php endif; ?>
+                                      
+
 
                                 </div>
                             </td>
